@@ -15,7 +15,7 @@
     @apply bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 mb-6 transition-colors duration-200;
   }
   .card.is-collapsible.collapsed {
-    @apply bg-gray-50 dark:bg-gray-700 pb-0;
+    @apply bg-gray-50 dark:bg-gray-700 pb-0 mb-4;
   }
   .card.is-collapsible.collapsed:hover {
     @apply bg-gray-100 dark:bg-gray-600;
@@ -46,6 +46,7 @@
   .card.is-collapsible.collapsed h3,
   .card.is-collapsible.collapsed h4 {
     margin-bottom: 0 !important;
+    @apply pb-4;
   }
   /* Tighter spacing between title and content when expanded */
   .card.is-collapsible:not(.collapsed) > h3,
