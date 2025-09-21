@@ -307,7 +307,7 @@
               <label
                 for="goalValue"
                 class="text-md font-medium text-gray-700 dark:text-gray-300"
-                >Wealth Goal (£)</label
+                >Wealth Goal (<span data-currency-symbol>£</span>)</label
               >
               <input
                 type="number"
@@ -364,7 +364,7 @@
             </div>
             <div class="md:col-span-full">
               <label for="assetValue" class="form-label required-label"
-                >Value (£)</label
+                >Value (<span data-currency-symbol>£</span>)</label
               >
               <input
                 type="number"
@@ -377,7 +377,7 @@
             </div>
             <div class="md:col-span-full">
               <label for="depositAmount" class="form-label"
-                >Deposit Amount (£)</label
+                >Deposit Amount (<span data-currency-symbol>£</span>)</label
               >
               <input
                 type="number"
@@ -549,7 +549,7 @@
             </div>
             <div class="md:col-span-full">
               <label for="liabilityValue" class="form-label required-label"
-                >Amount Owed (£)</label
+                >Amount Owed (<span data-currency-symbol>£</span>)</label
               >
               <input
                 type="number"
@@ -574,7 +574,7 @@
             </div>
             <div class="md:col-span-full">
               <label for="liabilityPaymentAmount" class="form-label"
-                >Recurring Payment (£)</label
+                >Recurring Payment (<span data-currency-symbol>£</span>)</label
               >
               <input
                 type="number"
@@ -619,7 +619,7 @@
                 <tr>
                   <th class="table-header">Name</th>
                   <th class="table-header">Start Date</th>
-                  <th class="table-header">Current (£)</th>
+                  <th class="table-header">Current (<span data-currency-symbol>£</span>)</th>
                   <th class="table-header">Payment</th>
                   <th class="table-header">
                     <span class="sr-only">Actions</span>
@@ -743,7 +743,7 @@
                   required
                 />
                 <select id="eventType" class="input-field w-20">
-                  <option value="absolute">£</option>
+                  <option value="absolute" data-currency-symbol>£</option>
                   <option value="percent">%</option>
                 </select>
               </div>
@@ -1041,7 +1041,7 @@
           <form id="fireForecastForm" class="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
             <div>
               <label for="fireForecastLivingCosts" class="form-label required-label"
-                >Living Costs (£)</label
+                >Living Costs (<span data-currency-symbol>£</span>)</label
               >
               <input
                 type="number"
@@ -1245,7 +1245,7 @@
               Share Target Profit (%)
             </button>
             <button class="tab-btn" data-tab-target="stock-profit-amount">
-              Share Target Profit (£)
+              Share Target Profit (<span data-currency-symbol>£</span>)
             </button>
             <button class="tab-btn" data-tab-target="compound-interest">
               Compound Interest
@@ -1327,7 +1327,7 @@
             <h3
               class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4"
             >
-              Share Target Profit (£)
+              Share Target Profit (<span data-currency-symbol>£</span>)
             </h3>
             <form
               id="stockProfitAmountForm"
@@ -1385,7 +1385,7 @@
               </div>
               <div>
                 <label for="target-profit" class="form-label required-label"
-                  >Target Profit (£)</label
+                  >Target Profit (<span data-currency-symbol>£</span>)</label
                 >
                 <input
                   type="number"
@@ -1416,7 +1416,7 @@
             >
               <div>
                 <label for="ci-principal" class="form-label required-label"
-                  >Principal (£)</label
+                  >Principal (<span data-currency-symbol>£</span>)</label
                 >
                 <input
                   type="number"
@@ -1463,7 +1463,7 @@
               </div>
               <div>
                 <label for="ci-contribution" class="form-label"
-                  >Monthly Contribution (£)</label
+                  >Monthly Contribution (<span data-currency-symbol>£</span>)</label
                 >
                 <input
                   type="number"
@@ -1494,7 +1494,7 @@
             >
               <div>
                 <label for="si-principal" class="form-label required-label"
-                  >Principal (£)</label
+                  >Principal (<span data-currency-symbol>£</span>)</label
                 >
                 <input
                   type="number"
@@ -1561,7 +1561,7 @@
             <form id="fireForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div class="md:col-span-2">
                 <label for="fireLivingExpenses" class="form-label required-label"
-                  >Living Costs (£)</label
+                  >Living Costs (<span data-currency-symbol>£</span>)</label
                 >
                 <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
                   <input
@@ -1932,6 +1932,26 @@
           <h3
             class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2"
           >
+            Currency
+          </h3>
+          <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
+            Choose the currency used throughout the app. Labels and values
+            will update immediately.
+          </p>
+          <div class="max-w-xs">
+            <label for="currencySelect" class="form-label">Currency</label>
+            <select id="currencySelect" class="input-field">
+              <option value="GBP">Pounds (£)</option>
+              <option value="USD">Dollars ($)</option>
+              <option value="EUR">Euros (€)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3
+            class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2"
+          >
             Theme
           </h3>
           <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
@@ -2047,7 +2067,7 @@
           </div>
           <div>
             <label for="editAssetValue" class="form-label required-label"
-              >Initial Value (£)</label
+              >Initial Value (<span data-currency-symbol>£</span>)</label
             >
             <input
               type="number"
@@ -2059,7 +2079,7 @@
           </div>
           <div>
             <label for="editDepositAmount" class="form-label"
-              >Deposit Amount (£)</label
+              >Deposit Amount (<span data-currency-symbol>£</span>)</label
             >
             <input
               type="number"
@@ -2159,7 +2179,7 @@
           </div>
           <div class="md:col-span-full">
             <label for="editLiabilityValue" class="form-label required-label"
-              >Amount Owed (£)</label
+              >Amount Owed (<span data-currency-symbol>£</span>)</label
             >
             <input
               type="number"
@@ -2182,7 +2202,7 @@
           </div>
           <div class="md:col-span-full">
             <label for="editLiabilityPaymentAmount" class="form-label"
-              >Recurring Payment (£)</label
+              >Recurring Payment (<span data-currency-symbol>£</span>)</label
             >
             <input
               type="number"
@@ -2252,7 +2272,7 @@
                 required
               />
               <select id="editEventType" class="input-field w-20">
-                <option value="absolute">£</option>
+                <option value="absolute" data-currency-symbol>£</option>
                 <option value="percent">%</option>
               </select>
             </div>

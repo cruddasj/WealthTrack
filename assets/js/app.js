@@ -43,12 +43,75 @@ const LS = {
   profiles: "profiles",
   activeProfile: "activeProfile",
   forecastTip: "forecastTipSeen",
+  currency: "currency",
 };
 const save = (k, v) => localStorage.setItem(k, JSON.stringify(v));
 const load = (k, d) => JSON.parse(localStorage.getItem(k)) || d;
 
-const fmtGBP = (n) =>
-  n.toLocaleString("en-GB", { style: "currency", currency: "GBP" });
+const currencyOptions = {
+  GBP: { label: "Pounds (£)", locale: "en-GB", currency: "GBP", symbol: "£" },
+  USD: { label: "Dollars ($)", locale: "en-US", currency: "USD", symbol: "$" },
+  EUR: { label: "Euros (€)", locale: "en-IE", currency: "EUR", symbol: "€" },
+};
+
+let currencyCode = load(LS.currency, "GBP");
+if (!currencyOptions[currencyCode]) currencyCode = "GBP";
+
+const getCurrencyConfig = () =>
+  currencyOptions[currencyCode] || currencyOptions.GBP;
+
+const fmtCurrency = (value) => {
+  const cfg = getCurrencyConfig();
+  const amount =
+    typeof value === "number" ? value : Number.parseFloat(value ?? 0);
+  const safeAmount = Number.isFinite(amount) ? amount : 0;
+  return safeAmount.toLocaleString(cfg.locale, {
+    style: "currency",
+    currency: cfg.currency,
+  });
+};
+
+const updateCurrencySymbols = () => {
+  const cfg = getCurrencyConfig();
+  document
+    .querySelectorAll("[data-currency-symbol]")
+    .forEach((el) => {
+      el.textContent = cfg.symbol;
+    });
+  document
+    .querySelectorAll("template")
+    .forEach((tpl) => {
+      const fragment = tpl.content;
+      if (!fragment) return;
+      fragment
+        .querySelectorAll("[data-currency-symbol]")
+        .forEach((el) => {
+          el.textContent = cfg.symbol;
+        });
+    });
+};
+
+const currencyTick = (v) => fmtCurrency(v);
+
+function applyCurrencyChoice(code, { persistChoice = true } = {}) {
+  if (!currencyOptions[code]) return;
+  currencyCode = code;
+  if (persistChoice) save(LS.currency, currencyCode);
+  refreshCurrencyDisplays();
+}
+
+function refreshCurrencyDisplays() {
+  updateCurrencySymbols();
+  const select = document.getElementById("currencySelect");
+  if (select && select.value !== currencyCode) select.value = currencyCode;
+  renderAssets();
+  renderLiabilities();
+  renderEvents();
+  renderSnapshots();
+  updateInflationImpactCard();
+  refreshFireProjection();
+}
+
 const fmtDate = new Intl.DateTimeFormat("en-GB", {
   day: "2-digit",
   month: "2-digit",
@@ -798,7 +861,7 @@ function showSnapshotDetails(snapshot) {
       .map(
         (a) => `<tr class="text-sm text-gray-700 dark:text-gray-300">
       <td class="px-6 py-4 whitespace-nowrap">${a.name}</td>
-      <td class="px-6 py-4 whitespace-nowrap">${fmtGBP(a.value)}</td>
+      <td class="px-6 py-4 whitespace-nowrap">${fmtCurrency(a.value)}</td>
     </tr>`,
       )
       .join("")}
@@ -1104,7 +1167,7 @@ const baseLineOpts = {
   maintainAspectRatio: false,
   layout: { padding: { bottom: 24 } },
   scales: {
-    y: { ticks: { callback: (v) => fmtGBP(v) } },
+    y: { ticks: { callback: (v) => fmtCurrency(v) } },
     x: {
       type: "time",
       time: { unit: "year", tooltipFormat: "MMM yyyy" },
@@ -1137,7 +1200,7 @@ const baseLineOpts = {
     },
     tooltip: {
       callbacks: {
-        label: (c) => `${c.dataset.label}: ${fmtGBP(c.raw.y)}`,
+        label: (c) => `${c.dataset.label}: ${fmtCurrency(c.raw.y)}`,
       },
     },
   },
@@ -1229,14 +1292,13 @@ const ensureChart = (ref, ctx, cfg) => {
   ref?.destroy();
   return new Chart(ctx, cfg);
 };
-const gbpTick = (v) => fmtGBP(v);
 const pieTooltip = (context) => {
   const total = context.chart.data.datasets[0].data.reduce(
     (a, b) => a + b,
     0,
   );
   const pct = ((context.raw / total) * 100).toFixed(2);
-  return `${context.label}: ${fmtGBP(context.raw)} (${pct}%)`;
+  return `${context.label}: ${fmtCurrency(context.raw)} (${pct}%)`;
 };
 
 function adaptChartToZoom(chart) {
@@ -1395,7 +1457,7 @@ function updatePassiveIncome() {
 
   const set = (id, val) => {
     const el = $(id);
-    if (el) el.textContent = fmtGBP(val);
+    if (el) el.textContent = fmtCurrency(val);
   };
   set("passiveDaily", daily || 0);
   set("passiveWeekly", weekly || 0);
@@ -1537,8 +1599,8 @@ function updateFireForecastCard() {
       : "";
   const costDescriptor =
     fireForecastFrequency === "monthly"
-      ? `${fmtGBP(annualCost / 12)} per month (${fmtGBP(annualCost)} per year)`
-      : `${fmtGBP(annualCost)} per year`;
+      ? `${fmtCurrency(annualCost / 12)} per month (${fmtCurrency(annualCost)} per year)`
+      : `${fmtCurrency(annualCost)} per year`;
   const inflLabel = inflationPct.toLocaleString(undefined, {
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
@@ -1619,16 +1681,16 @@ function updateFireForecastCard() {
       ? `<span class="text-green-500">${formatMonthYear(noInfl.date)}</span>`
       : '<span class="text-red-600">Not reached</span>';
     const withDetail = withInfl
-      ? `Inflation-adjusted living costs: ${fmtGBP(
+      ? `Inflation-adjusted living costs: ${fmtCurrency(
           withInfl.living,
-        )} (${inflationFactorText(withInfl.inflationFactor)}). Passive income: ${fmtGBP(
+        )} (${inflationFactorText(withInfl.inflationFactor)}). Passive income: ${fmtCurrency(
           withInfl.passive,
-        )} per year (~${fmtGBP(withInfl.passive / 12)} per month).`
+        )} per year (~${fmtCurrency(withInfl.passive / 12)} per month).`
       : "Passive income stays below your inflation-adjusted living costs within this forecast horizon.";
     const withoutDetail = noInfl
-      ? `Living costs today: ${fmtGBP(noInfl.living)}. Passive income: ${fmtGBP(
+      ? `Living costs today: ${fmtCurrency(noInfl.living)}. Passive income: ${fmtCurrency(
           noInfl.passive,
-        )} per year (~${fmtGBP(noInfl.passive / 12)} per month).`
+        )} per year (~${fmtCurrency(noInfl.passive / 12)} per month).`
       : "Passive income also stays below today's living costs within this horizon.";
     let deltaLine = "";
     if (withInfl && noInfl && withInfl.date && noInfl.date) {
@@ -1715,14 +1777,14 @@ function refreshFireProjection() {
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
       <div class="rounded-lg bg-gray-100 dark:bg-gray-700 p-3">
         <p class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Annual Living Costs</p>
-        <p class="text-lg font-semibold text-gray-900 dark:text-gray-100">${fmtGBP(
+        <p class="text-lg font-semibold text-gray-900 dark:text-gray-100">${fmtCurrency(
           annualExpenses,
         )}</p>
         <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Entered as ${frequencyLabel} spending.</p>
       </div>
       <div class="rounded-lg bg-gray-100 dark:bg-gray-700 p-3">
         <p class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">FIRE Number</p>
-        <p class="text-lg font-semibold text-gray-900 dark:text-gray-100">${fmtGBP(
+        <p class="text-lg font-semibold text-gray-900 dark:text-gray-100">${fmtCurrency(
           fireNumber,
         )}</p>
         <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">${rateFootnote}</p>
@@ -2018,7 +2080,7 @@ function renderAssets() {
       const hasDeposit =
         asset.originalDeposit > 0 && asset.frequency !== "none";
       const depositText = hasDeposit
-        ? `${fmtGBP(asset.originalDeposit)} (${asset.frequency})`
+        ? `${fmtCurrency(asset.originalDeposit)} (${asset.frequency})`
         : "-";
       const explicitStart = toTimestamp(asset.explicitStartDate);
       let startCell = "-";
@@ -2036,7 +2098,7 @@ function renderAssets() {
       return `<tr class="text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
     <td class="px-6 py-4 whitespace-nowrap">${asset.name}${passiveBadge}</td>
     <td class="px-6 py-4 whitespace-nowrap">${startCell}</td>
-    <td class="px-6 py-4 whitespace-nowrap font-semibold">${fmtGBP(currentValue)}</td>
+    <td class="px-6 py-4 whitespace-nowrap font-semibold">${fmtCurrency(currentValue)}</td>
     <td class="px-6 py-4 whitespace-nowrap">${depositText}</td>
     <td class="px-6 py-4 whitespace-nowrap">
       <span class="text-xs text-gray-500 dark:text-gray-400">Low:</span> ${asset.lowGrowth || 0}%
@@ -2134,7 +2196,7 @@ function renderLiabilities() {
     .map((l, i) => {
       const hasPay = l.originalPayment > 0 && l.frequency !== "none";
       const payText = hasPay
-        ? `${fmtGBP(l.originalPayment)} (${l.frequency})`
+        ? `${fmtCurrency(l.originalPayment)} (${l.frequency})`
         : "-";
       const currentValue = calculateCurrentLiability(l);
       const explicitStart = toTimestamp(l.explicitStartDate);
@@ -2149,7 +2211,7 @@ function renderLiabilities() {
       return `<tr class="text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
     <td class="px-6 py-4 whitespace-nowrap">${l.name}</td>
     <td class="px-6 py-4 whitespace-nowrap">${startCell}</td>
-    <td class="px-6 py-4 whitespace-nowrap font-semibold">${fmtGBP(currentValue)}</td>
+    <td class="px-6 py-4 whitespace-nowrap font-semibold">${fmtCurrency(currentValue)}</td>
     <td class="px-6 py-4 whitespace-nowrap">${payText}</td>
     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium flex items-center gap-2">
       <button data-action="edit-liability" data-index="${i}" class="btn-icon" title="Edit Liability">
@@ -2176,7 +2238,7 @@ function updateTotals() {
     (sum, l) => sum + calculateCurrentLiability(l),
     0,
   );
-  const current = fmtGBP(totalAssets - totalLiabs);
+  const current = fmtCurrency(totalAssets - totalLiabs);
   const elWealthOld = $("totalWealth");
   const elWealthForecast = $("totalWealthForecast");
   if (elWealthOld) elWealthOld.textContent = current;
@@ -2191,7 +2253,7 @@ function renderEvents() {
     .map((ev, i) => {
       const assetName =
         assets.find((a) => a.dateAdded === ev.assetId)?.name || "-";
-      const amt = ev.isPercent ? `${ev.amount}%` : fmtGBP(ev.amount);
+      const amt = ev.isPercent ? `${ev.amount}%` : fmtCurrency(ev.amount);
       return `
     <tr class="text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
       <td class="px-6 py-4 whitespace-nowrap">${ev.name}</td>
@@ -2226,7 +2288,7 @@ function renderSnapshots() {
         <span class="text-gray-500 dark:text-gray-400 text-sm ml-2">(${fmtDate(new Date(s.date))})</span>
       </div>
       <div class="flex items-center justify-between gap-3 sm:justify-end">
-        <span class="font-semibold text-gray-900 dark:text-gray-100">${fmtGBP(s.value)}</span>
+        <span class="font-semibold text-gray-900 dark:text-gray-100">${fmtCurrency(s.value)}</span>
         <button data-action="view-snapshot" data-index="${i}" class="hidden text-blue-500 hover:text-blue-700 sm:inline-block">View Details</button>
         <button data-action="rename-snapshot" data-index="${i}" class="hidden sm:inline-flex btn-icon text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200" title="Rename Snapshot">
           <svg class="h-5 w-5" fill="currentColor"><use href="#i-edit"/></svg>
@@ -2396,7 +2458,7 @@ function updateProgressCheckResult() {
   const currentNetWorth = calculateNetWorth();
   const diff = currentNetWorth - forecastValue;
   const tolerance = 1;
-  const diffAbs = fmtGBP(Math.abs(diff));
+  const diffAbs = fmtCurrency(Math.abs(diff));
   const diffSigned =
     diff > tolerance ? `+${diffAbs}` : diff < -tolerance ? `-${diffAbs}` : diffAbs;
   const statusClass =
@@ -2415,20 +2477,20 @@ function updateProgressCheckResult() {
   result.innerHTML = `
     <div class="space-y-3">
       <p class="text-sm text-gray-600 dark:text-gray-300">
-        Saved forecast from <strong>${snapshot.name}</strong> expected <span class="whitespace-nowrap">${fmtGBP(
+        Saved forecast from <strong>${snapshot.name}</strong> expected <span class="whitespace-nowrap">${fmtCurrency(
           forecastValue,
         )}</span> by ${fmtDate(comparisonDate)}.
       </p>
       <div class="grid grid-cols-1 gap-3 md:grid-cols-3">
         <div class="rounded-lg bg-gray-100 p-3 dark:bg-gray-700">
           <p class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Current Net Worth</p>
-          <p class="text-lg font-semibold text-gray-900 dark:text-gray-100">${fmtGBP(
+          <p class="text-lg font-semibold text-gray-900 dark:text-gray-100">${fmtCurrency(
             currentNetWorth,
           )}</p>
         </div>
         <div class="rounded-lg bg-gray-100 p-3 dark:bg-gray-700">
           <p class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Projected by Now</p>
-          <p class="text-lg font-semibold text-gray-900 dark:text-gray-100">${fmtGBP(
+          <p class="text-lg font-semibold text-gray-900 dark:text-gray-100">${fmtCurrency(
             forecastValue,
           )}</p>
         </div>
@@ -2541,7 +2603,7 @@ function updateWealthChart() {
   const minStart = Math.min(currentBaseline, minSeriesValue);
   let yOpts = {
     max: goalValue > 0 ? goalValue * 1.1 : undefined,
-    ticks: { callback: gbpTick },
+    ticks: { callback: currencyTick },
   };
 
   if (minStart > 0) {
@@ -2617,7 +2679,7 @@ function updateWealthChart() {
 
         tooltip: {
           callbacks: {
-            label: (c) => `${c.dataset.label}: ${fmtGBP(c.raw.y)}`,
+            label: (c) => `${c.dataset.label}: ${fmtCurrency(c.raw.y)}`,
             footer: (items) => {
               const [item] = items;
               const { dataIndex, dataset } = item;
@@ -2642,7 +2704,7 @@ function updateWealthChart() {
                     assetForecasts.get(a.dateAdded)?.[scenario]?.[
                       dataIndex
                     ] ?? 0;
-                  return `  ${a.name}: ${fmtGBP(forecast)}`;
+                  return `  ${a.name}: ${fmtCurrency(forecast)}`;
                 });
               const liabLines = [...liabilities]
                 .sort((a, b) =>
@@ -2653,7 +2715,7 @@ function updateWealthChart() {
                 .map((l) => {
                   const forecast =
                     liabilityForecasts.get(l.dateAdded)?.[dataIndex] ?? 0;
-                  return `  ${l.name}: ${fmtGBP(forecast)}`;
+                  return `  ${l.name}: ${fmtCurrency(forecast)}`;
                 });
               const lines = [...assetLines, ...liabLines];
               return lines.length
@@ -2786,7 +2848,7 @@ function updateInflationImpactCard() {
       el.className = "mt-1 text-red-600";
       if (yearEl) yearEl.textContent = "";
     } else {
-      el.textContent = fmtGBP(val || 0);
+      el.textContent = fmtCurrency(val || 0);
       el.className = "mt-1 text-green-500";
       if (yearEl) {
         yearEl.textContent = `Year: ${new Date(date).getFullYear()}`;
@@ -2815,9 +2877,9 @@ function updateInflationImpactCard() {
   setVal(lowEl, lowYearEl, hits?.low, lowV);
   setVal(expEl, expYearEl, hits?.base, baseV);
   setVal(highEl, highYearEl, hits?.high, highV);
-  if (lowEqEl) lowEqEl.textContent = hits?.low ? `Equivalent that year: ${fmtGBP(lowF || 0)}` : "";
-  if (expEqEl) expEqEl.textContent = hits?.base ? `Equivalent that year: ${fmtGBP(baseF || 0)}` : "";
-  if (highEqEl) highEqEl.textContent = hits?.high ? `Equivalent that year: ${fmtGBP(highF || 0)}` : "";
+  if (lowEqEl) lowEqEl.textContent = hits?.low ? `Equivalent that year: ${fmtCurrency(lowF || 0)}` : "";
+  if (expEqEl) expEqEl.textContent = hits?.base ? `Equivalent that year: ${fmtCurrency(baseF || 0)}` : "";
+  if (highEqEl) highEqEl.textContent = hits?.high ? `Equivalent that year: ${fmtCurrency(highF || 0)}` : "";
 }
 
 function renderAssetBreakdownChart() {
@@ -2899,14 +2961,14 @@ function updateSnapshotChart() {
         y: {
           beginAtZero: true,
           stacked: true,
-          ticks: { callback: gbpTick },
+          ticks: { callback: currencyTick },
         },
         x: { stacked: true },
       },
       plugins: {
         tooltip: {
           callbacks: {
-            label: (c) => `${c.dataset.label}: ${fmtGBP(c.raw)}`,
+            label: (c) => `${c.dataset.label}: ${fmtCurrency(c.raw)}`,
           },
         },
       },
@@ -3562,9 +3624,9 @@ function handleFormSubmit(e) {
         asset.highGrowth || 0,
         years,
       );
-      $("fvLow").textContent = fmtGBP(low);
-      $("fvExpected").textContent = fmtGBP(exp);
-      $("fvHigh").textContent = fmtGBP(high);
+      $("fvLow").textContent = fmtCurrency(low);
+      $("fvExpected").textContent = fmtCurrency(exp);
+      $("fvHigh").textContent = fmtCurrency(high);
       const res = $("fvResult");
       if (res) res.classList.remove("hidden");
       break;
@@ -3581,7 +3643,7 @@ function handleFormSubmit(e) {
       const monthly = annual / 12;
       $("simpleInterestResult").innerHTML = `
       <div class="mt-4">
-        <p class="text-lg font-semibold mb-2">Future Value: ${fmtGBP(total)}</p>
+        <p class="text-lg font-semibold mb-2">Future Value: ${fmtCurrency(total)}</p>
         <div class="overflow-x-auto">
           <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-left">
         <thead class="bg-gray-200 dark:bg-gray-700">
@@ -3591,10 +3653,10 @@ function handleFormSubmit(e) {
           </tr>
         </thead>
         <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700 text-sm text-left">
-          <tr><td class="px-6 py-3">Daily</td><td class="px-6 py-3">${fmtGBP(daily)}</td></tr>
-          <tr><td class="px-6 py-3">Weekly</td><td class="px-6 py-3">${fmtGBP(weekly)}</td></tr>
-          <tr><td class="px-6 py-3">Monthly</td><td class="px-6 py-3">${fmtGBP(monthly)}</td></tr>
-          <tr><td class="px-6 py-3">Yearly</td><td class="px-6 py-3">${fmtGBP(annual)}</td></tr>
+          <tr><td class="px-6 py-3">Daily</td><td class="px-6 py-3">${fmtCurrency(daily)}</td></tr>
+          <tr><td class="px-6 py-3">Weekly</td><td class="px-6 py-3">${fmtCurrency(weekly)}</td></tr>
+          <tr><td class="px-6 py-3">Monthly</td><td class="px-6 py-3">${fmtCurrency(monthly)}</td></tr>
+          <tr><td class="px-6 py-3">Yearly</td><td class="px-6 py-3">${fmtCurrency(annual)}</td></tr>
         </tbody>
       </table>
     </div>
@@ -3650,7 +3712,7 @@ function handleFormSubmit(e) {
       const daily = totalInterest / ((t || 1) * 365.25);
       $("compoundResult").innerHTML = `
       <div class="mt-4">
-        <p class="text-lg font-semibold mb-2">Future Value: ${fmtGBP(fv)}</p>
+        <p class="text-lg font-semibold mb-2">Future Value: ${fmtCurrency(fv)}</p>
     <div class="overflow-x-auto">
       <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-left">
         <thead class="bg-gray-200 dark:bg-gray-700">
@@ -3660,10 +3722,10 @@ function handleFormSubmit(e) {
           </tr>
         </thead>
         <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700 text-sm text-left">
-          <tr><td class="px-6 py-3">Daily</td><td class="px-6 py-3">${fmtGBP(daily)}</td></tr>
-          <tr><td class="px-6 py-3">Weekly</td><td class="px-6 py-3">${fmtGBP(weekly)}</td></tr>
-          <tr><td class="px-6 py-3">Monthly</td><td class="px-6 py-3">${fmtGBP(monthly)}</td></tr>
-          <tr><td class="px-6 py-3">Yearly</td><td class="px-6 py-3">${fmtGBP(yearly)}</td></tr>
+          <tr><td class="px-6 py-3">Daily</td><td class="px-6 py-3">${fmtCurrency(daily)}</td></tr>
+          <tr><td class="px-6 py-3">Weekly</td><td class="px-6 py-3">${fmtCurrency(weekly)}</td></tr>
+          <tr><td class="px-6 py-3">Monthly</td><td class="px-6 py-3">${fmtCurrency(monthly)}</td></tr>
+          <tr><td class="px-6 py-3">Yearly</td><td class="px-6 py-3">${fmtCurrency(yearly)}</td></tr>
         </tbody>
       </table>
     </div>
@@ -3711,6 +3773,14 @@ window.addEventListener("load", () => {
   $("themeToggle").checked = isDark;
   Chart.defaults.color = isDark ? "#ffffff" : "#374151";
   updateChartContainers();
+
+  updateCurrencySymbols();
+
+  const currencySelect = document.getElementById("currencySelect");
+  if (currencySelect) {
+    currencySelect.value = currencyCode;
+    on(currencySelect, "change", (e) => applyCurrencyChoice(e.target.value));
+  }
 
   // Apply saved theme choice
   (function () {
