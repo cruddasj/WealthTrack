@@ -1143,6 +1143,82 @@ const baseLineOpts = {
   },
 };
 
+const getActiveTooltipElements = (chart) => {
+  if (!chart?.tooltip) return [];
+  if (typeof chart.tooltip.getActiveElements === "function") {
+    return chart.tooltip.getActiveElements();
+  }
+  return chart.tooltip._active || [];
+};
+
+const clearChartTooltip = (chart) => {
+  if (!chart?.tooltip) return;
+  try {
+    if (typeof chart.tooltip.setActiveElements === "function") {
+      chart.tooltip.setActiveElements([], { x: 0, y: 0 });
+    } else {
+      chart.tooltip._active = [];
+    }
+    chart.update();
+  } catch (_) {}
+};
+
+const attachMobileTooltipDismiss = (chart, canvas) => {
+  if (!chart || !canvas) return;
+
+  if (canvas._wtTooltipDismiss) {
+    canvas.removeEventListener("pointerdown", canvas._wtTooltipDismiss);
+  }
+  if (canvas._wtTooltipLeave) {
+    canvas.removeEventListener("pointerleave", canvas._wtTooltipLeave);
+  }
+
+  const handler = (event) => {
+    const active = getActiveTooltipElements(chart);
+    if (!active.length) return;
+    const elements = chart.getElementsAtEventForMode(
+      event,
+      "nearest",
+      { intersect: true },
+      true,
+    );
+    const samePoint =
+      active.length === 1 &&
+      elements.length === 1 &&
+      active[0].datasetIndex === elements[0].datasetIndex &&
+      active[0].index === elements[0].index;
+    if (samePoint || elements.length === 0) {
+      clearChartTooltip(chart);
+    }
+  };
+
+  const leaveHandler = () => {
+    if (!getActiveTooltipElements(chart).length) return;
+    clearChartTooltip(chart);
+  };
+
+  canvas.addEventListener("pointerdown", handler, { passive: true });
+  canvas.addEventListener("pointerleave", leaveHandler);
+  canvas._wtTooltipDismiss = handler;
+  canvas._wtTooltipLeave = leaveHandler;
+};
+
+const updateChartContainers = () => {
+  const containers = document.querySelectorAll(".chart-container");
+  if (!containers.length) return;
+  const targetHeight = Math.min(420, Math.max(260, window.innerHeight * 0.55));
+  const padding = window.innerWidth < 640 ? "8px 0" : "12px 0";
+  containers.forEach((container) => {
+    container.style.height = `${targetHeight}px`;
+    container.style.padding = padding;
+    const canvas = container.querySelector("canvas");
+    if (canvas) {
+      canvas.style.width = "100%";
+      canvas.style.height = "100%";
+    }
+  });
+};
+
 const ensureChart = (ref, ctx, cfg) => {
   if (ref?.ctx?.canvas === ctx.canvas) {
     ref.config.data = cfg.data;
@@ -2597,6 +2673,7 @@ function updateWealthChart() {
   );
   adaptChartToZoom(wealthChart);
   updateChartTheme();
+  attachMobileTooltipDismiss(wealthChart, $("wealthChart"));
 
   const wrap = $("forecastGoalsDates");
   wrap.innerHTML = "";
@@ -3633,6 +3710,7 @@ window.addEventListener("load", () => {
   const isDark = document.documentElement.classList.contains("dark");
   $("themeToggle").checked = isDark;
   Chart.defaults.color = isDark ? "#ffffff" : "#374151";
+  updateChartContainers();
 
   // Apply saved theme choice
   (function () {
@@ -3707,12 +3785,45 @@ window.addEventListener("load", () => {
   // Mobile menu
   const sidebar = $("sidebar"),
     overlay = $("overlay");
+  const setMenuState = (open) => {
+    if (!sidebar || !overlay) return;
+    const hideSidebar = !open;
+    sidebar.classList.toggle("-translate-x-full", hideSidebar);
+    const hideOverlay = hideSidebar || window.innerWidth >= 768;
+    overlay.classList.toggle("hidden", hideOverlay);
+    if (open && window.innerWidth < 768) {
+      document.body.style.overflow = "hidden";
+      document.body.style.touchAction = "none";
+    } else {
+      document.body.style.overflow = "";
+      document.body.style.touchAction = "";
+    }
+  };
   const toggleMenu = () => {
-    sidebar.classList.toggle("-translate-x-full");
-    overlay.classList.toggle("hidden");
+    if (!sidebar) return;
+    const isHidden = sidebar.classList.contains("-translate-x-full");
+    setMenuState(isHidden);
   };
   on($("menu-toggle"), "click", toggleMenu);
-  on(overlay, "click", toggleMenu);
+  on(overlay, "click", () => setMenuState(false));
+
+  on(window, "resize", () => {
+    if (window.innerWidth >= 768) setMenuState(false);
+    updateChartContainers();
+  });
+
+  const resetBtn = $("wealthChartReset");
+  if (resetBtn)
+    on(resetBtn, "click", () => {
+      if (!wealthChart) return;
+      try {
+        if (typeof wealthChart.resetZoom === "function") {
+          wealthChart.resetZoom();
+        }
+      } catch (_) {}
+      clearChartTooltip(wealthChart);
+      adaptChartToZoom(wealthChart);
+    });
 
   const brandHome = $("brandHome");
   if (brandHome)
