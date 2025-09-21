@@ -4187,13 +4187,31 @@ window.addEventListener("load", () => {
     updateChartTheme();
   });
   on($("goalBtn"), "click", () => {
-    goalValue = parseFloat($("goalValue").value) || 0;
+    const prevGoalValue = goalValue;
+    const prevGoalTargetDate = goalTargetDate;
+    const nextGoalValue = parseFloat($("goalValue").value) || 0;
     const yr = parseInt($("goalYear").value);
-    goalTargetDate = yr ? new Date(yr, 11, 31).getTime() : null;
+    const nextGoalTargetDate = yr ? new Date(yr, 11, 31).getTime() : null;
+
+    goalValue = nextGoalValue;
+    goalTargetDate = nextGoalTargetDate;
     persist();
     updateWealthChart();
     updateEmptyStates();
     updateGoalButton();
+
+    const goalChanged =
+      prevGoalValue !== goalValue || prevGoalTargetDate !== goalTargetDate;
+    if (!goalChanged) return;
+
+    if (goalValue > 0) {
+      const messageParts = [
+        "Your wealth goal has been updated."
+      ].filter(Boolean);
+      showAlert(messageParts.join(" "));
+    } else {
+      showAlert("Your wealth goal has been cleared.");
+    }
   });
   const importInput = $("importFile");
   if (importInput)
