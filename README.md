@@ -13,11 +13,13 @@ WealthTrack is a personal wealth projection and planning tool built as a single-
 
 ## Getting Started
 
-Open `index.html` in a modern browser or serve the repository with any static HTTP server. All logic is client-side, so no backend is required.
+Serve the repository with any static HTTP server. All logic is client-side, so no backend is required. Using `file://` will prevent the service worker from registering, so prefer a local HTTP server.
 
 ```bash
 # Example: using a simple Python web server
 python -m http.server 8080
+# or Node's serve (if installed):
+# npx serve -l 8080
 ```
 
 Then visit `http://localhost:8080` in your browser.
@@ -41,9 +43,36 @@ To install the app, open it in a supporting browser (Chrome, Edge, or mobile equ
 
 ## Development Notes
 
-- Tailwind CSS is loaded through the CDN build and configured in `tailwind-config.js` if you need customisations.
+- Styles are built with Tailwind CSS (CLI, v3). The source stylesheet is `src/styles.css` and the compiled output is `assets/styles.css`, which is checked into the repo so GitHub Pages can deploy without a build step.
 - Chart.js powers the data visualisations; Hammer.js and the Chart.js Zoom plugin enable gesture controls.
 - All application state is stored in `localStorage`. Clearing the browser storage resets the app to defaults.
+
+### Rebuilding CSS
+
+Prerequisite: Node.js 16+ and npm.
+
+Install dependencies (first time only):
+
+```bash
+npm install
+```
+
+Build once:
+
+```bash
+npm run build:css
+```
+
+Watch for changes during development:
+
+```bash
+npm run watch:css
+```
+
+Notes:
+- Edit styles in `src/styles.css` (uses `@tailwind`/`@layer`/`@apply`).
+- Do not edit `assets/styles.css` by hand; it is generated.
+- If you add new HTML/JS files that include Tailwind classes, update `tailwind.config.js` `content` globs so the classes are included in the build.
 
 ## License
 
