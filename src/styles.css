@@ -4,8 +4,13 @@
 
 /* Extracted from index.html <style type="text/tailwindcss"> */
 @layer base {
+  html {
+    overflow-x: hidden;
+  }
+
   body {
     font-family: "Inter", sans-serif;
+    overflow-x: hidden;
   }
 }
 
