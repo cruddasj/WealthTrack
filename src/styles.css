@@ -198,6 +198,25 @@
 }
 
 /* required asterisk */
+@media (max-width: 767px) {
+  .card {
+    padding: 1.25rem;
+    margin-bottom: 1.25rem;
+  }
+  .card.is-collapsible:not(.collapsed) > h3,
+  .card.is-collapsible:not(.collapsed) > h4 {
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+  }
+  .chart-container {
+    height: min(360px, 60vh);
+    padding: 0.5rem 0;
+  }
+  #sidebar .nav-btn {
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+  }
+}
 .required-label:after {
   content: "*";
   color: #ef4444;

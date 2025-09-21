@@ -1111,6 +1111,7 @@ const baseLineOpts = {
     },
   },
   elements: { point: { radius: 1, hoverRadius: 5, hitRadius: 6 } },
+  interaction: { mode: "index", intersect: false, axis: "x" },
   plugins: {
     legend: {
       padding: 40,
@@ -1143,15 +1144,79 @@ const baseLineOpts = {
   },
 };
 
+function attachChartDismiss(chart) {
+  const canvas = chart?.canvas || chart?.ctx?.canvas;
+  if (!canvas) return;
+
+  const existing = canvas.__wtTouchDismiss;
+  if (existing) {
+    canvas.removeEventListener("touchstart", existing.touch, existing.touchOpts);
+    canvas.removeEventListener("pointerdown", existing.pointer);
+    canvas.removeEventListener("click", existing.click);
+    canvas.removeEventListener("mouseleave", existing.leave);
+  }
+
+  const hideTooltip = () => {
+    const tooltip = chart?.tooltip;
+    const active =
+      (typeof tooltip?.getActiveElements === "function"
+        ? tooltip.getActiveElements()
+        : chart?.getActiveElements?.()) || [];
+    if (!active.length) return;
+    if (typeof tooltip?.setActiveElements === "function")
+      tooltip.setActiveElements([], { x: 0, y: 0 });
+    if (typeof chart?.setActiveElements === "function")
+      chart.setActiveElements([]);
+    chart.update("none");
+  };
+
+  const hitTest = (event) => {
+    if (!chart) return;
+    if (event.type === "touchstart" && event.touches?.length > 1) return;
+    const mode = chart.options?.interaction?.mode || "nearest";
+    const intersect =
+      chart.options?.interaction?.intersect ?? true;
+    const elements = chart.getElementsAtEventForMode(
+      event,
+      mode,
+      { intersect },
+      false,
+    );
+    if (!elements.length) hideTooltip();
+  };
+
+  const handlePointerDown = (event) => {
+    if (event.pointerType === "touch") return;
+    hitTest(event);
+  };
+
+  const touchOpts = { passive: true };
+  canvas.addEventListener("touchstart", hitTest, touchOpts);
+  canvas.addEventListener("pointerdown", handlePointerDown);
+  canvas.addEventListener("click", hitTest);
+  canvas.addEventListener("mouseleave", hideTooltip);
+
+  canvas.__wtTouchDismiss = {
+    touch: hitTest,
+    touchOpts,
+    pointer: handlePointerDown,
+    click: hitTest,
+    leave: hideTooltip,
+  };
+}
+
 const ensureChart = (ref, ctx, cfg) => {
   if (ref?.ctx?.canvas === ctx.canvas) {
     ref.config.data = cfg.data;
     ref.config.options = cfg.options;
     ref.update();
+    attachChartDismiss(ref);
     return ref;
   }
   ref?.destroy();
-  return new Chart(ctx, cfg);
+  const chart = new Chart(ctx, cfg);
+  attachChartDismiss(chart);
+  return chart;
 };
 const gbpTick = (v) => fmtGBP(v);
 const pieTooltip = (context) => {
@@ -3706,13 +3771,25 @@ window.addEventListener("load", () => {
 
   // Mobile menu
   const sidebar = $("sidebar"),
-    overlay = $("overlay");
-  const toggleMenu = () => {
-    sidebar.classList.toggle("-translate-x-full");
-    overlay.classList.toggle("hidden");
+    overlay = $("overlay"),
+    menuToggleBtn = $("menu-toggle"),
+    menuCloseBtn = $("menu-close");
+  const setMenuState = (open) => {
+    if (!sidebar || !overlay) return;
+    sidebar.classList.toggle("-translate-x-full", !open);
+    overlay.classList.toggle("hidden", !open);
+    menuToggleBtn?.setAttribute("aria-expanded", String(open));
+    menuCloseBtn?.setAttribute("aria-expanded", String(open));
+    document.body.classList.toggle("overflow-hidden", open);
   };
-  on($("menu-toggle"), "click", toggleMenu);
-  on(overlay, "click", toggleMenu);
+  const toggleMenu = () => {
+    const shouldOpen = sidebar?.classList.contains("-translate-x-full");
+    setMenuState(Boolean(shouldOpen));
+  };
+  setMenuState(false);
+  if (menuToggleBtn) on(menuToggleBtn, "click", toggleMenu);
+  if (menuCloseBtn) on(menuCloseBtn, "click", () => setMenuState(false));
+  if (overlay) on(overlay, "click", () => setMenuState(false));
 
   const brandHome = $("brandHome");
   if (brandHome)
@@ -3727,7 +3804,7 @@ window.addEventListener("load", () => {
       } else {
         navigateTo("data-entry");
       }
-      if (window.innerWidth < 768) toggleMenu();
+      if (window.innerWidth < 768) setMenuState(false);
     });
 
   // Global click handlers (nav, tabs, actions, modal close)
@@ -3764,7 +3841,7 @@ window.addEventListener("load", () => {
     const navBtn = e.target.closest("nav button[data-target]");
     if (navBtn) {
       navigateTo(navBtn.dataset.target);
-      if (window.innerWidth < 768) toggleMenu();
+      if (window.innerWidth < 768) setMenuState(false);
     }
 
     const tabBtn = e.target.closest(".tab-btn[data-tab-target]");
