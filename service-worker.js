@@ -1,9 +1,11 @@
-const CACHE_NAME = "wealthtrack-cache-v1";
+const CACHE_NAME = "wealthtrack-cache-v2";
 const CORE_ASSETS = [
   "./",
   "./index.html",
   "./manifest.webmanifest",
-  "./assets/icons/app-logo.svg"
+  "./assets/icons/app-logo.svg",
+  "./assets/icons/icon-192-maskable.png",
+  "./assets/icons/icon-512-maskable.png"
 ];
 
 self.addEventListener("install", (event) => {
