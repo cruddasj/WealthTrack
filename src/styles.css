@@ -21,7 +21,9 @@
   main {
     min-height: 100vh;
     min-height: 100dvh;
-    background-color: transparent; /* inherit page theme */
+    /* Keep the scroll container aligned with the page theme so any
+       overscroll bounce (vertical or horizontal) doesn't flash white. */
+    background-color: inherit;
   }
 }
 
