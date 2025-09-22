@@ -1,4 +1,4 @@
-const CACHE_NAME = "wealthtrack-cache-v4";
+const CACHE_NAME = "wealthtrack-cache-v5";
 const CORE_ASSETS = [
   "./",
   "./index.html",
@@ -6,7 +6,11 @@ const CORE_ASSETS = [
   "./assets/icons/app-logo.svg",
   "./assets/icons/icon-192.png",
   "./assets/icons/icon-512.png",
+  "./assets/icons/icon-256.png",
+  "./assets/icons/icon-384.png",
   "./assets/icons/icon-192-maskable.png",
+  "./assets/icons/icon-256-maskable.png",
+  "./assets/icons/icon-384-maskable.png",
   "./assets/icons/icon-512-maskable.png"
 ];
 
