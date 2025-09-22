@@ -9,26 +9,27 @@ const outDir = path.join(root, 'assets', 'icons');
 
 const sizes = [192, 256, 384, 512];
 const brandBg = '#111827';
+const SCALE_MASKABLE = 0.8; // safe zone recommended
+const SCALE_ANY = 0.86; // a bit larger for launcher look
 
 async function run() {
   const svgWhite = await fs.promises.readFile(srcSvgWhite);
   const svgDark = await fs.promises.readFile(srcSvgDark);
 
-  const SCALE = 0.72; // keep content inside mask safe zone
   for (const size of sizes) {
-    // Maskable: transparent background + centered dark logo
+    // Maskable: dark tile background + white logo centered
     {
       const outMaskable = path.join(outDir, `icon-${size}-maskable.png`);
-      const logoBuf = await sharp(svgDark, { density: 512 })
-        .resize(Math.round(size * SCALE), Math.round(size * SCALE), { fit: 'contain' })
+      const logoBuf = await sharp(svgWhite, { density: 512 })
+        .resize(Math.round(size * SCALE_MASKABLE), Math.round(size * SCALE_MASKABLE), { fit: 'contain' })
         .png()
         .toBuffer();
-      await sharp({ create: { width: size, height: size, channels: 4, background: { r:0, g:0, b:0, alpha:0 } } })
+      await sharp({ create: { width: size, height: size, channels: 4, background: brandBg } })
         .composite([
           {
             input: logoBuf,
-            top: Math.round(size * (1 - SCALE) / 2),
-            left: Math.round(size * (1 - SCALE) / 2)
+            top: Math.round(size * (1 - SCALE_MASKABLE) / 2),
+            left: Math.round(size * (1 - SCALE_MASKABLE) / 2)
           }
         ])
         .png()
@@ -36,19 +37,19 @@ async function run() {
       console.log('Wrote', path.relative(root, outMaskable));
     }
 
-    // Regular launcher icon with brand background + white logo
+    // Regular launcher icon with brand background + white logo (slightly larger scale)
     {
       const outAny = path.join(outDir, `icon-${size}.png`);
       const logoBuf = await sharp(svgWhite, { density: 512 })
-        .resize(Math.round(size * SCALE), Math.round(size * SCALE), { fit: 'contain' })
+        .resize(Math.round(size * SCALE_ANY), Math.round(size * SCALE_ANY), { fit: 'contain' })
         .png()
         .toBuffer();
       await sharp({ create: { width: size, height: size, channels: 4, background: brandBg } })
         .composite([
           {
             input: logoBuf,
-            top: Math.round(size * (1 - SCALE) / 2),
-            left: Math.round(size * (1 - SCALE) / 2)
+            top: Math.round(size * (1 - SCALE_ANY) / 2),
+            left: Math.round(size * (1 - SCALE_ANY) / 2)
           }
         ])
         .png()
