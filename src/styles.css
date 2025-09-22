@@ -6,11 +6,22 @@
 @layer base {
   html {
     overflow-x: hidden;
+    height: 100%;
   }
 
   body {
     font-family: "Inter", sans-serif;
     overflow-x: hidden;
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+
+  /* Ensure the main scroll area always covers the viewport
+     to avoid a visible gap when sections are short/collapsed. */
+  main {
+    min-height: 100vh;
+    min-height: 100dvh;
+    background-color: transparent; /* inherit page theme */
   }
 }
 
@@ -44,6 +55,11 @@
     transition:
       height 0.25s ease,
       opacity 0.2s ease;
+  }
+  /* Prevent horizontal overflow caused by negative side margins
+     on the clickable header area. Keeps horizontal scrollbars away. */
+  .card.is-collapsible {
+    overflow-x: hidden;
   }
   .card.is-collapsible.collapsed .card-body {
     overflow: hidden;
@@ -198,6 +214,8 @@
 }
 .content-section {
   display: none;
+  /* Guard against any child overflows producing page-level x-scroll */
+  overflow-x: hidden;
 }
 .content-section.active {
   display: block;
@@ -454,4 +472,3 @@
     display: block;
   }
 }
-
