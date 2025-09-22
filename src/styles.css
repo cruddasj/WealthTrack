@@ -38,7 +38,8 @@
   }
   .card.is-collapsible h3,
   .card.is-collapsible h4 {
-    @apply -mx-6 -mt-6 px-6 pt-6 pb-6 rounded-t-2xl;
+    /* Remove horizontal negative margins to avoid page-level overflow */
+    @apply -mt-6 px-6 pt-6 pb-6 rounded-t-2xl;
     cursor: pointer;
     display: flex;
     align-items: center;
