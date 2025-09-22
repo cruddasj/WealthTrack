@@ -3,21 +3,21 @@ import path from 'path';
 import sharp from 'sharp';
 
 const root = path.resolve(process.cwd());
-const srcSvgWhite = path.join(root, 'assets', 'icons', 'app-logo-white.svg');
-const srcSvgDark = path.join(root, 'assets', 'icons', 'app-logo.svg');
+const srcSvg = path.join(root, 'assets', 'icons', 'app-logo.svg');
 const outDir = path.join(root, 'assets', 'icons');
 
 const sizes = [192, 256, 384, 512];
 const brandBg = '#111827';
 const SCALE_MASKABLE = 0.8; // safe zone recommended
-const SCALE_ANY = 0.86; // a bit larger for launcher look
+const SCALE_ANY = 0.9; // slightly larger for launcher
 
 async function run() {
-  const svgWhite = await fs.promises.readFile(srcSvgWhite);
-  const svgDark = await fs.promises.readFile(srcSvgDark);
+  const svgRaw = await fs.promises.readFile(srcSvg, 'utf8');
+  const svgWhiteStr = svgRaw.replace('<svg ', '<svg fill="#ffffff" ');
+  const svgWhite = Buffer.from(svgWhiteStr);
 
   for (const size of sizes) {
-    // Maskable: dark tile background + white logo centered
+    // Maskable (splash): dark tile + white logo centered
     {
       const outMaskable = path.join(outDir, `icon-${size}-maskable.png`);
       const logoBuf = await sharp(svgWhite, { density: 512 })
@@ -37,14 +37,14 @@ async function run() {
       console.log('Wrote', path.relative(root, outMaskable));
     }
 
-    // Regular launcher icon with brand background + white logo (slightly larger scale)
+    // Launcher (home screen): transparent + white logo, slightly bigger
     {
       const outAny = path.join(outDir, `icon-${size}.png`);
       const logoBuf = await sharp(svgWhite, { density: 512 })
         .resize(Math.round(size * SCALE_ANY), Math.round(size * SCALE_ANY), { fit: 'contain' })
         .png()
         .toBuffer();
-      await sharp({ create: { width: size, height: size, channels: 4, background: brandBg } })
+      await sharp({ create: { width: size, height: size, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } } })
         .composite([
           {
             input: logoBuf,
@@ -63,3 +63,4 @@ run().catch((err) => {
   console.error(err);
   process.exit(1);
 });
+
