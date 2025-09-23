@@ -6,12 +6,14 @@
 @layer base {
   html {
     overflow-x: hidden;
+    overscroll-behavior-x: none;
     height: 100%;
   }
 
   body {
     font-family: "Inter", sans-serif;
     overflow-x: hidden;
+    overscroll-behavior-x: none;
     min-height: 100vh;
     min-height: 100dvh;
   }
@@ -19,11 +21,25 @@
   /* Ensure the main scroll area always covers the viewport
      to avoid a visible gap when sections are short/collapsed. */
   main {
+    position: relative;
     min-height: 100vh;
     min-height: 100dvh;
+    overflow-x: hidden;
+    overscroll-behavior-x: contain;
     /* Keep the scroll container aligned with the page theme so any
        overscroll bounce (vertical or horizontal) doesn't flash white. */
     background-color: inherit;
+  }
+}
+
+@supports (overflow-x: clip) {
+  html,
+  body {
+    overflow-x: clip;
+  }
+
+  main {
+    overflow-x: clip;
   }
 }
 
