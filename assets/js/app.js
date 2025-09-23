@@ -851,7 +851,7 @@ function showSnapshotDetails(snapshot) {
   tpl.querySelector("[data-date]").textContent =
     `Snapshot taken on: ${new Date(snapshot.date).toLocaleString()}`;
   const list = tpl.querySelector("[data-list]");
-  list.innerHTML = `<table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+  list.innerHTML = `<table class="w-full table-fixed sm:table-auto divide-y divide-gray-200 dark:divide-gray-700">
   <thead class="bg-gray-200 dark:bg-gray-700">
     <tr><th class="table-header">Asset Name</th><th class="table-header">Value</th></tr>
   </thead>
@@ -860,8 +860,8 @@ function showSnapshotDetails(snapshot) {
       .sort((a, b) => (a?.name || "").localeCompare(b?.name || ""))
       .map(
         (a) => `<tr class="text-sm text-gray-700 dark:text-gray-300">
-      <td class="px-6 py-4 whitespace-nowrap">${a.name}</td>
-      <td class="px-6 py-4 whitespace-nowrap">${fmtCurrency(a.value)}</td>
+      <td class="px-4 sm:px-6 py-4 whitespace-normal sm:whitespace-nowrap">${a.name}</td>
+      <td class="px-4 sm:px-6 py-4 whitespace-normal sm:whitespace-nowrap">${fmtCurrency(a.value)}</td>
     </tr>`,
       )
       .join("")}
@@ -1022,7 +1022,7 @@ function buildAssetHeader() {
     const key = ASSET_KEYS[idx];
     const isActive = assetSort.key === key;
     const arrow = isActive ? (assetSort.dir === "asc" ? "▲" : "▼") : "";
-    const inner = `<div class="flex items-center gap-1 whitespace-nowrap"><span>${h}</span><span class="sort-arrow">${arrow}</span></div>`;
+    const inner = `<div class="flex flex-wrap items-center gap-1 whitespace-normal sm:whitespace-nowrap"><span>${h}</span><span class="sort-arrow">${arrow}</span></div>`;
     return `<th scope="col" class="table-header cursor-pointer select-none align-middle" data-sort="${key}">${inner}</th>`;
   }).join("");
   $("assetTableHeader").innerHTML =
@@ -1085,7 +1085,7 @@ function buildStressHeader() {
     const key = STRESS_KEYS[idx];
     const isActive = stressSort.key === key;
     const arrow = isActive ? (stressSort.dir === "asc" ? "▲" : "▼") : "";
-    const inner = `<div class="flex items-center gap-1 whitespace-nowrap"><span>${h}</span><span class="sort-arrow">${arrow}</span></div>`;
+    const inner = `<div class="flex flex-wrap items-center gap-1 whitespace-normal sm:whitespace-nowrap"><span>${h}</span><span class="sort-arrow">${arrow}</span></div>`;
     return `<th class="table-header cursor-pointer select-none" data-sort="${key}">${inner}</th>`;
   }).join("");
   $("stressEventsTableHeader").innerHTML = `<tr>${headHtml}</tr>`;
@@ -1121,9 +1121,9 @@ function renderStressEvents() {
       .map(
         (ev) => `
       <tr>
-        <td class="px-6 py-4 whitespace-nowrap">${ev.name}</td>
-        <td class="px-6 py-4 whitespace-nowrap">${fmtDate(new Date(ev.date))}</td>
-        <td class="px-6 py-4 whitespace-nowrap">${ev.amount.toFixed(1)}%</td>
+        <td class="px-4 sm:px-6 py-4 whitespace-normal sm:whitespace-nowrap">${ev.name}</td>
+        <td class="px-4 sm:px-6 py-4 whitespace-normal sm:whitespace-nowrap">${fmtDate(new Date(ev.date))}</td>
+        <td class="px-4 sm:px-6 py-4 whitespace-normal sm:whitespace-nowrap">${ev.amount.toFixed(1)}%</td>
       </tr>`,
       )
       .join("") ||
@@ -2096,16 +2096,16 @@ function renderAssets() {
           ? '<span class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100" title="Included in Current Passive Income Estimates">Passive Income</span>'
           : "";
       return `<tr class="text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
-    <td class="px-6 py-4 whitespace-nowrap">${asset.name}${passiveBadge}</td>
-    <td class="px-6 py-4 whitespace-nowrap">${startCell}</td>
-    <td class="px-6 py-4 whitespace-nowrap font-semibold">${fmtCurrency(currentValue)}</td>
-    <td class="px-6 py-4 whitespace-nowrap">${depositText}</td>
-    <td class="px-6 py-4 whitespace-nowrap">
+    <td class="px-4 sm:px-6 py-4 whitespace-normal sm:whitespace-nowrap">${asset.name}${passiveBadge}</td>
+    <td class="px-4 sm:px-6 py-4 whitespace-normal sm:whitespace-nowrap">${startCell}</td>
+    <td class="px-4 sm:px-6 py-4 whitespace-normal sm:whitespace-nowrap font-semibold">${fmtCurrency(currentValue)}</td>
+    <td class="px-4 sm:px-6 py-4 whitespace-normal sm:whitespace-nowrap">${depositText}</td>
+    <td class="px-4 sm:px-6 py-4 whitespace-normal sm:whitespace-nowrap">
       <span class="text-xs text-gray-500 dark:text-gray-400">Low:</span> ${asset.lowGrowth || 0}%
       <span class="ml-3 text-xs text-gray-500 dark:text-gray-400">Exp:</span> ${asset.return || 0}%
       <span class="ml-3 text-xs text-gray-500 dark:text-gray-400">High:</span> ${asset.highGrowth || 0}%
     </td>
-    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium flex items-center gap-2">
+    <td class="px-4 sm:px-6 py-4 whitespace-normal sm:whitespace-nowrap text-right text-sm font-medium flex flex-wrap items-center justify-end gap-2">
       <button data-action="edit-asset" data-index="${originalIndex}" class="btn-icon" title="Edit Asset">
         <svg class="h-5 w-5" fill="currentColor"><use href="#i-edit"/></svg>
       </button>
@@ -2209,11 +2209,11 @@ function renderLiabilities() {
           : startLabel;
       }
       return `<tr class="text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
-    <td class="px-6 py-4 whitespace-nowrap">${l.name}</td>
-    <td class="px-6 py-4 whitespace-nowrap">${startCell}</td>
-    <td class="px-6 py-4 whitespace-nowrap font-semibold">${fmtCurrency(currentValue)}</td>
-    <td class="px-6 py-4 whitespace-nowrap">${payText}</td>
-    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium flex items-center gap-2">
+    <td class="px-4 sm:px-6 py-4 whitespace-normal sm:whitespace-nowrap">${l.name}</td>
+    <td class="px-4 sm:px-6 py-4 whitespace-normal sm:whitespace-nowrap">${startCell}</td>
+    <td class="px-4 sm:px-6 py-4 whitespace-normal sm:whitespace-nowrap font-semibold">${fmtCurrency(currentValue)}</td>
+    <td class="px-4 sm:px-6 py-4 whitespace-normal sm:whitespace-nowrap">${payText}</td>
+    <td class="px-4 sm:px-6 py-4 whitespace-normal sm:whitespace-nowrap text-right text-sm font-medium flex flex-wrap items-center justify-end gap-2">
       <button data-action="edit-liability" data-index="${i}" class="btn-icon" title="Edit Liability">
         <svg class="h-5 w-5" fill="currentColor"><use href="#i-edit"/></svg>
       </button>
@@ -2256,11 +2256,11 @@ function renderEvents() {
       const amt = ev.isPercent ? `${ev.amount}%` : fmtCurrency(ev.amount);
       return `
     <tr class="text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
-      <td class="px-6 py-4 whitespace-nowrap">${ev.name}</td>
-      <td class="px-6 py-4 whitespace-nowrap">${fmtDate(new Date(ev.date))}</td>
-      <td class="px-6 py-4 whitespace-nowrap">${ev.assetId ? assetName : "-"}</td>
-      <td class="px-6 py-4 whitespace-nowrap font-semibold">${amt}</td>
-      <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium flex items-center gap-2">
+      <td class="px-4 sm:px-6 py-4 whitespace-normal sm:whitespace-nowrap">${ev.name}</td>
+      <td class="px-4 sm:px-6 py-4 whitespace-normal sm:whitespace-nowrap">${fmtDate(new Date(ev.date))}</td>
+      <td class="px-4 sm:px-6 py-4 whitespace-normal sm:whitespace-nowrap">${ev.assetId ? assetName : "-"}</td>
+      <td class="px-4 sm:px-6 py-4 whitespace-normal sm:whitespace-nowrap font-semibold">${amt}</td>
+      <td class="px-4 sm:px-6 py-4 whitespace-normal sm:whitespace-nowrap text-right text-sm font-medium flex flex-wrap items-center justify-end gap-2">
         <button data-action="edit-event" data-index="${i}" class="btn-icon" title="Edit Event">
           <svg class="h-5 w-5" fill="currentColor"><use href="#i-edit"/></svg>
         </button>
@@ -3574,7 +3574,7 @@ function handleFormSubmit(e) {
       <h4 class="text-md font-medium text-gray-900 dark:text-gray-100">Sample events</h4>
       <div class="card-body">
         <div class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-left">
+        <table class="w-full table-fixed sm:table-auto divide-y divide-gray-200 dark:divide-gray-700 text-left">
             <thead id="stressEventsTableHeader" class="bg-gray-200 dark:bg-gray-700"></thead>
             <tbody id="stressEventsTableBody" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700"></tbody>
           </table>
@@ -3645,7 +3645,7 @@ function handleFormSubmit(e) {
       <div class="mt-4">
         <p class="text-lg font-semibold mb-2">Future Value: ${fmtCurrency(total)}</p>
         <div class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-left">
+        <table class="w-full table-fixed sm:table-auto divide-y divide-gray-200 dark:divide-gray-700 text-left">
         <thead class="bg-gray-200 dark:bg-gray-700">
           <tr>
             <th class="table-header">Period</th>
@@ -3714,7 +3714,7 @@ function handleFormSubmit(e) {
       <div class="mt-4">
         <p class="text-lg font-semibold mb-2">Future Value: ${fmtCurrency(fv)}</p>
     <div class="overflow-x-auto">
-      <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-left">
+      <table class="w-full table-fixed sm:table-auto divide-y divide-gray-200 dark:divide-gray-700 text-left">
         <thead class="bg-gray-200 dark:bg-gray-700">
           <tr>
             <th class="table-header">Period</th>
