@@ -48,6 +48,16 @@ const LS = {
 const save = (k, v) => localStorage.setItem(k, JSON.stringify(v));
 const load = (k, d) => JSON.parse(localStorage.getItem(k)) || d;
 
+function normalizeCardHeadings(root = document) {
+  root
+    .querySelectorAll(".card > h3, .card > h4")
+    .forEach((heading) => {
+      if (heading && heading.childElementCount === 0) {
+        heading.textContent = heading.textContent.trim();
+      }
+    });
+}
+
 const currencyOptions = {
   GBP: { label: "Pounds (£)", locale: "en-GB", currency: "GBP", symbol: "£" },
   USD: { label: "Dollars ($)", locale: "en-US", currency: "USD", symbol: "$" },
@@ -4430,6 +4440,9 @@ window.addEventListener("load", () => {
 
   // Enable collapsible cards
   setupCardCollapsing();
+
+  // Remove stray leading whitespace from card headings for consistent layout
+  normalizeCardHeadings();
 
   // Brand logo sizing
   sizeBrandLogo();
