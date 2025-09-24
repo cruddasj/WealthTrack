@@ -61,17 +61,13 @@
   .card.is-collapsible > h3,
   .card.is-collapsible > h4 {
     /* Remove horizontal negative margins to avoid page-level overflow */
-    @apply px-6 py-6 rounded-t-2xl;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
+    @apply m-0 flex items-center px-6 py-6 rounded-t-2xl cursor-pointer;
   }
   .card.is-collapsible .chev {
-    margin-left: auto;
-    transition: transform 0.2s ease;
+    @apply ml-auto h-5 w-5 transition-transform duration-200 ease-out;
   }
   .card.is-collapsible.collapsed .chev {
-    transform: rotate(-90deg);
+    @apply -rotate-90;
   }
   .card.is-collapsible > .card-body {
     @apply px-6 pb-6 pt-0;
