@@ -84,7 +84,7 @@
   .card.is-collapsible.collapsed h3,
   .card.is-collapsible.collapsed h4 {
     margin-bottom: 0 !important;
-    @apply py-5;
+    @apply pt-6 pb-4;
   }
   /* Tighter spacing between title and content when expanded */
   .card.is-collapsible:not(.collapsed) > h3,
