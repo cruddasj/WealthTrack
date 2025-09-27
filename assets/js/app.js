@@ -2419,6 +2419,10 @@ function deleteActiveProfile() {
 }
 
 // Empty states and gating UX for new users
+function canRunStressTest() {
+  return goalValue > 0 && goalTargetDate != null && assets.length > 0;
+}
+
 function updateEmptyStates() {
   const hasAssets = assets.length > 0;
   const hasLiabs = liabilities.length > 0;
@@ -2426,6 +2430,7 @@ function updateEmptyStates() {
   const hasGoal = goalValue > 0 && goalTargetDate;
   const canForecast = hasAssets || hasLiabs;
   const goalInsightsAvailable = canForecast && hasGoal;
+  const canStressTest = canRunStressTest();
   const hasAnyData =
     hasAssets ||
     hasLiabs ||
@@ -2467,6 +2472,15 @@ function updateEmptyStates() {
   if (exportCard) exportCard.hidden = isFresh;
   const futureCard = $("futureValueCard");
   if (futureCard) futureCard.hidden = !hasAssets;
+  const stressTestCard = $("StressTestCard");
+  if (stressTestCard) stressTestCard.hidden = !canStressTest;
+  if (!canStressTest) {
+    const stressResult = $("stressTestResult");
+    if (stressResult) {
+      stressResult.className = "mt-4 text-sm";
+      stressResult.innerHTML = "";
+    }
+  }
   const snapshotSection = $("snapshots");
   if (snapshotSection)
     snapshotSection.classList.toggle("hidden", isFresh);
@@ -3967,9 +3981,8 @@ function handleFormSubmit(e) {
     case "stressTestForm": {
       const runs = parseInt(form.stressRuns.value) || 100;
       const scenario = form.stressScenario.value;
-      if (goalValue <= 0 || !goalTargetDate || assets.length === 0) {
-        $("stressTestResult").innerHTML =
-          '<p class="text-red-600">Add assets, set a goal, and choose a target year before running the stress test.</p>';
+      if (!canRunStressTest()) {
+        updateEmptyStates();
         break;
       }
       const selected = [...stressAssetIds];
