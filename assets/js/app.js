@@ -2310,15 +2310,17 @@ function deleteActiveProfile() {
 function updateEmptyStates() {
   const hasAssets = assets.length > 0;
   const hasLiabs = liabilities.length > 0;
+  const hasGoalData = goalValue > 0 || goalTargetDate;
+  const hasGoal = goalValue > 0 && goalTargetDate;
+  const canForecast = hasAssets || hasLiabs;
+  const goalInsightsAvailable = canForecast && hasGoal;
   const hasAnyData =
     hasAssets ||
     hasLiabs ||
     snapshots.length > 0 ||
     simEvents.length > 0 ||
-    goalValue > 0 ||
-    goalTargetDate;
+    hasGoalData;
   const isFresh = !hasAnyData;
-  const canForecast = hasAssets && goalValue > 0 && goalTargetDate;
 
   // Save Snapshot gating
   const snapBtn = $("snapshotBtn");
@@ -2341,7 +2343,7 @@ function updateEmptyStates() {
   const ForecastCard = $("ForecastCard");
   const forecastGoalsCard = $("forecastGoalsCard");
   if (ForecastCard) ForecastCard.hidden = !canForecast;
-  if (forecastGoalsCard) forecastGoalsCard.hidden = !canForecast;
+  if (forecastGoalsCard) forecastGoalsCard.hidden = !goalInsightsAvailable;
   const saveSnapCard = $("saveSnapshotCard");
   if (saveSnapCard) saveSnapCard.hidden = isFresh;
   const snapHistCard = $("snapshotHistoryCard");
@@ -2843,11 +2845,7 @@ function updateProgressCheckResult() {
 }
 
 function updateWealthChart() {
-  const hasData =
-    assets.length > 0 ||
-    liabilities.length > 0 ||
-    goalValue > 0 ||
-    goalTargetDate;
+  const hasData = assets.length > 0 || liabilities.length > 0;
   $("wealthChart").hidden = !hasData;
   $("wealthChartMessage").hidden = hasData;
   if (!hasData) {
@@ -3077,7 +3075,7 @@ function updateWealthChart() {
 
   const wrap = $("forecastGoalsDates");
   wrap.innerHTML = "";
-  if (goalValue > 0 && assets.length > 0) {
+  if (goalValue > 0 && (assets.length > 0 || liabilities.length > 0)) {
     const getHit = (arr) => {
       for (let i = 1; i < arr.length; i++) {
         if (arr[i].y >= goalValue) return arr[i].x;
@@ -3459,9 +3457,9 @@ function runStressTest(iterations, scenario, assetIds) {
 }
 
 function navigateTo(viewId) {
-  if (viewId === "forecasts" && !(assets.length > 0 && goalValue > 0 && goalTargetDate)) {
+  if (viewId === "forecasts" && assets.length === 0 && liabilities.length === 0) {
     showAlert(
-      "Add at least one asset and set a wealth goal and target year to unlock Forecasts."
+      "Add at least one asset or liability to unlock Forecasts. Set a wealth goal to enable goal-specific insights."
     );
     viewId = "data-entry";
   }
