@@ -219,9 +219,18 @@
     border-radius: 1rem;
     padding: 1.5rem;
     box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+    /* Keep modal content scrollable without clipping focus rings */
+    max-height: min(80vh, calc(100vh - 2rem));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
   }
   .dark .modal-panel {
     background: #1f2937;
+  }
+  .modal-panel > #modal-body {
+    overflow: visible;
+    max-height: none;
   }
   .modal-panel .input-field {
     width: calc(100% - 0.5rem);
