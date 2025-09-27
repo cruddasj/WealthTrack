@@ -46,14 +46,23 @@
 @layer components {
   /* cards, labels, inputs */
   .card {
-    @apply bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 mb-6 transition-colors duration-200;
+    @apply bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 mb-6 transition-colors duration-200;
   }
   .card.is-collapsible {
     @apply p-0;
-    overflow-x: hidden;
+    position: relative;
+    /* Ensure cards can raise above neighbors when hovered */
+    z-index: 0;
+    /* Keep overflow visible so shadows are not clipped after
+       expand/collapse animations */
+    overflow: visible;
   }
   .card.is-collapsible.collapsed {
     @apply bg-gray-50 dark:bg-gray-700 pb-0 mb-4;
+  }
+  .card.is-collapsible:hover,
+  .card.is-collapsible:focus-within {
+    z-index: 10;
   }
   .card.is-collapsible.collapsed:hover {
     @apply bg-gray-100 dark:bg-gray-600;
@@ -425,7 +434,6 @@
   border-color: var(--card-border) !important;
   backdrop-filter: var(--card-filter);
   -webkit-backdrop-filter: var(--card-filter);
-  box-shadow: var(--card-shadow);
 }
 /* Themed tip: match current card styling */
 .themed-tip {
