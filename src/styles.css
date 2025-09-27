@@ -50,12 +50,19 @@
   }
   .card.is-collapsible {
     @apply p-0;
+    position: relative;
+    /* Ensure cards can raise above neighbors when hovered */
+    z-index: 0;
     /* Keep overflow visible so shadows are not clipped after
        expand/collapse animations */
     overflow: visible;
   }
   .card.is-collapsible.collapsed {
     @apply bg-gray-50 dark:bg-gray-700 pb-0 mb-4;
+  }
+  .card.is-collapsible:hover,
+  .card.is-collapsible:focus-within {
+    z-index: 10;
   }
   .card.is-collapsible.collapsed:hover {
     @apply bg-gray-100 dark:bg-gray-600;
