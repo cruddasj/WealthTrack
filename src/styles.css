@@ -50,7 +50,9 @@
   }
   .card.is-collapsible {
     @apply p-0;
-    overflow-x: hidden;
+    /* Keep overflow visible so shadows are not clipped after
+       expand/collapse animations */
+    overflow: visible;
   }
   .card.is-collapsible.collapsed {
     @apply bg-gray-50 dark:bg-gray-700 pb-0 mb-4;
