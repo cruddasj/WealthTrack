@@ -23,6 +23,7 @@ let fireForecastCosts = 0;
 let fireForecastFrequency = "annual";
 let fireForecastInflation = 2.5;
 let fireForecastRetireDate = null;
+let passiveIncomeAsOf = null;
 
 const profilePickers = {};
 let importFileContent = null;
@@ -483,6 +484,7 @@ function updateGoalButton() {
 }
 
 const perYear = { none: 0, monthly: 12, quarterly: 4, yearly: 1 };
+const MS_PER_YEAR = 1000 * 60 * 60 * 24 * 365.25;
 const monthlyFrom = (freq, amount) =>
   ({
     none: 0,
@@ -831,6 +833,94 @@ const calculateCurrentValue = (asset, now = Date.now()) => {
   const start = getStartDate(asset);
   if (now < start) return 0;
   return (asset.value || 0) + depositsSoFar(asset, now);
+};
+
+const getPassiveIncomeTargetDate = () => {
+  const today = startOfToday();
+  if (Number.isFinite(passiveIncomeAsOf)) {
+    return Math.max(passiveIncomeAsOf, today);
+  }
+  return today;
+};
+
+const applyPassiveGrowth = (value, fromTime, toTime, annualRate) => {
+  if (!(toTime > fromTime) || !Number.isFinite(value)) return value || 0;
+  const years = (toTime - fromTime) / MS_PER_YEAR;
+  if (!(years > 0)) return value || 0;
+  const rateDecimal = (parseFloat(annualRate) || 0) / 100;
+  if (rateDecimal === 0) return value || 0;
+  const base = 1 + rateDecimal;
+  if (base <= 0) return 0;
+  const factor = Math.pow(base, years);
+  if (!Number.isFinite(factor)) return value || 0;
+  return (value || 0) * factor;
+};
+
+const applyEventToValue = (value, event) => {
+  if (!event) return value || 0;
+  if (event.isPercent) {
+    const factor = 1 + (parseFloat(event.amount) || 0) / 100;
+    return (value || 0) * factor;
+  }
+  return (value || 0) + (parseFloat(event.amount) || 0);
+};
+
+const calculatePassiveAssetValueAt = (
+  asset,
+  targetTs,
+  eventsByAsset,
+  nowTs = Date.now(),
+) => {
+  if (!asset) return 0;
+  const startTimestamp = getStartDate(asset);
+  if (!(targetTs >= startTimestamp)) return 0;
+  const assetEventsRaw = eventsByAsset.get(asset.dateAdded) || [];
+  const relevantEvents = [];
+  for (let i = 0; i < assetEventsRaw.length; i++) {
+    const ev = assetEventsRaw[i];
+    if (!ev) continue;
+    if (ev.date < startTimestamp) continue;
+    if (ev.date > targetTs) break;
+    relevantEvents.push(ev);
+  }
+
+  const cutoff = Math.min(targetTs, nowTs);
+  let value;
+  let referenceTime;
+  if (cutoff >= startTimestamp) {
+    value = calculateCurrentValue(asset, cutoff);
+    for (let i = 0; i < relevantEvents.length; i++) {
+      const ev = relevantEvents[i];
+      if (ev.date > cutoff) break;
+      value = applyEventToValue(value, ev);
+    }
+    referenceTime = cutoff;
+  } else {
+    value = parseFloat(asset.value) || 0;
+    for (let i = 0; i < relevantEvents.length; i++) {
+      const ev = relevantEvents[i];
+      if (ev.date > startTimestamp) break;
+      value = applyEventToValue(value, ev);
+    }
+    referenceTime = startTimestamp;
+  }
+
+  if (targetTs <= referenceTime) return value || 0;
+
+  let prevTime = referenceTime;
+  const annualRate = parseFloat(asset.return) || 0;
+  for (let i = 0; i < relevantEvents.length; i++) {
+    const ev = relevantEvents[i];
+    if (ev.date <= referenceTime) continue;
+    if (ev.date > targetTs) break;
+    value = applyPassiveGrowth(value, prevTime, ev.date, annualRate);
+    prevTime = ev.date;
+    value = applyEventToValue(value, ev);
+  }
+  if (targetTs > prevTime) {
+    value = applyPassiveGrowth(value, prevTime, targetTs, annualRate);
+  }
+  return value || 0;
 };
 
 const liabilityBalanceAfterMonths = (liability, months) => {
@@ -1777,12 +1867,34 @@ function updatePassiveIncome() {
     return;
   }
 
+  const targetTs = getPassiveIncomeTargetDate();
+  passiveIncomeAsOf = targetTs;
+  const dateInput = $("passiveIncomeDate");
+  if (dateInput) {
+    const inputVal = toDateInputValue(targetTs);
+    if (dateInput.value !== inputVal) dateInput.value = inputVal;
+  }
+
+  const eventsByAsset = new Map();
+  simEvents.forEach((ev) => {
+    if (!ev || ev.assetId == null) return;
+    if (!eventsByAsset.has(ev.assetId)) eventsByAsset.set(ev.assetId, []);
+    eventsByAsset.get(ev.assetId).push(ev);
+  });
+  eventsByAsset.forEach((list) => list.sort((a, b) => a.date - b.date));
+
+  const nowTs = Date.now();
   let annualIncome = 0;
-  assets.forEach((a) => {
-    if (a.includeInPassive === false) return;
-    const currentValue = calculateCurrentValue(a);
-    const r = (a.return || 0) / 100;
-    annualIncome += currentValue * r;
+  assets.forEach((asset) => {
+    if (asset?.includeInPassive === false) return;
+    const valueAtDate = calculatePassiveAssetValueAt(
+      asset,
+      targetTs,
+      eventsByAsset,
+      nowTs,
+    );
+    const rate = (parseFloat(asset?.return) || 0) / 100;
+    annualIncome += valueAtDate * rate;
   });
 
   const daily = annualIncome / 365.25;
@@ -4111,6 +4223,25 @@ window.addEventListener("load", () => {
   updateChartContainers();
 
   updateCurrencySymbols();
+
+  const today = startOfToday();
+  if (!Number.isFinite(passiveIncomeAsOf) || passiveIncomeAsOf < today)
+    passiveIncomeAsOf = today;
+  const passiveDateInput = $("passiveIncomeDate");
+  if (passiveDateInput) {
+    const todayValue = toDateInputValue(today);
+    passiveDateInput.min = todayValue;
+    passiveDateInput.value = toDateInputValue(passiveIncomeAsOf);
+    on(passiveDateInput, "change", (e) => {
+      const raw = e.target.value;
+      const fallback = startOfToday();
+      const parsed = raw ? parseDateInput(raw, fallback) : fallback;
+      const clamped = Math.max(parsed, fallback);
+      passiveIncomeAsOf = clamped;
+      e.target.value = toDateInputValue(clamped);
+      updatePassiveIncome();
+    });
+  }
 
   setupProfilePickers();
 

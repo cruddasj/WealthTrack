@@ -950,6 +950,15 @@
           <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
             Based on expected annual returns and current values.
           </p>
+          <div class="mb-4">
+            <label for="passiveIncomeDate" class="form-label"
+              >Estimate as of (optional)</label
+            >
+            <input type="date" id="passiveIncomeDate" class="input-field" />
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              Defaults to today. Future dates apply scheduled one-off events.
+            </p>
+          </div>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div
               class="flex flex-col items-center justify-center gap-1 p-4 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 stat-box"
@@ -975,7 +984,8 @@
             </div>
           </div>
           <p class="text-xs text-gray-500 dark:text-gray-400 mt-3">
-            Excludes new contributions; shows growth from appreciation only.
+            Excludes new contributions; shows growth from appreciation only,
+            using your selected date when provided.
           </p>
         </div>
 
