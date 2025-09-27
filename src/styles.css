@@ -46,7 +46,7 @@
 @layer components {
   /* cards, labels, inputs */
   .card {
-    @apply bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 mb-6 transition-colors duration-200;
+    @apply bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 mb-6 transition-colors duration-200;
   }
   .card.is-collapsible {
     @apply p-0;
@@ -434,7 +434,6 @@
   border-color: var(--card-border) !important;
   backdrop-filter: var(--card-filter);
   -webkit-backdrop-filter: var(--card-filter);
-  box-shadow: var(--card-shadow);
 }
 /* Themed tip: match current card styling */
 .themed-tip {
