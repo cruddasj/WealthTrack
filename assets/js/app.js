@@ -2318,7 +2318,9 @@ function updateEmptyStates() {
     goalValue > 0 ||
     goalTargetDate;
   const isFresh = !hasAnyData;
-  const canForecast = hasAssets && goalValue > 0 && goalTargetDate;
+  const hasGoal = goalValue > 0 && goalTargetDate;
+  const hasForecastInputs = hasAssets || hasLiabs;
+  const goalDrivenForecasts = hasForecastInputs && hasGoal;
 
   // Save Snapshot gating
   const snapBtn = $("snapshotBtn");
@@ -2340,15 +2342,15 @@ function updateEmptyStates() {
   // Hide full cards for brand-new users
   const ForecastCard = $("ForecastCard");
   const forecastGoalsCard = $("forecastGoalsCard");
-  if (ForecastCard) ForecastCard.hidden = !canForecast;
-  if (forecastGoalsCard) forecastGoalsCard.hidden = !canForecast;
+  if (ForecastCard) ForecastCard.hidden = !hasForecastInputs;
+  if (forecastGoalsCard) forecastGoalsCard.hidden = !goalDrivenForecasts;
   const saveSnapCard = $("saveSnapshotCard");
   if (saveSnapCard) saveSnapCard.hidden = isFresh;
   const snapHistCard = $("snapshotHistoryCard");
   if (snapHistCard) snapHistCard.hidden = snapshots.length === 0;
   const progressCard = $("progressCheckCard");
   if (progressCard)
-    progressCard.hidden = snapshots.length === 0 || !canForecast;
+    progressCard.hidden = snapshots.length === 0 || !hasForecastInputs;
   const exportCard = $("exportCard");
   if (exportCard) exportCard.hidden = isFresh;
   const futureCard = $("futureValueCard");
@@ -2361,13 +2363,13 @@ function updateEmptyStates() {
   const forecastBtn = document.querySelector('nav button[data-target="forecasts"]');
   if (forecastBtn) {
     const wasHidden = forecastBtn.classList.contains("hidden");
-    forecastBtn.classList.toggle("hidden", !canForecast);
-    if (canForecast && wasHidden) {
+    forecastBtn.classList.toggle("hidden", !hasForecastInputs);
+    if (hasForecastInputs && wasHidden) {
       forecastBtn.classList.add("fade-in");
       setTimeout(() => forecastBtn.classList.remove("fade-in"), 500);
     }
   }
-  if (!canForecast && $("forecasts").classList.contains("active")) {
+  if (!hasForecastInputs && $("forecasts").classList.contains("active")) {
     navigateTo("data-entry");
   }
 
@@ -2843,11 +2845,7 @@ function updateProgressCheckResult() {
 }
 
 function updateWealthChart() {
-  const hasData =
-    assets.length > 0 ||
-    liabilities.length > 0 ||
-    goalValue > 0 ||
-    goalTargetDate;
+  const hasData = assets.length > 0 || liabilities.length > 0;
   $("wealthChart").hidden = !hasData;
   $("wealthChartMessage").hidden = hasData;
   if (!hasData) {
@@ -3459,9 +3457,9 @@ function runStressTest(iterations, scenario, assetIds) {
 }
 
 function navigateTo(viewId) {
-  if (viewId === "forecasts" && !(assets.length > 0 && goalValue > 0 && goalTargetDate)) {
+  if (viewId === "forecasts" && !(assets.length > 0 || liabilities.length > 0)) {
     showAlert(
-      "Add at least one asset and set a wealth goal and target year to unlock Forecasts."
+      "Add at least one asset or liability to unlock Forecasts."
     );
     viewId = "data-entry";
   }
