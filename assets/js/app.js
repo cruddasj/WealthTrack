@@ -24,9 +24,22 @@ let fireForecastFrequency = "annual";
 let fireForecastInflation = 2.5;
 let fireForecastRetireDate = null;
 
+const profilePickers = {};
+let importFileContent = null;
+let importFileToken = null;
+let importPreviewData = null;
+const getImportFileToken = (file) =>
+  file && file.name != null
+    ? `${file.name}|${file.size}|${file.lastModified}`
+    : null;
+
 // --- DOM helpers ---
 const $ = (id) => document.getElementById(id);
 const on = (el, ev, fn) => el.addEventListener(ev, fn);
+const getLatestById = (id) => {
+  const nodes = document.querySelectorAll(`[id="${id}"]`);
+  return nodes.length ? nodes[nodes.length - 1] : null;
+};
 const LS = {
   assets: "assets",
   liabs: "liabilities",
@@ -56,6 +69,193 @@ function normalizeCardHeadings(root = document) {
         heading.textContent = heading.textContent.trim();
       }
     });
+}
+
+const IMPORT_PROFILE_DEFAULT_HINT =
+  "Profiles from the selected file will appear here once the password (if any) is provided.";
+
+function setImportProfileHint(message) {
+  document
+    .querySelectorAll('[id="importProfileHint"]')
+    .forEach((el) => (el.textContent = message));
+}
+
+function closeProfilePicker(key) {
+  const picker = profilePickers[key];
+  if (!picker) return;
+  picker.menu.classList.add("hidden");
+  picker.toggle.setAttribute("aria-expanded", "false");
+}
+
+function closeAllProfilePickers() {
+  Object.keys(profilePickers).forEach((key) => closeProfilePicker(key));
+}
+
+function updateProfilePickerSummary(key) {
+  const picker = profilePickers[key];
+  if (!picker) return;
+  const total = picker.optionIds.size;
+  if (total === 0) {
+    picker.summary.textContent = picker.emptySummary;
+    return;
+  }
+  const selected = Array.from(picker.selected);
+  if (selected.length === 0) {
+    picker.summary.textContent = "No profiles selected";
+  } else if (selected.length === total) {
+    picker.summary.textContent = "All profiles selected";
+  } else if (selected.length === 1) {
+    picker.summary.textContent =
+      picker.names.get(selected[0]) || "1 profile selected";
+  } else {
+    picker.summary.textContent = `${selected.length} of ${total} profiles`;
+  }
+}
+
+function populateProfilePickerOptions(key, profilesList) {
+  const picker = profilePickers[key];
+  if (!picker) return;
+  const prevSelected = new Set(picker.selected);
+  const prevOptionIds = new Set(picker.optionIds);
+  picker.options.innerHTML = "";
+  picker.selected = new Set();
+  picker.optionIds = new Set();
+  picker.names = new Map();
+  profilesList.forEach((profile, index) => {
+    const id = String(profile?.id ?? Date.now() + index);
+    picker.optionIds.add(id);
+    const label = profile?.name || `Profile ${index + 1}`;
+    picker.names.set(id, label);
+    const isNew = !prevOptionIds.has(id);
+    const shouldSelect =
+      (prevOptionIds.size === 0 && prevSelected.size === 0) ||
+      prevSelected.has(id) ||
+      isNew;
+    if (shouldSelect) picker.selected.add(id);
+    const optionLabel = document.createElement("label");
+    optionLabel.className =
+      "flex items-center px-3 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700";
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.value = id;
+    checkbox.checked = shouldSelect;
+    checkbox.className =
+      "mr-2 h-4 w-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500";
+    optionLabel.appendChild(checkbox);
+    const span = document.createElement("span");
+    span.textContent = label;
+    optionLabel.appendChild(span);
+    picker.options.appendChild(optionLabel);
+  });
+  picker.disabled = profilesList.length === 0;
+  picker.toggle.disabled = picker.disabled;
+  picker.toggle.setAttribute("aria-expanded", "false");
+  picker.menu.classList.add("hidden");
+  if (picker.disabled) {
+    picker.summary.textContent = picker.emptySummary;
+  } else {
+    updateProfilePickerSummary(key);
+  }
+  if (key === "import") {
+    if (profilesList.length === 0) {
+      setImportProfileHint("No profiles were found in the selected file.");
+    } else {
+      setImportProfileHint(
+        "All profiles are selected by default. Deselect any you don't want to import.",
+      );
+    }
+  }
+}
+
+function resetProfilePicker(key, summaryMessage, { hint } = {}) {
+  const picker = profilePickers[key];
+  if (!picker) return;
+  picker.options.innerHTML = "";
+  picker.selected = new Set();
+  picker.optionIds = new Set();
+  picker.names = new Map();
+  picker.disabled = true;
+  picker.toggle.disabled = true;
+  picker.summary.textContent = summaryMessage || picker.emptySummary;
+  picker.menu.classList.add("hidden");
+  picker.toggle.setAttribute("aria-expanded", "false");
+  if (key === "import") {
+    setImportProfileHint(hint || IMPORT_PROFILE_DEFAULT_HINT);
+  }
+}
+
+function getProfilePickerSelection(key) {
+  const picker = profilePickers[key];
+  if (!picker) return [];
+  return Array.from(picker.selected);
+}
+
+function setupProfilePickers() {
+  const createPicker = (prefix, emptySummary) => {
+    const toggle = getLatestById(`${prefix}ProfileToggle`);
+    const menu = getLatestById(`${prefix}ProfileMenu`);
+    const summary = getLatestById(`${prefix}ProfileSummary`);
+    const options = getLatestById(`${prefix}ProfileOptions`);
+    if (!toggle || !menu || !summary || !options) {
+      profilePickers[prefix] = null;
+      return null;
+    }
+    const picker = {
+      toggle,
+      menu,
+      summary,
+      options,
+      selected: new Set(),
+      optionIds: new Set(),
+      names: new Map(),
+      emptySummary,
+      disabled: true,
+    };
+    profilePickers[prefix] = picker;
+    on(toggle, "click", () => {
+      if (picker.disabled) return;
+      const willOpen = menu.classList.contains("hidden");
+      closeAllProfilePickers();
+      if (willOpen) {
+        menu.classList.remove("hidden");
+        toggle.setAttribute("aria-expanded", "true");
+      } else {
+        toggle.setAttribute("aria-expanded", "false");
+      }
+    });
+    on(options, "change", (event) => {
+      const input = event.target;
+      if (!input || input.type !== "checkbox") return;
+      const id = input.value;
+      if (input.checked) picker.selected.add(id);
+      else picker.selected.delete(id);
+      updateProfilePickerSummary(prefix);
+    });
+    toggle.disabled = true;
+    summary.textContent = emptySummary;
+    return picker;
+  };
+
+  createPicker("export", "No profiles available");
+  createPicker("import", "Select a file to choose profiles");
+
+  document.addEventListener("click", (event) => {
+    Object.entries(profilePickers).forEach(([key, picker]) => {
+      if (!picker || picker.menu.classList.contains("hidden")) return;
+      if (
+        picker.toggle.contains(event.target) ||
+        picker.menu.contains(event.target)
+      )
+        return;
+      closeProfilePicker(key);
+    });
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") closeAllProfilePickers();
+  });
+
+  resetProfilePicker("export");
+  resetProfilePicker("import");
 }
 
 const currencyOptions = {
@@ -127,6 +327,130 @@ const fmtDate = new Intl.DateTimeFormat("en-GB", {
   month: "2-digit",
   year: "numeric",
 }).format;
+
+const ensureArray = (value) => (Array.isArray(value) ? value : []);
+
+function normalizeImportedProfile(profile, index = 0) {
+  const baseId =
+    profile?.id != null && profile.id !== ""
+      ? profile.id
+      : Date.now() + index;
+  return {
+    id: baseId,
+    name: profile?.name || `Profile ${index + 1}`,
+    assets: ensureArray(profile?.assets),
+    liabilities: ensureArray(profile?.liabilities),
+    snapshots: ensureArray(profile?.snapshots),
+    simEvents: ensureArray(profile?.simEvents),
+    goalValue: profile?.goalValue || 0,
+    goalTargetDate: profile?.goalTargetDate || null,
+    inflationRate:
+      profile?.inflationRate != null ? profile.inflationRate : 2.5,
+    fireExpenses:
+      profile?.fireExpenses != null ? profile.fireExpenses : 0,
+    fireExpensesFrequency:
+      profile?.fireExpensesFrequency === "monthly" ? "monthly" : "annual",
+    fireWithdrawalRate:
+      profile?.fireWithdrawalRate > 0 ? profile.fireWithdrawalRate : 4,
+    fireProjectionYears:
+      profile?.fireProjectionYears > 0 ? profile.fireProjectionYears : 30,
+    fireForecastCosts:
+      profile?.fireForecastCosts != null ? profile.fireForecastCosts : 0,
+    fireForecastFrequency:
+      profile?.fireForecastFrequency === "monthly" ? "monthly" : "annual",
+    fireForecastInflation:
+      profile?.fireForecastInflation >= 0
+        ? profile.fireForecastInflation
+        : 2.5,
+    fireForecastRetireDate:
+      profile?.fireForecastRetireDate != null &&
+      isFinite(profile.fireForecastRetireDate)
+        ? profile.fireForecastRetireDate
+        : null,
+  };
+}
+
+function prepareImportedProfiles(data) {
+  if (Array.isArray(data?.profiles) && data.profiles.length > 0) {
+    const normalized = data.profiles.map((profile, index) =>
+      normalizeImportedProfile(profile, index),
+    );
+    const activeCandidate = data?.activeProfileId;
+    const active =
+      normalized.find((p) => p.id == activeCandidate)?.id ||
+      normalized[0]?.id ||
+      null;
+    return { profiles: normalized, activeProfileId: active };
+  }
+  const fallbackProfile = normalizeImportedProfile(
+    {
+      id: data?.id ?? Date.now(),
+      name: data?.name || data?.profileName || "Imported",
+      assets: data?.assets,
+      liabilities: data?.liabilities,
+      snapshots: data?.snapshots,
+      simEvents: data?.simEvents,
+      goalValue: data?.goalValue,
+      goalTargetDate: data?.goalTargetDate,
+      inflationRate: data?.inflationRate,
+      fireExpenses: data?.fireExpenses,
+      fireExpensesFrequency: data?.fireExpensesFrequency,
+      fireWithdrawalRate: data?.fireWithdrawalRate,
+      fireProjectionYears: data?.fireProjectionYears,
+      fireForecastCosts: data?.fireForecastCosts,
+      fireForecastFrequency: data?.fireForecastFrequency,
+      fireForecastInflation: data?.fireForecastInflation,
+      fireForecastRetireDate: data?.fireForecastRetireDate,
+    },
+    0,
+  );
+  return { profiles: [fallbackProfile], activeProfileId: fallbackProfile.id };
+}
+
+function parseImportPayload(rawContent, password) {
+  let json = rawContent;
+  if (password) {
+    const bytes = CryptoJS.AES.decrypt(json, password);
+    json = bytes.toString(CryptoJS.enc.Utf8);
+    if (!json) throw new Error("Decryption failed");
+  }
+  const data = JSON.parse(json);
+  return prepareImportedProfiles(data);
+}
+
+function attemptImportPreview() {
+  if (!importFileContent) {
+    importPreviewData = null;
+    resetProfilePicker("import");
+    return;
+  }
+  const passwordInput = getLatestById("importPassword");
+  const password = passwordInput ? passwordInput.value : "";
+  try {
+    const parsed = parseImportPayload(importFileContent, password);
+    importPreviewData = parsed;
+    populateProfilePickerOptions("import", parsed.profiles);
+  } catch (err) {
+    importPreviewData = null;
+    if (password) {
+      resetProfilePicker(
+        "import",
+        "Enter the correct password to preview profiles",
+        {
+          hint: "Unable to decrypt with the current password. Adjust the password to preview profiles.",
+        },
+      );
+    } else {
+      resetProfilePicker(
+        "import",
+        "Select a file to choose profiles",
+        {
+          hint: "Provide the file password if it was encrypted to preview its profiles.",
+        },
+      );
+    }
+  }
+}
 
 function saveCurrentProfile() {
   if (!activeProfile) return;
@@ -1811,11 +2135,15 @@ function refreshFireProjection() {
 
 function renderProfileOptions() {
   const sel = $("profileSelect");
-  if (!sel) return;
-  sel.innerHTML = profiles
-    .map((p) => `<option value="${p.id}">${p.name}</option>`)
-    .join("");
-  if (activeProfile) sel.value = activeProfile.id;
+  if (sel) {
+    sel.innerHTML = profiles
+      .map((p) => `<option value="${p.id}">${p.name}</option>`)
+      .join("");
+    if (activeProfile) sel.value = activeProfile.id;
+  }
+  if (profilePickers.export) {
+    populateProfilePickerOptions("export", profiles);
+  }
 }
 
 function switchProfile(id) {
@@ -3786,6 +4114,8 @@ window.addEventListener("load", () => {
 
   updateCurrencySymbols();
 
+  setupProfilePickers();
+
   const currencySelect = document.getElementById("currencySelect");
   if (currencySelect) {
     currencySelect.value = currencyCode;
@@ -4117,12 +4447,22 @@ window.addEventListener("load", () => {
         case "export-data":
           {
             persist();
-            const hasAny = profiles.some(
+            const selectedIds = profilePickers.export
+              ? getProfilePickerSelection("export")
+              : profiles.map((p) => String(p.id));
+            const selectedProfiles = profiles.filter((p) =>
+              selectedIds.includes(String(p.id)),
+            );
+            if (selectedProfiles.length === 0) {
+              showAlert("Select at least one profile to export.");
+              return;
+            }
+            const hasAny = selectedProfiles.some(
               (p) =>
-                p.assets.length > 0 ||
-                p.liabilities?.length > 0 ||
-                p.snapshots.length > 0 ||
-                p.simEvents.length > 0,
+                (p.assets?.length || 0) > 0 ||
+                (p.liabilities?.length || 0) > 0 ||
+                (p.snapshots?.length || 0) > 0 ||
+                (p.simEvents?.length || 0) > 0,
             );
             if (!hasAny) {
               showAlert(
@@ -4130,10 +4470,15 @@ window.addEventListener("load", () => {
               );
               return;
             }
-            const password = $("exportPassword").value;
+            const passwordInput = getLatestById("exportPassword");
+            const password = passwordInput ? passwordInput.value : "";
+            const activeId =
+              selectedProfiles.find((p) => p.id == activeProfile?.id)?.id ||
+              selectedProfiles[0]?.id ||
+              null;
             const dataToExport = {
-              profiles,
-              activeProfileId: activeProfile?.id,
+              profiles: selectedProfiles,
+              activeProfileId: activeId,
             };
             let payload = JSON.stringify(dataToExport);
             if (password)
@@ -4153,6 +4498,7 @@ window.addEventListener("load", () => {
             a.download = `wealthtrack-data-${dateStr}.json`;
             a.click();
             URL.revokeObjectURL(url);
+            closeAllProfilePickers();
             showAlert("Data exported successfully");
           }
           break;
@@ -4160,103 +4506,55 @@ window.addEventListener("load", () => {
         case "import-data":
           {
             const fi = $("importFile");
-            if (fi.files.length === 0) {
+            if (!fi || fi.files.length === 0) {
               showAlert("Please select a file to import first.");
               return;
             }
             const file = fi.files[0];
-            const reader = new FileReader();
-            reader.onload = (ev) => {
+            const passwordInput = getLatestById("importPassword");
+            const password = passwordInput ? passwordInput.value : "";
+            const pickerState = profilePickers.import;
+            const selectedIds =
+              pickerState && pickerState.optionIds.size > 0
+                ? getProfilePickerSelection("import")
+                : null;
+            const importToken = getImportFileToken(file);
+            const executeImport = (raw) => {
               try {
-                const password = $("importPassword").value;
-                let json = ev.target.result;
-                if (password) {
-                  const bytes = CryptoJS.AES.decrypt(json, password);
-                  json = bytes.toString(CryptoJS.enc.Utf8);
+                const parsed = parseImportPayload(raw, password);
+                const idSet = selectedIds
+                  ? new Set(selectedIds.map((id) => String(id)))
+                  : null;
+                const filteredProfiles = idSet
+                  ? parsed.profiles.filter((p) => idSet.has(String(p.id)))
+                  : parsed.profiles;
+                const hasPickerSelection =
+                  pickerState && pickerState.optionIds.size > 0;
+                if (hasPickerSelection && (!idSet || idSet.size === 0)) {
+                  showAlert("Select at least one profile to import.");
+                  return;
                 }
-                if (!json)
-                  throw new Error("Decryption failed or file is empty.");
-                const data = JSON.parse(json);
-                if (data.profiles) {
-                  profiles = data.profiles;
-                  profiles.forEach((p) => {
-                    if (p.goalTargetDate == null) p.goalTargetDate = null;
-                    if (p.fireExpenses == null) p.fireExpenses = 0;
-                    p.fireExpensesFrequency =
-                      p.fireExpensesFrequency === "monthly"
-                        ? "monthly"
-                        : "annual";
-                    if (!(p.fireWithdrawalRate > 0)) p.fireWithdrawalRate = 4;
-                    if (!(p.fireProjectionYears > 0)) p.fireProjectionYears = 30;
-                    if (p.fireForecastCosts == null)
-                      p.fireForecastCosts = 0;
-                    p.fireForecastFrequency =
-                      p.fireForecastFrequency === "monthly"
-                        ? "monthly"
-                        : "annual";
-                    if (!(p.fireForecastInflation >= 0))
-                      p.fireForecastInflation = 2.5;
-                    if (
-                      p.fireForecastRetireDate != null &&
-                      !isFinite(p.fireForecastRetireDate)
-                    )
-                      p.fireForecastRetireDate = null;
-                  });
-                  activeProfile =
-                    profiles.find((p) => p.id == data.activeProfileId) ||
-                    profiles[0];
-                } else {
-                  const id = Date.now();
-                  profiles = [
-                    {
-                      id,
-                      name: "Imported",
-                      assets: data.assets || [],
-                      liabilities: data.liabilities || [],
-                      snapshots: data.snapshots || [],
-                      simEvents: data.simEvents || [],
-                      goalValue: data.goalValue || 0,
-                      goalTargetDate: data.goalTargetDate || null,
-                      fireExpenses: data.fireExpenses || 0,
-                      fireExpensesFrequency:
-                        data.fireExpensesFrequency === "monthly"
-                          ? "monthly"
-                          : "annual",
-                      fireWithdrawalRate:
-                        data.fireWithdrawalRate > 0
-                          ? data.fireWithdrawalRate
-                          : 4,
-                      fireProjectionYears:
-                        data.fireProjectionYears > 0
-                          ? data.fireProjectionYears
-                          : 30,
-                      fireForecastCosts:
-                        data.fireForecastCosts != null
-                          ? data.fireForecastCosts
-                          : 0,
-                      fireForecastFrequency:
-                        data.fireForecastFrequency === "monthly"
-                          ? "monthly"
-                          : "annual",
-                      fireForecastInflation:
-                        data.fireForecastInflation >= 0
-                          ? data.fireForecastInflation
-                          : 2.5,
-                      fireForecastRetireDate:
-                        data.fireForecastRetireDate &&
-                        isFinite(data.fireForecastRetireDate)
-                          ? data.fireForecastRetireDate
-                          : null,
-                    },
-                  ];
-                  activeProfile = profiles[0];
+                if (filteredProfiles.length === 0) {
+                  showAlert("Select at least one profile to import.");
+                  return;
                 }
+                const nextActiveId =
+                  idSet && !idSet.has(String(parsed.activeProfileId))
+                    ? filteredProfiles[0]?.id
+                    : parsed.activeProfileId;
+                profiles = filteredProfiles.map((profile) => ({ ...profile }));
+                activeProfile =
+                  profiles.find((p) => p.id == nextActiveId) || profiles[0];
                 assets = activeProfile.assets || [];
                 liabilities = activeProfile.liabilities || [];
                 snapshots = activeProfile.snapshots || [];
                 simEvents = activeProfile.simEvents || [];
                 goalValue = activeProfile.goalValue || 0;
                 goalTargetDate = activeProfile.goalTargetDate || null;
+                inflationRate =
+                  activeProfile.inflationRate != null
+                    ? activeProfile.inflationRate
+                    : 2.5;
                 fireExpenses =
                   activeProfile.fireExpenses != null
                     ? activeProfile.fireExpenses
@@ -4270,7 +4568,8 @@ window.addEventListener("load", () => {
                     ? activeProfile.fireWithdrawalRate
                     : 4;
                 fireProjectionYears =
-                  activeProfile.fireProjectionYears && activeProfile.fireProjectionYears > 0
+                  activeProfile.fireProjectionYears &&
+                  activeProfile.fireProjectionYears > 0
                     ? activeProfile.fireProjectionYears
                     : 30;
                 fireLastInputs =
@@ -4301,6 +4600,8 @@ window.addEventListener("load", () => {
                 activeProfile.fireForecastFrequency = fireForecastFrequency;
                 activeProfile.fireForecastInflation = fireForecastInflation;
                 activeProfile.fireForecastRetireDate = fireForecastRetireDate;
+                const inflEl = $("inflationRate");
+                if (inflEl) inflEl.value = inflationRate;
                 $("goalValue").value = goalValue || "";
                 $("goalYear").value = goalTargetDate
                   ? new Date(goalTargetDate).getFullYear()
@@ -4322,6 +4623,15 @@ window.addEventListener("load", () => {
                 updateFireForecastCard();
                 persist();
                 renderProfileOptions();
+                fi.value = "";
+                document
+                  .querySelectorAll('[data-import-filename]')
+                  .forEach((el) => (el.textContent = "No file chosen"));
+                resetProfilePicker("import");
+                importFileContent = null;
+                importFileToken = null;
+                importPreviewData = null;
+                closeAllProfilePickers();
                 showAlert("Data imported successfully", () => {
                   navigateTo("data-entry");
                   updateEmptyStates();
@@ -4333,7 +4643,25 @@ window.addEventListener("load", () => {
                 );
               }
             };
-            reader.readAsText(file);
+            if (
+              importFileToken === importToken &&
+              typeof importFileContent === "string"
+            ) {
+              executeImport(importFileContent);
+            } else {
+              const reader = new FileReader();
+              reader.onload = (ev) => {
+                importFileContent = ev.target.result;
+                importFileToken = importToken;
+                executeImport(importFileContent);
+              };
+              reader.onerror = () => {
+                showAlert(
+                  "Error importing file. Check password or file format.",
+                );
+              };
+              reader.readAsText(file);
+            }
           }
           break;
         case "clear-data":
@@ -4407,11 +4735,41 @@ window.addEventListener("load", () => {
   const importInput = $("importFile");
   if (importInput)
     on(importInput, "change", (e) => {
-      const name = e.target.files[0]?.name || "No file chosen";
+      const file = e.target.files[0] || null;
+      const name = file?.name || "No file chosen";
       document
         .querySelectorAll("[data-import-filename]")
         .forEach((el) => (el.textContent = name));
+      if (!file) {
+        importFileContent = null;
+        importFileToken = null;
+        importPreviewData = null;
+        resetProfilePicker("import");
+        return;
+      }
+      importFileToken = getImportFileToken(file);
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        importFileContent = ev.target.result;
+        attemptImportPreview();
+      };
+      reader.onerror = () => {
+        importFileContent = null;
+        importFileToken = null;
+        importPreviewData = null;
+        resetProfilePicker("import", "Unable to read the selected file", {
+          hint: "Please choose a different file to continue.",
+        });
+      };
+      reader.readAsText(file);
     });
+  document
+    .querySelectorAll('[id="importPassword"]')
+    .forEach((el) =>
+      on(el, "input", () => {
+        if (importFileContent != null) attemptImportPreview();
+      }),
+    );
   // Theme choice handlers
   const themeSel = document.getElementById("themeSelect");
   if (themeSel)

@@ -1553,6 +1553,33 @@
                   class="input-field"
                 />
               </div>
+              <div class="mt-4">
+                <label class="form-label" for="exportProfileToggle"
+                  >Profiles to Export</label
+                >
+                <div id="exportProfilePicker" class="relative">
+                  <button
+                    type="button"
+                    id="exportProfileToggle"
+                    class="input-field flex items-center justify-between"
+                    aria-haspopup="listbox"
+                    aria-expanded="false"
+                  >
+                    <span id="exportProfileSummary">All profiles selected</span>
+                    <i class="fa-solid fa-chevron-down text-gray-400 ml-2"></i>
+                  </button>
+                  <div
+                    id="exportProfileMenu"
+                    class="absolute z-20 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-48 overflow-y-auto hidden"
+                  >
+                    <div id="exportProfileOptions"></div>
+                  </div>
+                </div>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                  All profiles are selected by default. Deselect any you don't
+                  want to include.
+                </p>
+              </div>
             </div>
             <div class="mt-4">
               <button
@@ -1623,6 +1650,39 @@
                   placeholder="Enter password for file"
                   class="input-field"
                 />
+              </div>
+              <div class="mt-4">
+                <label class="form-label" for="importProfileToggle"
+                  >Profiles to Import</label
+                >
+                <div id="importProfilePicker" class="relative">
+                  <button
+                    type="button"
+                    id="importProfileToggle"
+                    class="input-field flex items-center justify-between"
+                    aria-haspopup="listbox"
+                    aria-expanded="false"
+                    disabled
+                  >
+                    <span id="importProfileSummary"
+                      >Select a file to choose profiles</span
+                    >
+                    <i class="fa-solid fa-chevron-down text-gray-400 ml-2"></i>
+                  </button>
+                  <div
+                    id="importProfileMenu"
+                    class="absolute z-20 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-48 overflow-y-auto hidden"
+                  >
+                    <div id="importProfileOptions"></div>
+                  </div>
+                </div>
+                <p
+                  id="importProfileHint"
+                  class="text-xs text-gray-500 dark:text-gray-400 mt-2"
+                >
+                  Profiles from the selected file will appear here once the
+                  password (if any) is provided.
+                </p>
               </div>
             </div>
             <div class="mt-4">
@@ -1735,6 +1795,33 @@
                 class="input-field"
               />
             </div>
+            <div class="mt-4">
+              <label class="form-label" for="exportProfileToggle"
+                >Profiles to Export</label
+              >
+              <div id="exportProfilePicker" class="relative">
+                <button
+                  type="button"
+                  id="exportProfileToggle"
+                  class="input-field flex items-center justify-between"
+                  aria-haspopup="listbox"
+                  aria-expanded="false"
+                >
+                  <span id="exportProfileSummary">All profiles selected</span>
+                  <i class="fa-solid fa-chevron-down text-gray-400 ml-2"></i>
+                </button>
+                <div
+                  id="exportProfileMenu"
+                  class="absolute z-20 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-48 overflow-y-auto hidden"
+                >
+                  <div id="exportProfileOptions"></div>
+                </div>
+              </div>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                All profiles are selected by default. Deselect any you don't
+                want to include.
+              </p>
+            </div>
           </div>
           <div class="mt-4">
             <button
@@ -1799,6 +1886,39 @@
                 placeholder="Enter password for file"
                 class="input-field"
               />
+            </div>
+            <div class="mt-4">
+              <label class="form-label" for="importProfileToggle"
+                >Profiles to Import</label
+              >
+              <div id="importProfilePicker" class="relative">
+                <button
+                  type="button"
+                  id="importProfileToggle"
+                  class="input-field flex items-center justify-between"
+                  aria-haspopup="listbox"
+                  aria-expanded="false"
+                  disabled
+                >
+                  <span id="importProfileSummary"
+                    >Select a file to choose profiles</span
+                  >
+                  <i class="fa-solid fa-chevron-down text-gray-400 ml-2"></i>
+                </button>
+                <div
+                  id="importProfileMenu"
+                  class="absolute z-20 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-48 overflow-y-auto hidden"
+                >
+                  <div id="importProfileOptions"></div>
+                </div>
+              </div>
+              <p
+                id="importProfileHint"
+                class="text-xs text-gray-500 dark:text-gray-400 mt-2"
+              >
+                Profiles from the selected file will appear here once the
+                password (if any) is provided.
+              </p>
             </div>
           </div>
           <div class="mt-4">
