@@ -96,6 +96,17 @@
     margin-bottom: 0 !important;
     @apply pt-6 pb-5;
   }
+  .stat-box {
+    @apply text-center;
+  }
+  .stat-box > * {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+  .stat-box .text-3xl {
+    font-size: clamp(1.5rem, 6vw, 1.875rem);
+    line-height: 1.2;
+  }
   /* Tighter spacing between title and content when expanded */
   .card.is-collapsible:not(.collapsed) > h3,
   .card.is-collapsible:not(.collapsed) > h4 {
