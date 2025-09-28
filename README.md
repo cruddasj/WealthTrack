@@ -18,6 +18,7 @@ Serve the repository with any static HTTP server. All logic is client-side, so n
 ```bash
 # Example: using a simple Python web server
 python -m http.server 8080
+
 # or Node's serve (if installed):
 npx serve -l 8080
 ```
