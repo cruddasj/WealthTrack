@@ -858,30 +858,7 @@ function computeAssetTaxDetails() {
 function describeAssetTax(asset, summary) {
   const meta = getTaxTreatmentMeta(asset?.taxTreatment);
   if (!meta) return "";
-  if (!meta.totalsKey) {
-    return `<span class="inline-flex items-center gap-2 whitespace-nowrap">${meta.label}</span>`;
-  }
-  const band = summary?.band || getTaxBandConfig(taxSettings?.band);
-  const allowanceValue = taxSettings?.[meta.allowanceSetting] || 0;
-  const rate = band?.[meta.rateKey] || 0;
-  const details = [];
-  if (band?.label) {
-    details.push(`${band.label} ${formatPercent(rate)}`);
-  } else if (rate) {
-    details.push(formatPercent(rate));
-  }
-  if (meta.allowanceSetting) {
-    details.push(
-      `Allowance: ${fmtCurrency(allowanceValue)} ${meta.allowanceLabel}`,
-    );
-  }
-  const detailText =
-    details.length > 0
-      ? `<span class="text-xs text-gray-500 dark:text-gray-400">${details.join(
-          " · ",
-        )}</span>`
-      : "";
-  return `<span class="inline-flex items-center gap-2 whitespace-nowrap"><span>${meta.label}</span>${detailText}</span>`;
+  return `<span class="inline-flex items-center gap-2 whitespace-nowrap">${meta.label}</span>`;
 }
 
 function clearTaxCalculatorResult() {
