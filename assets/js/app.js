@@ -644,15 +644,29 @@ function describeAssetTax(asset, summary) {
   const meta = getTaxTreatmentMeta(asset?.taxTreatment);
   if (!meta) return "";
   if (!meta.totalsKey) {
-    return `<div>${meta.label}</div><div class="text-xs text-gray-500 dark:text-gray-400">${meta.info}</div>`;
+    return `<span class="inline-flex items-center gap-2 whitespace-nowrap">${meta.label}</span>`;
   }
   const band = summary?.band || getTaxBandConfig(taxSettings?.band);
   const allowanceValue = taxSettings?.[meta.allowanceSetting] || 0;
-  const allowanceText = `${fmtCurrency(allowanceValue)} ${meta.allowanceLabel}`;
   const rate = band?.[meta.rateKey] || 0;
-  return `<div>${meta.label}</div>
-    <div class="text-xs text-gray-500 dark:text-gray-400">${band?.label || ""} applies at ${formatPercent(rate)} once allowances are used.</div>
-    <div class="text-xs text-gray-500 dark:text-gray-400">${allowanceText}. ${meta.info}</div>`;
+  const details = [];
+  if (band?.label) {
+    details.push(`${band.label} ${formatPercent(rate)}`);
+  } else if (rate) {
+    details.push(formatPercent(rate));
+  }
+  if (meta.allowanceSetting) {
+    details.push(
+      `Allowance: ${fmtCurrency(allowanceValue)} ${meta.allowanceLabel}`,
+    );
+  }
+  const detailText =
+    details.length > 0
+      ? `<span class="text-xs text-gray-500 dark:text-gray-400">${details.join(
+          " · ",
+        )}</span>`
+      : "";
+  return `<span class="inline-flex items-center gap-2 whitespace-nowrap"><span>${meta.label}</span>${detailText}</span>`;
 }
 
 function clearTaxCalculatorResult() {
@@ -3141,20 +3155,21 @@ function renderAssets() {
       const lowNet = detail?.low?.netRate ?? lowGross;
       const baseNet = detail?.base?.netRate ?? baseGross;
       const highNet = detail?.high?.netRate ?? highGross;
-      const growthLines = `
-        <div><span class="text-xs text-gray-500 dark:text-gray-400">Low:</span> ${formatGrossNetRate(lowGross, lowNet)}</div>
-        <div class="mt-1"><span class="text-xs text-gray-500 dark:text-gray-400">Exp:</span> ${formatGrossNetRate(baseGross, baseNet)}</div>
-        <div class="mt-1"><span class="text-xs text-gray-500 dark:text-gray-400">High:</span> ${formatGrossNetRate(highGross, highNet)}</div>
-      `;
+      const growthLines =
+        '<span class="inline-flex items-center gap-4 whitespace-nowrap">' +
+        `<span><span class="text-xs text-gray-500 dark:text-gray-400">Low:</span> ${formatGrossNetRate(lowGross, lowNet)}</span>` +
+        `<span><span class="text-xs text-gray-500 dark:text-gray-400">Exp:</span> ${formatGrossNetRate(baseGross, baseNet)}</span>` +
+        `<span><span class="text-xs text-gray-500 dark:text-gray-400">High:</span> ${formatGrossNetRate(highGross, highNet)}</span>` +
+        "</span>";
       const taxInfo = describeAssetTax(asset, taxSummary);
       return `<tr class="text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
-    <td class="px-6 py-4 whitespace-nowrap">${asset.name}${passiveBadge}</td>
-    <td class="px-6 py-4 whitespace-nowrap">${startCell}</td>
-    <td class="px-6 py-4 whitespace-nowrap font-semibold">${fmtCurrency(currentValue)}</td>
-    <td class="px-6 py-4 whitespace-nowrap">${depositText}</td>
-    <td class="px-6 py-4 whitespace-normal align-top">${growthLines}</td>
-    <td class="px-6 py-4 whitespace-normal align-top">${taxInfo}</td>
-    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium flex items-center gap-2">
+    <td class="px-6 py-3 whitespace-nowrap align-middle">${asset.name}${passiveBadge}</td>
+    <td class="px-6 py-3 whitespace-nowrap align-middle">${startCell}</td>
+    <td class="px-6 py-3 whitespace-nowrap align-middle font-semibold">${fmtCurrency(currentValue)}</td>
+    <td class="px-6 py-3 whitespace-nowrap align-middle">${depositText}</td>
+    <td class="px-6 py-3 whitespace-nowrap align-middle">${growthLines}</td>
+    <td class="px-6 py-3 whitespace-nowrap align-middle">${taxInfo}</td>
+    <td class="px-6 py-3 whitespace-nowrap text-right text-sm font-medium flex items-center gap-2">
       <button data-action="edit-asset" data-index="${originalIndex}" class="btn-icon" title="Edit Asset">
         <svg class="h-5 w-5" fill="currentColor"><use href="#i-edit"/></svg>
       </button>
