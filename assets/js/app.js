@@ -5273,6 +5273,33 @@ function handleFormSubmit(e) {
 }
 
 window.addEventListener("load", () => {
+  const versionTargets = document.querySelectorAll("[data-app-version]");
+  if (versionTargets.length) {
+    const fallbackVersion = "0.0.0-dev";
+    const normalizeVersion = (value) => {
+      if (typeof value !== "string") return fallbackVersion;
+      const trimmed = value.trim();
+      if (!trimmed) return fallbackVersion;
+      return trimmed.replace(/^v/i, "");
+    };
+    const applyVersion = (value) =>
+      versionTargets.forEach((el) => {
+        el.textContent = value;
+      });
+    fetch("assets/version.json", { cache: "no-store" })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((data) => {
+        if (data && data.version) {
+          applyVersion(normalizeVersion(data.version));
+        } else {
+          applyVersion(fallbackVersion);
+        }
+      })
+      .catch(() => {
+        applyVersion(fallbackVersion);
+      });
+  }
+
   // Generate light/dark favicons from the inline #app-logo symbol
   (function generateFavicons() {
     const sym = document.getElementById("app-logo");
