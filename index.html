@@ -976,6 +976,37 @@
               Defaults to today. Future dates apply scheduled one-off events.
             </p>
           </div>
+          <div class="mb-4">
+            <label for="passiveAssetsToggle" class="form-label"
+              >Assets included</label
+            >
+            <div class="relative">
+              <button
+                type="button"
+                id="passiveAssetsToggle"
+                class="input-field text-left"
+              >
+                All Passive Assets
+              </button>
+              <div
+                id="passiveAssetsMenu"
+                class="hidden absolute z-10 w-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg mt-1 max-h-48 overflow-y-auto shadow-lg"
+              ></div>
+            </div>
+            <p
+              id="passiveAssetsSummary"
+              class="text-xs text-gray-500 dark:text-gray-400 mt-1"
+            >
+              All passive income assets are included.
+            </p>
+          </div>
+          <div
+            id="passiveAssetsEmptyNotice"
+            class="hidden text-xs text-amber-600 dark:text-amber-400 mb-4"
+          >
+            No passive income assets are selected. Choose at least one asset to
+            calculate estimates.
+          </div>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div
               class="flex flex-col items-center justify-center gap-1 p-4 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 stat-box"

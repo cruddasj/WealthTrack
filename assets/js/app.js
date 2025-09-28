@@ -24,6 +24,7 @@ let fireForecastFrequency = "annual";
 let fireForecastInflation = 2.5;
 let fireForecastRetireDate = null;
 let passiveIncomeAsOf = null;
+let passiveIncomeExcludedAssetIds = new Set();
 
 const profilePickers = {};
 let importFileContent = null;
@@ -737,6 +738,9 @@ function normalizeImportedProfile(profile, index = 0) {
     liabilities: ensureArray(profile?.liabilities),
     snapshots: ensureArray(profile?.snapshots),
     simEvents: ensureArray(profile?.simEvents),
+    passiveIncomeExcludedAssets: ensureArray(
+      profile?.passiveIncomeExcludedAssets,
+    ),
     goalValue: profile?.goalValue || 0,
     goalTargetDate: profile?.goalTargetDate || null,
     inflationRate:
@@ -870,6 +874,9 @@ function saveCurrentProfile() {
   activeProfile.fireForecastFrequency = fireForecastFrequency;
   activeProfile.fireForecastInflation = fireForecastInflation;
   activeProfile.fireForecastRetireDate = fireForecastRetireDate;
+  activeProfile.passiveIncomeExcludedAssets = Array.from(
+    passiveIncomeExcludedAssetIds,
+  );
   activeProfile.taxSettings = normalizeTaxSettings(taxSettings);
   activeProfile.currencyCode = currencyCode;
   activeProfile.themeChoice = currentThemeChoice;
@@ -880,6 +887,21 @@ function persist() {
   save(LS.profiles, profiles);
   if (activeProfile)
     localStorage.setItem(LS.activeProfile, activeProfile.id);
+}
+
+function loadPassiveIncomeSelection(profile) {
+  if (!profile) {
+    passiveIncomeExcludedAssetIds = new Set();
+    return;
+  }
+  const stored = Array.isArray(profile.passiveIncomeExcludedAssets)
+    ? profile.passiveIncomeExcludedAssets
+    : [];
+  passiveIncomeExcludedAssetIds = new Set(
+    stored
+      .map((id) => Number(id))
+      .filter((id) => Number.isFinite(id)),
+  );
 }
 
 function updateGoalButton() {
@@ -1009,6 +1031,9 @@ function loadDemoData() {
       { name: "Bonus", amount: 2000, isPercent: false, date: nextYear },
       { name: "Car Purchase", amount: -10000, isPercent: false, date: twoYears },
     ];
+
+    passiveIncomeExcludedAssetIds = new Set();
+    if (activeProfile) activeProfile.passiveIncomeExcludedAssets = [];
 
     // Goal in ~10 years; calibrate so only High hits the goal
     const targetYr = new Date().getFullYear() + 10;
@@ -1231,6 +1256,7 @@ function initProfiles() {
   liabilities = activeProfile.liabilities || [];
   snapshots = activeProfile.snapshots || [];
   simEvents = activeProfile.simEvents || [];
+  loadPassiveIncomeSelection(activeProfile);
   goalValue = activeProfile.goalValue || 0;
   goalTargetDate = activeProfile.goalTargetDate || null;
   inflationRate =
@@ -2419,6 +2445,88 @@ function applyProfilePreferences(profile) {
   if (profile) profile.darkMode = isDarkMode;
 }
 
+function getPassiveIncomeEligibleAssets() {
+  return assets.filter((asset) => asset && asset.includeInPassive !== false);
+}
+
+function updatePassiveIncomeAssetPicker(eligibleAssets) {
+  const toggle = $("passiveAssetsToggle");
+  const menu = $("passiveAssetsMenu");
+  const summary = $("passiveAssetsSummary");
+  const emptyNotice = $("passiveAssetsEmptyNotice");
+  const eligibleIds = new Set(eligibleAssets.map((asset) => asset.dateAdded));
+  let selectionChanged = false;
+  Array.from(passiveIncomeExcludedAssetIds).forEach((id) => {
+    if (!eligibleIds.has(id)) {
+      passiveIncomeExcludedAssetIds.delete(id);
+      selectionChanged = true;
+    }
+  });
+  const selectedAssets = eligibleAssets.filter(
+    (asset) => !passiveIncomeExcludedAssetIds.has(asset.dateAdded),
+  );
+
+  if (menu && toggle) {
+    if (eligibleAssets.length === 0) {
+      menu.innerHTML =
+        '<p class="px-3 py-2 text-sm text-gray-500 dark:text-gray-300">Mark assets as providing passive income to include them.</p>';
+      menu.classList.add("hidden");
+      toggle.disabled = true;
+      toggle.textContent = "No Passive Assets";
+      toggle.setAttribute("aria-expanded", "false");
+    } else {
+      const sorted = [...eligibleAssets].sort((a, b) =>
+        (a.name || "").localeCompare(b.name || "", undefined, {
+          sensitivity: "base",
+        }),
+      );
+      menu.innerHTML = sorted
+        .map((asset) => {
+          const checked = !passiveIncomeExcludedAssetIds.has(asset.dateAdded);
+          return `<label class="flex items-center px-3 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"><input type="checkbox" data-id="${asset.dateAdded}" class="mr-2 h-4 w-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500" ${checked ? "checked" : ""}/><span>${asset.name}</span></label>`;
+        })
+        .join("");
+      const total = eligibleAssets.length;
+      const selectedCount = selectedAssets.length;
+      toggle.disabled = false;
+      toggle.textContent =
+        selectedCount === total
+          ? "All Passive Assets"
+          : `${selectedCount}/${total} Selected`;
+    }
+  }
+
+  if (summary) {
+    let summaryText;
+    if (eligibleAssets.length === 0) {
+      summaryText =
+        "Mark assets as passive income to include them in these estimates.";
+    } else {
+      const total = eligibleAssets.length;
+      const selectedCount = selectedAssets.length;
+      if (selectedCount === 0) {
+        summaryText = "No passive income assets are currently included.";
+      } else if (selectedCount === total) {
+        summaryText = "All passive income assets are included.";
+      } else {
+        summaryText = `${selectedCount} of ${total} passive income assets are included.`;
+      }
+    }
+    summary.textContent = summaryText;
+  }
+
+  if (emptyNotice) {
+    emptyNotice.classList.toggle(
+      "hidden",
+      !(eligibleAssets.length > 0 && selectedAssets.length === 0),
+    );
+  }
+
+  if (selectionChanged) persist();
+
+  return selectedAssets;
+}
+
 // Passive income summary (based on expected returns)
 function updatePassiveIncome() {
   const card = $("passiveIncomeCard");
@@ -2430,6 +2538,10 @@ function updatePassiveIncome() {
     return;
   }
 
+  const eligibleAssets = getPassiveIncomeEligibleAssets();
+  const selectedAssets = updatePassiveIncomeAssetPicker(eligibleAssets);
+  const selectedIds = new Set(selectedAssets.map((asset) => asset.dateAdded));
+
   const targetTs = getPassiveIncomeTargetDate();
   passiveIncomeAsOf = targetTs;
   const dateInput = $("passiveIncomeDate");
@@ -2440,7 +2552,8 @@ function updatePassiveIncome() {
 
   const eventsByAsset = new Map();
   simEvents.forEach((ev) => {
-    if (!ev || ev.assetId == null) return;
+    if (!ev || ev.assetId == null || (selectedIds.size && !selectedIds.has(ev.assetId)))
+      return;
     if (!eventsByAsset.has(ev.assetId)) eventsByAsset.set(ev.assetId, []);
     eventsByAsset.get(ev.assetId).push(ev);
   });
@@ -2449,8 +2562,7 @@ function updatePassiveIncome() {
   const nowTs = Date.now();
   let annualIncome = 0;
   const taxDetails = computeAssetTaxDetails();
-  assets.forEach((asset) => {
-    if (asset?.includeInPassive === false) return;
+  selectedAssets.forEach((asset) => {
     const valueAtDate = calculatePassiveAssetValueAt(
       asset,
       targetTs,
@@ -2834,6 +2946,7 @@ function switchProfile(id, { showFeedback = false } = {}) {
   liabilities = activeProfile.liabilities || [];
   snapshots = activeProfile.snapshots || [];
   simEvents = activeProfile.simEvents || [];
+  loadPassiveIncomeSelection(activeProfile);
   goalValue = activeProfile.goalValue || 0;
   goalTargetDate = activeProfile.goalTargetDate || null;
   inflationRate =
@@ -2929,6 +3042,7 @@ function addProfile(name) {
     fireForecastFrequency: "annual",
     fireForecastInflation: 2.5,
     fireForecastRetireDate: null,
+    passiveIncomeExcludedAssets: [],
     taxSettings: normalizeTaxSettings(),
     currencyCode,
     themeChoice: currentThemeChoice,
@@ -2978,6 +3092,7 @@ function deleteActiveProfile() {
     fireForecastFrequency = "annual";
     fireForecastInflation = 2.5;
     fireForecastRetireDate = null;
+    passiveIncomeExcludedAssetIds = new Set();
     $("goalYear").value = "";
     taxSettings = normalizeTaxSettings();
     updateTaxSettingsUI();
@@ -5508,6 +5623,7 @@ window.addEventListener("load", () => {
                 liabilities = activeProfile.liabilities || [];
                 snapshots = activeProfile.snapshots || [];
                 simEvents = activeProfile.simEvents || [];
+                loadPassiveIncomeSelection(activeProfile);
                 goalValue = activeProfile.goalValue || 0;
                 goalTargetDate = activeProfile.goalTargetDate || null;
                 inflationRate =
@@ -5765,6 +5881,42 @@ window.addEventListener("load", () => {
         !stressToggle.contains(e.target)
       ) {
         stressMenu.classList.add("hidden");
+      }
+    });
+  }
+  const passiveToggle = $("passiveAssetsToggle");
+  const passiveMenu = $("passiveAssetsMenu");
+  if (passiveToggle && passiveMenu) {
+    passiveToggle.setAttribute("aria-expanded", "false");
+    on(passiveToggle, "click", () => {
+      if (passiveToggle.disabled) return;
+      const willOpen = passiveMenu.classList.contains("hidden");
+      if (willOpen) {
+        passiveMenu.classList.remove("hidden");
+        passiveToggle.setAttribute("aria-expanded", "true");
+      } else {
+        passiveMenu.classList.add("hidden");
+        passiveToggle.setAttribute("aria-expanded", "false");
+      }
+    });
+    on(passiveMenu, "change", (e) => {
+      const input = e.target;
+      if (!input || input.type !== "checkbox") return;
+      const id = Number(input.dataset.id);
+      if (!Number.isFinite(id)) return;
+      if (input.checked) passiveIncomeExcludedAssetIds.delete(id);
+      else passiveIncomeExcludedAssetIds.add(id);
+      updatePassiveIncome();
+      persist();
+    });
+    on(document, "click", (e) => {
+      if (
+        !passiveMenu.contains(e.target) &&
+        e.target !== passiveToggle &&
+        !passiveToggle.contains(e.target)
+      ) {
+        passiveMenu.classList.add("hidden");
+        passiveToggle.setAttribute("aria-expanded", "false");
       }
     });
   }
