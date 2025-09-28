@@ -36,21 +36,10 @@ jobs:
       - name: Determine release version
         id: version
         run: |
-          git fetch --tags --force
-          latest=$(git tag -l 'v*' --sort=-version:refname | head -n 1)
-          if [ -z "$latest" ]; then
-            next="0.1.0"
-          else
-            version="${latest#v}"
-            IFS='.' read -r major minor patch <<<"$version"
-            major=${major:-0}
-            minor=${minor:-1}
-            patch=${patch:-0}
-            patch=$((patch + 1))
-            next="$major.$minor.$patch"
-          fi
-          echo "version=$next" >> "$GITHUB_OUTPUT"
-          echo "tag=v$next" >> "$GITHUB_OUTPUT"
+          epoch=$(date +%s)
+          version="1.0.${epoch}"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "tag=v$version" >> "$GITHUB_OUTPUT"
       - name: Update version file
         run: |
           cat <<'JSON' > assets/version.json

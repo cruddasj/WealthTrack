@@ -50,7 +50,7 @@ To install the app, open it in a supporting browser (Chrome, Edge, or mobile equ
 ### App Versioning
 
 - The Settings page shows the current app version so users can reference it when sharing feedback.
-- A GitHub Actions workflow (`.github/workflows/static.yml`) automatically increments the semantic version on each push to `main`, updates `assets/version.json`, and creates a matching `v*` tag and release.
+- A GitHub Actions workflow (`.github/workflows/static.yml`) sets the version to `1.0.<epoch>` on each push to `main`, updates `assets/version.json`, and creates a matching `v*` tag and release.
 - Only the five most recent releases are kept—older releases and their tags are pruned during the deployment run.
 - The service worker cache is stamped with the release version so clients automatically pick up the newest assets without needing to clear site data.
 
