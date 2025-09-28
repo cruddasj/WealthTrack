@@ -47,6 +47,14 @@ To install the app, open it in a supporting browser (Chrome, Edge, or mobile equ
 - Chart.js powers the data visualisations; Hammer.js and the Chart.js Zoom plugin enable gesture controls.
 - All application state is stored in `localStorage`. Clearing the browser storage resets the app to defaults.
 
+### App Versioning
+
+- The Settings page shows the current app version so users can reference it when sharing feedback.
+- A pull request workflow (`.github/workflows/pr-version.yml`) bumps the semantic version by looking at existing `v*` tags (or the `VERSION_BASE` seed), updates `assets/version.json`, and stamps the service worker cache identifier so the change is committed alongside the rest of the PR.
+- The Pages deployment workflow (`.github/workflows/static.yml`) reads the checked-in version, creates the matching `v*` tag and release on pushes to `main`, and prunes older releases to keep only the five most recent.
+- The base major/minor version is sourced from `VERSION_BASE`; edit that file before opening a PR if you need to roll to a new major/minor series.
+- The service worker cache is stamped with the release version so clients automatically pick up the newest assets without needing to clear site data.
+
 ### Rebuilding CSS
 
 Prerequisite: Node.js 16+ and npm.

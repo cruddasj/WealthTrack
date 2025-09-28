@@ -1,4 +1,9 @@
-const CACHE_NAME = "wealthtrack-cache-v7";
+const APP_VERSION = "1.0.0";
+const CACHE_VERSION = APP_VERSION && APP_VERSION.endsWith("-dev")
+  ? "dev"
+  : APP_VERSION;
+const CACHE_NAME = `wealthtrack-cache-${CACHE_VERSION}`;
+
 const CORE_ASSETS = [
   "./",
   "./index.html",
@@ -43,19 +48,68 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
+  const isHTMLRequest =
+    requestURL.pathname === "/" || requestURL.pathname.endsWith(".html");
+  const isVersionRequest = /\/assets\/version\.json$/.test(requestURL.pathname);
+
+  if (isVersionRequest) {
+    event.respondWith(
+      fetch(event.request.clone())
+        .then((response) => {
+          if (response && response.status === 200) {
+            const clone = response.clone();
+            event.waitUntil(
+              caches
+                .open(CACHE_NAME)
+                .then((cache) => cache.put(event.request, clone))
+            );
+          }
+          return response;
+        })
+        .catch(() => caches.match(event.request))
+    );
+    return;
+  }
+
+  const networkFetch = () =>
+    fetch(event.request)
+      .then((response) => {
+        if (!response || response.status !== 200 || response.type !== "basic") {
+          return response;
+        }
+        const responseClone = response.clone();
+        event.waitUntil(
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseClone))
+        );
+        return response;
+      })
+      .catch(() => null);
+
+  if (isHTMLRequest) {
+    event.respondWith(
+      networkFetch().then((response) => {
+        if (response) {
+          return response;
+        }
+        return caches.match(event.request).then((cached) => cached || caches.match("./index.html"));
+      })
+    );
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
       if (cachedResponse) {
+        event.waitUntil(networkFetch());
         return cachedResponse;
       }
 
-      return fetch(event.request)
-        .then((response) => {
-          const responseClone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseClone));
+      return networkFetch().then((response) => {
+        if (response) {
           return response;
-        })
-        .catch(() => caches.match("./index.html"));
+        }
+        return caches.match("./index.html");
+      });
     })
   );
 });
