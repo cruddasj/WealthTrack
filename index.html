@@ -976,6 +976,59 @@
               Defaults to today. Future dates apply scheduled one-off events.
             </p>
           </div>
+          <div class="mb-4">
+            <label for="passiveAssetToggle" class="form-label"
+              >Assets included</label
+            >
+            <div id="passiveAssetPicker" class="relative">
+              <button
+                type="button"
+                id="passiveAssetToggle"
+                class="input-field flex items-center justify-between"
+                aria-haspopup="listbox"
+                aria-expanded="false"
+                disabled
+              >
+                <span id="passiveAssetSummary"
+                  >All passive assets selected</span
+                >
+                <i class="fa-solid fa-chevron-down text-gray-400 ml-2"></i>
+              </button>
+              <div
+                id="passiveAssetMenu"
+                class="absolute z-20 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg hidden"
+              >
+                <div
+                  class="flex items-center justify-between px-3 py-2 border-b border-gray-200 dark:border-gray-700"
+                >
+                  <button
+                    type="button"
+                    id="passiveAssetSelectAll"
+                    class="text-xs font-medium text-purple-600 dark:text-purple-300 hover:underline disabled:opacity-50"
+                  >
+                    Select all
+                  </button>
+                  <button
+                    type="button"
+                    id="passiveAssetClear"
+                    class="text-xs text-gray-500 dark:text-gray-400 hover:underline disabled:opacity-50"
+                  >
+                    Clear
+                  </button>
+                </div>
+                <div id="passiveAssetOptions" class="max-h-48 overflow-y-auto"></div>
+              </div>
+            </div>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
+              Choose which passive income assets to include in this estimate.
+            </p>
+            <p
+              id="passiveAssetSelectionMessage"
+              class="text-xs text-amber-600 dark:text-amber-400 mt-2 hidden"
+            >
+              Select at least one asset to see a passive income estimate.
+            </p>
+          </div>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div
               class="flex flex-col items-center justify-center gap-1 p-4 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 stat-box"

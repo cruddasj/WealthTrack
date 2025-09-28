@@ -24,6 +24,8 @@ let fireForecastFrequency = "annual";
 let fireForecastInflation = 2.5;
 let fireForecastRetireDate = null;
 let passiveIncomeAsOf = null;
+let passiveAssetSelection = null;
+let passiveAssetPicker = null;
 
 const profilePickers = {};
 let importFileContent = null;
@@ -196,6 +198,219 @@ function getProfilePickerSelection(key) {
   const picker = profilePickers[key];
   if (!picker) return [];
   return Array.from(picker.selected);
+}
+
+const getPassiveEligibleAssets = () =>
+  [...assets]
+    .filter((asset) => asset && asset.includeInPassive !== false)
+    .sort((a, b) =>
+      (a.name || "").localeCompare(b.name || "", undefined, {
+        sensitivity: "base",
+      }),
+    );
+
+function closePassiveAssetPicker() {
+  if (!passiveAssetPicker) return;
+  passiveAssetPicker.menu.classList.add("hidden");
+  passiveAssetPicker.toggle.setAttribute("aria-expanded", "false");
+}
+
+function updatePassiveAssetSummary() {
+  if (!passiveAssetPicker) return;
+  const total = Array.isArray(passiveAssetPicker.ids)
+    ? passiveAssetPicker.ids.length
+    : 0;
+  const summary = passiveAssetPicker.summary;
+  if (!summary) return;
+  if (total === 0) {
+    summary.textContent = "No passive income assets";
+    return;
+  }
+  if (passiveAssetSelection === null) {
+    summary.textContent = "All passive assets selected";
+    return;
+  }
+  let selectedCount = 0;
+  let singleName = null;
+  passiveAssetSelection.forEach((id) => {
+    if (passiveAssetPicker.names?.has(id)) {
+      selectedCount += 1;
+      if (!singleName) singleName = passiveAssetPicker.names.get(id);
+    }
+  });
+  if (selectedCount === 0) {
+    summary.textContent = "No assets selected";
+  } else if (selectedCount === 1 && singleName) {
+    summary.textContent = singleName;
+  } else if (selectedCount === total) {
+    summary.textContent = "All passive assets selected";
+  } else {
+    summary.textContent = `${selectedCount} of ${total} assets`;
+  }
+}
+
+function syncPassiveAssetCheckboxes() {
+  if (!passiveAssetPicker) return;
+  const checkboxes = passiveAssetPicker.options?.querySelectorAll(
+    'input[type="checkbox"]',
+  );
+  if (!checkboxes) return;
+  const selectedIds =
+    passiveAssetSelection === null
+      ? new Set(passiveAssetPicker.ids || [])
+      : passiveAssetSelection;
+  checkboxes.forEach((input) => {
+    const id = Number(input.value);
+    if (!Number.isFinite(id)) return;
+    input.checked = selectedIds.has(id);
+  });
+}
+
+function renderPassiveAssetPickerOptions() {
+  if (!passiveAssetPicker) return;
+  const eligible = getPassiveEligibleAssets();
+  passiveAssetPicker.ids = eligible.map((asset) => asset.dateAdded);
+  const validIds = new Set(passiveAssetPicker.ids);
+  if (passiveAssetSelection instanceof Set) {
+    const filtered = new Set();
+    passiveAssetSelection.forEach((id) => {
+      if (validIds.has(id)) filtered.add(id);
+    });
+    if (filtered.size === validIds.size && validIds.size > 0) {
+      passiveAssetSelection = null;
+    } else {
+      passiveAssetSelection = filtered;
+    }
+  }
+  passiveAssetPicker.names = new Map();
+  if (eligible.length === 0) {
+    passiveAssetPicker.options.innerHTML =
+      '<p class="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">Mark assets as passive income in Assets &amp; Goals.</p>';
+    passiveAssetPicker.toggle.disabled = true;
+    if (passiveAssetPicker.selectAll)
+      passiveAssetPicker.selectAll.disabled = true;
+    if (passiveAssetPicker.clear)
+      passiveAssetPicker.clear.disabled = true;
+    updatePassiveAssetSummary();
+    closePassiveAssetPicker();
+    return;
+  }
+  const selectedIds =
+    passiveAssetSelection === null ? validIds : passiveAssetSelection;
+  const markup = eligible
+    .map((asset) => {
+      const id = asset.dateAdded;
+      const name = asset.name || "Unnamed asset";
+      passiveAssetPicker.names.set(id, name);
+      const checked = selectedIds.has(id) ? "checked" : "";
+      return `<label class="flex items-center px-3 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"><input type="checkbox" value="${id}" class="mr-2 h-4 w-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500" ${checked}/><span>${name}</span></label>`;
+    })
+    .join("");
+  passiveAssetPicker.options.innerHTML = markup;
+  passiveAssetPicker.toggle.disabled = false;
+  if (passiveAssetPicker.selectAll)
+    passiveAssetPicker.selectAll.disabled = false;
+  if (passiveAssetPicker.clear)
+    passiveAssetPicker.clear.disabled = false;
+  updatePassiveAssetSummary();
+}
+
+function updatePassiveAssetSelectionMessage(totalEligible, selectedCount) {
+  const message = $("passiveAssetSelectionMessage");
+  if (!message) return;
+  if (totalEligible === 0) {
+    message.textContent =
+      "Mark assets as providing passive income in Assets & Goals to include them here.";
+    message.classList.remove("hidden");
+  } else if (selectedCount === 0) {
+    message.textContent =
+      "Select at least one asset to see a passive income estimate.";
+    message.classList.remove("hidden");
+  } else {
+    message.classList.add("hidden");
+  }
+}
+
+function setupPassiveIncomeAssetPicker() {
+  const toggle = $("passiveAssetToggle");
+  const menu = $("passiveAssetMenu");
+  const summary = $("passiveAssetSummary");
+  const options = $("passiveAssetOptions");
+  if (!toggle || !menu || !summary || !options) {
+    passiveAssetPicker = null;
+    return;
+  }
+  passiveAssetPicker = {
+    toggle,
+    menu,
+    summary,
+    options,
+    selectAll: $("passiveAssetSelectAll"),
+    clear: $("passiveAssetClear"),
+    names: new Map(),
+    ids: [],
+  };
+  toggle.disabled = true;
+  summary.textContent = "All passive assets selected";
+  on(toggle, "click", () => {
+    if (toggle.disabled) return;
+    const willOpen = menu.classList.contains("hidden");
+    closePassiveAssetPicker();
+    if (willOpen) {
+      menu.classList.remove("hidden");
+      toggle.setAttribute("aria-expanded", "true");
+    }
+  });
+  on(options, "change", (event) => {
+    const input = event.target;
+    if (!input || input.type !== "checkbox") return;
+    const id = Number(input.value);
+    if (!Number.isFinite(id)) return;
+    const validIds = new Set(passiveAssetPicker.ids || []);
+    if (passiveAssetSelection === null) {
+      passiveAssetSelection = new Set(validIds);
+    }
+    if (input.checked) passiveAssetSelection.add(id);
+    else passiveAssetSelection.delete(id);
+    if (passiveAssetSelection.size === validIds.size) {
+      passiveAssetSelection = null;
+    }
+    updatePassiveAssetSummary();
+    persist();
+    updatePassiveIncome();
+  });
+  if (passiveAssetPicker.selectAll)
+    on(passiveAssetPicker.selectAll, "click", () => {
+      if (toggle.disabled) return;
+      passiveAssetSelection = null;
+      syncPassiveAssetCheckboxes();
+      updatePassiveAssetSummary();
+      persist();
+      updatePassiveIncome();
+    });
+  if (passiveAssetPicker.clear)
+    on(passiveAssetPicker.clear, "click", () => {
+      if (toggle.disabled) return;
+      passiveAssetSelection = new Set();
+      syncPassiveAssetCheckboxes();
+      updatePassiveAssetSummary();
+      persist();
+      updatePassiveIncome();
+    });
+  document.addEventListener("click", (event) => {
+    if (!passiveAssetPicker) return;
+    if (passiveAssetPicker.menu.classList.contains("hidden")) return;
+    if (
+      passiveAssetPicker.menu.contains(event.target) ||
+      passiveAssetPicker.toggle.contains(event.target)
+    )
+      return;
+    closePassiveAssetPicker();
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") closePassiveAssetPicker();
+  });
+  renderPassiveAssetPickerOptions();
 }
 
 function setupProfilePickers() {
@@ -725,6 +940,43 @@ const fmtDate = new Intl.DateTimeFormat("en-GB", {
 
 const ensureArray = (value) => (Array.isArray(value) ? value : []);
 
+const sanitizePassiveSelection = (raw) => {
+  if (raw == null) return null;
+  const source = Array.isArray(raw)
+    ? raw
+    : Array.isArray(raw?.ids)
+      ? raw.ids
+      : null;
+  if (!Array.isArray(source)) return null;
+  const seen = new Set();
+  const normalized = [];
+  source.forEach((entry) => {
+    const id = Number(entry);
+    if (Number.isFinite(id) && !seen.has(id)) {
+      seen.add(id);
+      normalized.push(id);
+    }
+  });
+  return normalized;
+};
+
+function loadPassiveAssetSelection(profile) {
+  if (!profile) {
+    passiveAssetSelection = null;
+    return;
+  }
+  const rawSelection =
+    profile.passiveIncomeAssetSelection ?? profile.passiveIncomeSelection;
+  const normalized = sanitizePassiveSelection(rawSelection);
+  if (normalized === null) {
+    passiveAssetSelection = null;
+    profile.passiveIncomeAssetSelection = null;
+    return;
+  }
+  profile.passiveIncomeAssetSelection = normalized;
+  passiveAssetSelection = new Set(normalized);
+}
+
 function normalizeImportedProfile(profile, index = 0) {
   const baseId =
     profile?.id != null && profile.id !== ""
@@ -768,6 +1020,9 @@ function normalizeImportedProfile(profile, index = 0) {
     ),
     themeChoice: sanitizeThemeChoice(profile?.themeChoice),
     darkMode: !!profile?.darkMode,
+    passiveIncomeAssetSelection: sanitizePassiveSelection(
+      profile?.passiveIncomeAssetSelection ?? profile?.passiveIncomeSelection,
+    ),
   };
 }
 
@@ -874,6 +1129,13 @@ function saveCurrentProfile() {
   activeProfile.currencyCode = currencyCode;
   activeProfile.themeChoice = currentThemeChoice;
   activeProfile.darkMode = isDarkMode;
+  if (passiveAssetSelection === null) {
+    activeProfile.passiveIncomeAssetSelection = null;
+  } else {
+    activeProfile.passiveIncomeAssetSelection = Array.from(
+      passiveAssetSelection,
+    );
+  }
 }
 function persist() {
   saveCurrentProfile();
@@ -987,6 +1249,8 @@ function loadDemoData() {
         taxTreatment: "income",
       },
     ];
+    passiveAssetSelection = null;
+    if (activeProfile) activeProfile.passiveIncomeAssetSelection = null;
 
     // Optional liability example
     liabilities = [
@@ -1158,6 +1422,7 @@ function initProfiles() {
         localStorage.getItem(LS.themeChoice) || "default",
       ),
       darkMode: localStorage.getItem(LS.theme) === "1",
+      passiveIncomeAssetSelection: null,
     };
     profiles = [def];
     id = def.id;
@@ -1223,6 +1488,23 @@ function initProfiles() {
         p.darkMode = fallbackDarkMode;
         profilesUpdated = true;
       }
+      const normalizedSelection = sanitizePassiveSelection(
+        p.passiveIncomeAssetSelection ?? p.passiveIncomeSelection,
+      );
+      const previousSelection = sanitizePassiveSelection(
+        p.passiveIncomeAssetSelection,
+      );
+      const selectionsMatch =
+        (previousSelection === null && normalizedSelection === null) ||
+        (Array.isArray(previousSelection) &&
+          Array.isArray(normalizedSelection) &&
+          previousSelection.length === normalizedSelection.length &&
+          previousSelection.every((val, idx) => val === normalizedSelection[idx]));
+      if (!selectionsMatch || p.passiveIncomeSelection != null) {
+        profilesUpdated = true;
+      }
+      p.passiveIncomeAssetSelection = normalizedSelection;
+      if (p.passiveIncomeSelection != null) delete p.passiveIncomeSelection;
     });
     if (profilesUpdated) save(LS.profiles, profiles);
   }
@@ -1279,6 +1561,7 @@ function initProfiles() {
   activeProfile.fireForecastInflation = fireForecastInflation;
   activeProfile.fireForecastRetireDate = fireForecastRetireDate;
   normalizeData();
+  loadPassiveAssetSelection(activeProfile);
   taxSettings = normalizeTaxSettings(activeProfile.taxSettings);
   activeProfile.taxSettings = taxSettings;
   invalidateTaxCache();
@@ -2426,6 +2709,8 @@ function updatePassiveIncome() {
   const hasAssets = assets.length > 0;
   card.hidden = !hasAssets;
   if (!hasAssets) {
+    const message = $("passiveAssetSelectionMessage");
+    if (message) message.classList.add("hidden");
     updateFireForecastCard();
     return;
   }
@@ -2438,9 +2723,42 @@ function updatePassiveIncome() {
     if (dateInput.value !== inputVal) dateInput.value = inputVal;
   }
 
+  const eligibleAssets = getPassiveEligibleAssets();
+  const eligibleIds = new Set(eligibleAssets.map((asset) => asset.dateAdded));
+  let selectedIds;
+  if (passiveAssetSelection === null) {
+    selectedIds = eligibleIds;
+  } else {
+    selectedIds = new Set();
+    passiveAssetSelection.forEach((id) => {
+      if (eligibleIds.has(id)) selectedIds.add(id);
+    });
+  }
+  const consideredAssets =
+    passiveAssetSelection === null
+      ? eligibleAssets
+      : eligibleAssets.filter((asset) => selectedIds.has(asset.dateAdded));
+  const selectedCount = selectedIds.size;
+  updatePassiveAssetSummary();
+  updatePassiveAssetSelectionMessage(eligibleAssets.length, selectedCount);
+
+  const set = (id, val) => {
+    const el = $(id);
+    if (el) el.textContent = fmtCurrency(val);
+  };
+
+  if (selectedCount === 0) {
+    set("passiveDaily", 0);
+    set("passiveWeekly", 0);
+    set("passiveMonthly", 0);
+    updateFireForecastCard();
+    return;
+  }
+
   const eventsByAsset = new Map();
   simEvents.forEach((ev) => {
     if (!ev || ev.assetId == null) return;
+    if (!selectedIds.has(ev.assetId)) return;
     if (!eventsByAsset.has(ev.assetId)) eventsByAsset.set(ev.assetId, []);
     eventsByAsset.get(ev.assetId).push(ev);
   });
@@ -2449,8 +2767,7 @@ function updatePassiveIncome() {
   const nowTs = Date.now();
   let annualIncome = 0;
   const taxDetails = computeAssetTaxDetails();
-  assets.forEach((asset) => {
-    if (asset?.includeInPassive === false) return;
+  consideredAssets.forEach((asset) => {
     const valueAtDate = calculatePassiveAssetValueAt(
       asset,
       targetTs,
@@ -2469,10 +2786,6 @@ function updatePassiveIncome() {
   const weekly = annualIncome / 52;
   const monthly = annualIncome / 12;
 
-  const set = (id, val) => {
-    const el = $(id);
-    if (el) el.textContent = fmtCurrency(val);
-  };
   set("passiveDaily", daily || 0);
   set("passiveWeekly", weekly || 0);
   set("passiveMonthly", monthly || 0);
@@ -2885,6 +3198,7 @@ function switchProfile(id, { showFeedback = false } = {}) {
   updateFireForecastInputs();
   updateGoalButton();
   normalizeData();
+  loadPassiveAssetSelection(activeProfile);
   taxSettings = normalizeTaxSettings(activeProfile.taxSettings);
   activeProfile.taxSettings = taxSettings;
   invalidateTaxCache();
@@ -2933,6 +3247,7 @@ function addProfile(name) {
     currencyCode,
     themeChoice: currentThemeChoice,
     darkMode: isDarkMode,
+    passiveIncomeAssetSelection: null,
   });
   if (
     profiles.length === 2 &&
@@ -2978,6 +3293,7 @@ function deleteActiveProfile() {
     fireForecastFrequency = "annual";
     fireForecastInflation = 2.5;
     fireForecastRetireDate = null;
+    passiveAssetSelection = null;
     $("goalYear").value = "";
     taxSettings = normalizeTaxSettings();
     updateTaxSettingsUI();
@@ -3186,6 +3502,7 @@ function renderAssets() {
   renderFutureValueAssetOptions();
   renderTaxCalculatorOptions();
   renderStressAssetOptions();
+  renderPassiveAssetPickerOptions();
   persist();
   updateWealthChart();
   renderAssetBreakdownChart();
@@ -5039,6 +5356,7 @@ window.addEventListener("load", () => {
   }
 
   setupProfilePickers();
+  setupPassiveIncomeAssetPicker();
 
   const currencySelect = document.getElementById("currencySelect");
   if (currencySelect) {
