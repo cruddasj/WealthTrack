@@ -252,7 +252,7 @@
                 <li><b>Portfolio Insights</b>: see allocation, passive income, future asset values, stress testing, and inflation impact.</li>
                 <li><b>Snapshots</b>: save your totals and review how your wealth has changed over time.</li>
                 <li><b>Calculators</b>: run one-off financial calculations.</li>
-                <li><b>Settings & Data</b>: update theme, manage profiles, and export/import your data (optional password protection).</li>
+                <li><b>Settings & Data</b>: update theme, choose your UK tax band, manage profiles, and export/import your data (optional password protection).</li>
               </ul>
             </div>
           </div>
@@ -339,8 +339,9 @@
         <div class="card transition">
           <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Assets & Contributions</h3>
           <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
-            Add assets and recurring deposits, then set growth assumptions to
-            project your future wealth.
+            Add assets and recurring deposits, then set growth assumptions and
+            the UK tax treatment so WealthTrack can project your future wealth
+            using after-tax growth.
           </p>
 
           <form id="assetForm" class="grid grid-cols-1 md:gap-4 gap-2">
@@ -421,6 +422,31 @@
               </p>
             </div>
 
+            <div class="md:col-span-full">
+              <label for="assetTaxTreatment" class="form-label"
+                >UK Tax Treatment</label
+              >
+              <select id="assetTaxTreatment" class="input-field">
+                <option value="none">
+                  No UK tax (ISA, pension, already taxed)
+                </option>
+                <option value="income">
+                  Income tax (interest, rental profit, savings)
+                </option>
+                <option value="dividend">
+                  Dividend tax (UK share dividends outside wrappers)
+                </option>
+                <option value="capital">
+                  Capital gains tax (unwrapped shares, funds, crypto)
+                </option>
+              </select>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                Enter gross returns below. We apply your UK tax band from
+                Settings to taxable assets. Allowances are shown in the
+                calculator tab for reference.
+              </p>
+            </div>
+
             <div
               class="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-4 md:col-span-full"
             >
@@ -435,7 +461,8 @@
                       class="hidden group-hover:block absolute z-50 mt-2 w-64 p-3 rounded-lg shadow bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 text-sm"
                     >
                       Optional. Used for conservative future forecasts (lower
-                      expected returns).
+                      expected returns). Enter the gross rate before tax—we
+                      apply your UK tax settings automatically.
                     </span>
                   </span>
                 </label>
@@ -459,7 +486,8 @@
                       class="hidden group-hover:block absolute z-50 mt-2 w-64 p-3 rounded-lg shadow bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 text-sm"
                     >
                       Optional. Used for future forecasts and estimated passive
-                      income. Leave blank for no growth.
+                      income. Enter the gross rate before tax; your selected UK
+                      tax band determines the net growth in forecasts.
                     </span>
                   </span>
                 </label>
@@ -483,7 +511,8 @@
                       class="hidden group-hover:block absolute z-50 mt-2 w-64 p-3 rounded-lg shadow bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 text-sm"
                     >
                       Optional. Used for optimistic future forecasts (higher
-                      expected returns).
+                      expected returns). Enter the gross rate before tax; we
+                      show the net effect in the table once saved.
                     </span>
                   </span>
                 </label>
@@ -948,7 +977,8 @@
         <div class="card" id="passiveIncomeCard">
           <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Estimated Passive Income</h3>
           <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
-            Based on expected annual returns and current values.
+            Based on expected annual returns (after applying your UK tax
+            settings) and current values.
           </p>
           <div class="mb-4">
             <label for="passiveIncomeDate" class="form-label"
@@ -987,6 +1017,10 @@
             Excludes new contributions; shows growth from appreciation only,
             using your selected date when provided.
           </p>
+          <p
+            id="passiveIncomeTaxNote"
+            class="text-xs text-blue-700 dark:text-blue-300 mt-2"
+          ></p>
         </div>
 
         <div class="card" id="fireForecastCard">
@@ -1206,6 +1240,9 @@
             </button>
             <button class="tab-btn" data-tab-target="simple-interest">
               Simple Interest
+            </button>
+            <button class="tab-btn" data-tab-target="tax-calculator">
+              UK Tax on Returns
             </button>
             <button class="tab-btn" data-tab-target="fire-calculator">
               FIRE (Simple)
@@ -1475,6 +1512,85 @@
               </div>
             </form>
             <div id="simpleInterestResult" class="mt-4"></div>
+          </div>
+
+          <div id="tax-calculator" class="tab-content hidden">
+            <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
+              UK Tax on Returns
+            </h3>
+            <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
+              Estimate the annual UK tax due on an asset's expected returns.
+              Calculations use your selected tax band. Enter returns before tax
+              and adjust the allowance field if some of your annual allowance is
+              already committed elsewhere.
+            </p>
+            <form
+              id="taxCalculatorForm"
+              class="grid grid-cols-1 md:grid-cols-2 gap-4"
+            >
+              <div>
+                <label for="taxAssetValue" class="form-label required-label"
+                  >Asset Value (<span data-currency-symbol>£</span>)</label
+                >
+                <input
+                  type="number"
+                  step="any"
+                  id="taxAssetValue"
+                  class="input-field"
+                  required
+                />
+              </div>
+              <div>
+                <label for="taxAssetReturn" class="form-label required-label"
+                  >Expected Annual Return (%)</label
+                >
+                <input
+                  type="number"
+                  step="any"
+                  id="taxAssetReturn"
+                  class="input-field"
+                  required
+                />
+              </div>
+              <div>
+                <label for="taxAssetTreatment" class="form-label"
+                  >Tax Treatment</label
+                >
+                <select id="taxAssetTreatment" class="input-field">
+                  <option value="income">Income tax</option>
+                  <option value="dividend">Dividend tax</option>
+                  <option value="capital">Capital gains tax</option>
+                  <option value="none">No UK tax</option>
+                </select>
+              </div>
+              <div>
+                <label for="taxAllowanceUsed" class="form-label"
+                  >Allowance already used (<span data-currency-symbol>£</span>)</label
+                >
+                <input
+                  type="number"
+                  step="any"
+                  id="taxAllowanceUsed"
+                  class="input-field"
+                  value="0"
+                />
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Enter how much of the relevant annual allowance you've used
+                  elsewhere. We'll reduce the remaining allowance accordingly.
+                </p>
+              </div>
+              <div class="md:col-span-2 flex items-end">
+                <button type="submit" class="btn btn-block btn-green">
+                  Calculate tax
+                </button>
+              </div>
+            </form>
+            <div id="taxCalculatorResult" class="mt-4"></div>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-3">
+              Reminder: UK tax rules can change, and additional factors (such as
+              dividend rates or property surcharges) may apply. Use this as an
+              educational estimate rather than advice.
+            </p>
           </div>
 
           <div id="fire-calculator" class="tab-content hidden">
@@ -1798,6 +1914,48 @@
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
+            UK Tax Settings
+          </h3>
+          <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
+            Choose the UK taxpayer band that best matches your situation.
+            Forecasts treat your growth assumptions as gross (before tax) and
+            then apply these rates to assets marked as taxable. Dividend
+            allowances and rates are included so you can model UK share income
+            alongside interest and capital gains.
+          </p>
+          <div class="max-w-md space-y-3">
+            <label for="taxBandSelect" class="form-label">Tax band</label>
+            <select id="taxBandSelect" class="input-field">
+              <option value="none">No UK tax adjustments</option>
+              <option value="basic">
+                Basic rate taxpayer (20% income / 8.75% dividends / 10% capital
+                gains)
+              </option>
+              <option value="higher">
+                Higher rate taxpayer (40% income / 33.75% dividends / 20%
+                capital gains)
+              </option>
+              <option value="additional">
+                Additional rate taxpayer (45% income / 39.35% dividends / 20%
+                capital gains)
+              </option>
+            </select>
+          </div>
+          <div
+            class="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 text-blue-900 dark:text-blue-100 text-xs rounded-lg p-3 mt-4"
+          >
+            <p>
+              Allowances (personal savings, dividend, and capital gains annual
+              exempt amounts) are shown in the calculator tab for reference. The
+              app does not automatically spread allowances across multiple
+              assets—use the calculator to model partial allowance usage when
+              needed.
+            </p>
           </div>
         </div>
 
@@ -2131,6 +2289,23 @@
               ></span>
             </label>
           </div>
+          <div class="sm:col-span-2">
+            <label for="editAssetTaxTreatment" class="form-label"
+              >UK Tax Treatment</label
+            >
+            <select id="editAssetTaxTreatment" class="input-field">
+              <option value="none">
+                No UK tax (ISA, pension, already taxed)
+              </option>
+              <option value="income">Income tax</option>
+              <option value="dividend">Dividend tax</option>
+              <option value="capital">Capital gains tax</option>
+            </select>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              Enter growth as gross returns. Net projections follow your UK tax
+              settings in the main app.
+            </p>
+          </div>
           <div>
             <label for="editLowGrowth" class="form-label">Low Growth (%)</label>
             <input
@@ -2389,7 +2564,7 @@
           <li><b>Forecasts</b>: project your wealth, add one-off events.</li>
           <li><b>Portfolio Insights</b>: see allocation, passive income, and stress tests.</li>
           <li><b>Snapshots</b>: save totals to compare progress over time.</li>
-          <li><b>Settings & Data</b>: profiles, theme, and export/import.</li>
+          <li><b>Settings & Data</b>: profiles, theme, UK tax band, and export/import.</li>
         </ul>
         <div class="flex flex-wrap gap-2 justify-end">
           <button class="btn btn-gray" data-action="go-assets">Open Assets & Goals</button>

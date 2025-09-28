@@ -7,6 +7,7 @@ WealthTrack is a personal wealth projection and planning tool built as a single-
 - **Assets & Goals** – Track assets, liabilities, and savings targets.
 - **Forecasts** – Model future balances with configurable growth assumptions, one-off events, and stress tests.
 - **Portfolio Insights** – Visualise allocations, income projections, and stress scenarios.
+- **UK Tax Modelling** – Apply basic/higher/additional rate assumptions to income, dividend, and capital growth and estimate allowances with the built-in tax calculator.
 - **Snapshots** – Save checkpoints and review progress over time.
 - **Custom Themes** – Switch between dark mode and alternate visual themes.
 - **Secure Profiles** – Create multiple profiles with optional password protection.
