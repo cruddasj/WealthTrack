@@ -7,6 +7,7 @@ WealthTrack is a personal wealth projection and planning tool built as a single-
 - **Assets & Goals** – Track assets, liabilities, and savings targets.
 - **Forecasts** – Model future balances with configurable growth assumptions, one-off events, and stress tests.
 - **Portfolio Insights** – Visualise allocations, income projections, and stress scenarios.
+- **UK Tax Tools** – Choose your tax band, classify each asset's tax treatment, and see projections after UK income, dividend, or capital gains tax.
 - **Snapshots** – Save checkpoints and review progress over time.
 - **Custom Themes** – Switch between dark mode and alternate visual themes.
 - **Secure Profiles** – Create multiple profiles with optional password protection.
@@ -73,6 +74,17 @@ Notes:
 - Edit styles in `src/styles.css` (uses `@tailwind`/`@layer`/`@apply`).
 - Do not edit `assets/styles.css` by hand; it is generated.
 - If you add new HTML/JS files that include Tailwind classes, update `tailwind.config.js` `content` globs so the classes are included in the build.
+
+## UK Tax Tools
+
+WealthTrack now includes optional UK tax handling so you can plan on an after-tax basis:
+
+- **Profile-level settings** – Choose a tax band (Basic, Higher, Additional, or ignore UK tax entirely) in the **Settings → UK Tax Settings** card. Each profile keeps its own selection.
+- **Asset tax treatment** – Mark assets as tax-free, taxed as income, dividends, or capital gains directly in the asset form. Tax-free assets always retain their full returns.
+- **Net-of-tax projections** – Forecasts, passive income estimates, and the UK Tax Helper calculator automatically apply the selected rates to taxable assets.
+- **Transparent calculations** – The UK Tax Helper tab breaks down gross growth, tax deducted, and the final net amount so you can follow every step.
+
+> ℹ️ Personal allowances (Savings, Dividend, Capital Gains) and tax shelters such as ISAs or pensions are not modelled automatically. Adjust expected returns or asset values if part of the growth will be sheltered from tax.
 
 ## License
 

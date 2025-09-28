@@ -394,6 +394,33 @@
             </div>
 
             <div class="md:col-span-full">
+              <label for="assetTaxTreatment" class="form-label">
+                UK Tax Treatment
+                <span
+                  class="relative group inline-block align-middle ml-1 cursor-help"
+                >
+                  <span class="text-gray-400">?</span>
+                  <span
+                    class="hidden group-hover:block absolute z-50 mt-2 w-72 p-3 rounded-lg shadow bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 text-sm"
+                  >
+                    Determines how we deduct UK tax from returns using your tax
+                    band in Settings. Tax-free options keep the full growth.
+                  </span>
+                </span>
+              </label>
+              <select id="assetTaxTreatment" class="input-field">
+                <option value="tax-free">Tax-free or sheltered (ISA, pension)</option>
+                <option value="income">Taxed as income (interest, rent)</option>
+                <option value="dividend">Taxed as dividends</option>
+                <option value="capital-gains">Taxed on capital gains</option>
+              </select>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                Change this if the asset sits outside tax wrappers so forecasts
+                and passive income use after-tax growth.
+              </p>
+            </div>
+
+            <div class="md:col-span-full">
               <label for="assetStartDate" class="form-label"
                 >Start Date</label
               >
@@ -948,7 +975,8 @@
         <div class="card" id="passiveIncomeCard">
           <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Estimated Passive Income</h3>
           <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
-            Based on expected annual returns and current values.
+            Based on expected annual returns after applying your UK tax band to
+            taxable assets.
           </p>
           <div class="mb-4">
             <label for="passiveIncomeDate" class="form-label"
@@ -987,6 +1015,10 @@
             Excludes new contributions; shows growth from appreciation only,
             using your selected date when provided.
           </p>
+          <p
+            id="passiveIncomeTaxNote"
+            class="text-xs text-gray-500 dark:text-gray-400 mt-2"
+          ></p>
         </div>
 
         <div class="card" id="fireForecastCard">
@@ -1206,6 +1238,9 @@
             </button>
             <button class="tab-btn" data-tab-target="simple-interest">
               Simple Interest
+            </button>
+            <button class="tab-btn" data-tab-target="uk-tax-calculator">
+              UK Tax Helper
             </button>
             <button class="tab-btn" data-tab-target="fire-calculator">
               FIRE (Simple)
@@ -1475,6 +1510,76 @@
               </div>
             </form>
             <div id="simpleInterestResult" class="mt-4"></div>
+          </div>
+
+          <div id="uk-tax-calculator" class="tab-content hidden">
+            <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
+              UK Tax Helper
+            </h3>
+            <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
+              Estimate the tax due on an asset's expected annual return. Select
+              an existing asset to prefill its value and tax treatment or enter
+              custom details. We apply your tax band from Settings and show the
+              calculation so you can see the deduction.
+            </p>
+            <form
+              id="ukTaxEstimatorForm"
+              class="grid grid-cols-1 md:grid-cols-2 gap-4"
+            >
+              <div class="md:col-span-2">
+                <label for="ukTaxAsset" class="form-label">Use existing asset</label>
+                <select id="ukTaxAsset" class="input-field">
+                  <option value="">Custom values</option>
+                </select>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Choosing an asset copies its current value, expected return,
+                  and tax treatment. You can still adjust the numbers below.
+                </p>
+              </div>
+              <div>
+                <label for="ukTaxValue" class="form-label required-label">
+                  Asset Value (<span data-currency-symbol>£</span>)
+                </label>
+                <input
+                  type="number"
+                  step="any"
+                  id="ukTaxValue"
+                  class="input-field"
+                  required
+                />
+              </div>
+              <div>
+                <label for="ukTaxReturn" class="form-label required-label">
+                  Expected Annual Return (%)
+                </label>
+                <input
+                  type="number"
+                  step="any"
+                  id="ukTaxReturn"
+                  class="input-field"
+                  required
+                />
+              </div>
+              <div class="md:col-span-2">
+                <label for="ukTaxTreatment" class="form-label">Tax Treatment</label>
+                <select id="ukTaxTreatment" class="input-field">
+                  <option value="tax-free">Tax-free or sheltered (ISA, pension)</option>
+                  <option value="income">Taxed as income (interest, rent)</option>
+                  <option value="dividend">Taxed as dividends</option>
+                  <option value="capital-gains">Taxed on capital gains</option>
+                </select>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Matches the options in the asset form. Choose tax-free to see
+                  the gross return.
+                </p>
+              </div>
+              <div class="md:col-span-2 flex items-end">
+                <button type="submit" class="btn btn-block btn-green">
+                  Estimate Tax
+                </button>
+              </div>
+            </form>
+            <div id="ukTaxEstimatorResult" class="mt-4"></div>
           </div>
 
           <div id="fire-calculator" class="tab-content hidden">
@@ -1751,15 +1856,15 @@
         >
           Settings & Data
         </h2>
-        <div class="card mb-6">
-          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Profiles</h3>
-          <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
-            Create and switch between profiles to keep scenarios separate.
-            Assets, events, snapshots, and goals are saved per profile.
-          </p>
-          <div class="grid grid-cols-1 sm:grid-cols-4 gap-2 sm:gap-4 items-end">
-            <div class="sm:col-span-3">
-              <label for="profileSelect" class="form-label">Profile</label>
+          <div class="card mb-6">
+            <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Profiles</h3>
+            <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
+              Create and switch between profiles to keep scenarios separate.
+              Assets, events, snapshots, and goals are saved per profile.
+            </p>
+            <div class="grid grid-cols-1 sm:grid-cols-4 gap-2 sm:gap-4 items-end">
+              <div class="sm:col-span-3">
+                <label for="profileSelect" class="form-label">Profile</label>
               <div class="flex items-center gap-2">
                 <select id="profileSelect" class="input-field flex-1"></select>
                 <div class="hidden sm:flex gap-2">
@@ -1797,13 +1902,43 @@
                   <i class="fa-solid fa-trash mr-2"></i>Delete Profile
                 </button>
               </div>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div id="exportCard" class="card flex flex-col">
-          <div class="flex-grow">
-            <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Export Your Data</h3>
+          <div class="card mb-6">
+            <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
+              UK Tax Settings
+            </h3>
+            <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
+              Choose the tax band that matches your situation so forecasts,
+              passive income, and calculators can show after-tax growth.
+              Allowances such as ISAs or the Personal Savings Allowance are not
+              applied automatically, so mark tax-free assets accordingly in the
+              data entry form.
+            </p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label for="ukTaxBand" class="form-label">UK Tax Band</label>
+                <select id="ukTaxBand" class="input-field">
+                  <option value="basic">Basic rate (20% income, 8.75% dividend, 10% CGT)</option>
+                  <option value="higher">Higher rate (40% income, 33.75% dividend, 20% CGT)</option>
+                  <option value="additional">Additional rate (45% income, 39.35% dividend, 20% CGT)</option>
+                  <option value="none">Ignore UK tax (show gross returns)</option>
+                </select>
+              </div>
+              <div>
+                <p
+                  id="ukTaxSummary"
+                  class="text-xs text-gray-500 dark:text-gray-400"
+                ></p>
+              </div>
+            </div>
+          </div>
+
+          <div id="exportCard" class="card flex flex-col">
+            <div class="flex-grow">
+              <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Export Your Data</h3>
             <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
               Export your data with an optional password for backup or use on
               another device.
@@ -2105,21 +2240,43 @@
               class="input-field"
             />
           </div>
-          <div class="sm:col-span-2">
-            <label for="editDepositFrequency" class="form-label"
-              >Deposit Frequency</label
-            >
-            <select id="editDepositFrequency" class="input-field">
-              <option value="none">None</option>
-              <option value="monthly">Monthly</option>
-              <option value="quarterly">Quarterly</option>
-              <option value="yearly">Yearly</option>
-            </select>
-          </div>
-          <div class="sm:col-span-2">
-            <label for="editAssetStartDate" class="form-label">Start Date</label>
-            <input type="date" id="editAssetStartDate" class="input-field" />
-          </div>
+            <div class="sm:col-span-2">
+              <label for="editDepositFrequency" class="form-label"
+                >Deposit Frequency</label
+              >
+              <select id="editDepositFrequency" class="input-field">
+                <option value="none">None</option>
+                <option value="monthly">Monthly</option>
+                <option value="quarterly">Quarterly</option>
+                <option value="yearly">Yearly</option>
+              </select>
+            </div>
+            <div class="sm:col-span-2">
+              <label for="editAssetTaxTreatment" class="form-label">
+                UK Tax Treatment
+                <span
+                  class="relative group inline-block align-middle ml-1 cursor-help"
+                >
+                  <span class="text-gray-400">?</span>
+                  <span
+                    class="hidden group-hover:block absolute z-50 mt-2 w-72 p-3 rounded-lg shadow bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 text-sm"
+                  >
+                    Matches the add asset form and controls the tax applied in
+                    forecasts.
+                  </span>
+                </span>
+              </label>
+              <select id="editAssetTaxTreatment" class="input-field">
+                <option value="tax-free">Tax-free or sheltered (ISA, pension)</option>
+                <option value="income">Taxed as income (interest, rent)</option>
+                <option value="dividend">Taxed as dividends</option>
+                <option value="capital-gains">Taxed on capital gains</option>
+              </select>
+            </div>
+            <div class="sm:col-span-2">
+              <label for="editAssetStartDate" class="form-label">Start Date</label>
+              <input type="date" id="editAssetStartDate" class="input-field" />
+            </div>
           <div class="sm:col-span-2">
             <label class="form-label"
               >Include in estimated Passive Income values</label

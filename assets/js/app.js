@@ -24,6 +24,157 @@ let fireForecastFrequency = "annual";
 let fireForecastInflation = 2.5;
 let fireForecastRetireDate = null;
 let passiveIncomeAsOf = null;
+let taxSettings = null;
+
+const DEFAULT_TAX_SETTINGS = Object.freeze({ ukTaxBand: "basic" });
+
+const UK_TAX_BANDS = {
+  none: {
+    label: "Ignore UK tax in calculations",
+    income: 0,
+    dividend: 0,
+    capitalGains: 0,
+  },
+  basic: {
+    label: "Basic rate (20% income, 8.75% dividends, 10% capital gains)",
+    income: 0.2,
+    dividend: 0.0875,
+    capitalGains: 0.1,
+  },
+  higher: {
+    label: "Higher rate (40% income, 33.75% dividends, 20% capital gains)",
+    income: 0.4,
+    dividend: 0.3375,
+    capitalGains: 0.2,
+  },
+  additional: {
+    label: "Additional rate (45% income, 39.35% dividends, 20% capital gains)",
+    income: 0.45,
+    dividend: 0.3935,
+    capitalGains: 0.2,
+  },
+};
+
+const TAX_TREATMENT_OPTIONS = [
+  "tax-free",
+  "income",
+  "dividend",
+  "capital-gains",
+];
+
+const TAX_TREATMENT_LABELS = {
+  "tax-free": "Tax-free or sheltered",
+  income: "Taxed as income",
+  dividend: "Taxed as dividends",
+  "capital-gains": "Taxed on capital gains",
+};
+
+const TAX_TREATMENT_RATE_KEY = {
+  "tax-free": null,
+  income: "income",
+  dividend: "dividend",
+  "capital-gains": "capitalGains",
+};
+
+const getActiveTaxBand = () =>
+  normalizeTaxSettings(taxSettings ?? activeProfile?.taxSettings)?.ukTaxBand ||
+  DEFAULT_TAX_SETTINGS.ukTaxBand;
+
+const getTaxBandConfig = (band) =>
+  UK_TAX_BANDS[band] || UK_TAX_BANDS[DEFAULT_TAX_SETTINGS.ukTaxBand];
+
+function normalizeTaxSettings(raw) {
+  const base = { ...DEFAULT_TAX_SETTINGS };
+  if (raw && typeof raw === "object") {
+    const band = raw.ukTaxBand;
+    if (band && UK_TAX_BANDS[band]) base.ukTaxBand = band;
+  }
+  return base;
+}
+
+function getAssetTaxTreatment(asset) {
+  if (!asset || !asset.taxTreatment) return "tax-free";
+  return TAX_TREATMENT_OPTIONS.includes(asset.taxTreatment)
+    ? asset.taxTreatment
+    : "tax-free";
+}
+
+function getNetAnnualRate(asset, grossRate) {
+  const rate = Number(grossRate) || 0;
+  if (!(rate > 0)) return rate;
+  const treatment = getAssetTaxTreatment(asset);
+  const rateKey = TAX_TREATMENT_RATE_KEY[treatment];
+  if (!rateKey) return rate;
+  const band = getTaxBandConfig(getActiveTaxBand());
+  const taxRate = Number(band?.[rateKey]) || 0;
+  const netFactor = Math.max(0, 1 - taxRate);
+  return rate * netFactor;
+}
+
+function describeAssetTax(asset) {
+  const treatment = getAssetTaxTreatment(asset);
+  const bandKey = getActiveTaxBand();
+  if (treatment === "tax-free") return "Tax-free";
+  const cfg = getTaxBandConfig(bandKey);
+  const rateKey = TAX_TREATMENT_RATE_KEY[treatment];
+  const taxRate = Number(cfg?.[rateKey]) || 0;
+  const ratePct = (taxRate * 100).toLocaleString(undefined, {
+    minimumFractionDigits: taxRate === 0 ? 0 : taxRate < 0.1 ? 2 : 1,
+    maximumFractionDigits: taxRate === 0 ? 0 : taxRate < 0.1 ? 2 : 1,
+  });
+  const bandName =
+    {
+      none: "No UK tax",
+      basic: "Basic rate",
+      higher: "Higher rate",
+      additional: "Additional rate",
+    }[bandKey] || "Selected band";
+  return `${TAX_TREATMENT_LABELS[treatment]} (${bandName} ${ratePct}% tax)`;
+}
+
+function estimateAnnualTax({
+  value,
+  grossRate,
+  treatment,
+  bandKey,
+}) {
+  const rateKey = TAX_TREATMENT_RATE_KEY[treatment];
+  if (!rateKey) {
+    return { grossGrowth: value * (grossRate / 100), taxDue: 0, netGrowth: value * (grossRate / 100) };
+  }
+  const cfg = getTaxBandConfig(bandKey);
+  const taxRate = Number(cfg?.[rateKey]) || 0;
+  const grossGrowth = value * (grossRate / 100);
+  const taxDue = grossGrowth > 0 ? grossGrowth * taxRate : 0;
+  return {
+    grossGrowth,
+    taxDue,
+    netGrowth: grossGrowth - taxDue,
+  };
+}
+
+function getTaxBandLabel(bandKey) {
+  return (
+    {
+      none: "No UK tax", // explicit override
+      basic: "Basic rate taxpayer",
+      higher: "Higher rate taxpayer",
+      additional: "Additional rate taxpayer",
+    }[bandKey] || "Selected tax band"
+  );
+}
+
+function updateTaxBandSummary() {
+  const summary = $("ukTaxSummary");
+  if (!summary) return;
+  const bandKey = getActiveTaxBand();
+  const label = getTaxBandLabel(bandKey);
+  const cfg = getTaxBandConfig(bandKey);
+  const detail = `Income ${Math.round((cfg.income || 0) * 100)}%, dividends ${((cfg.dividend || 0) * 100).toFixed(
+    cfg.dividend && cfg.dividend < 0.1 ? 2 : 1,
+  )}%, capital gains ${Math.round((cfg.capitalGains || 0) * 100)}%`;
+  summary.textContent = `${label}. We apply these rates to taxable assets: ${detail}. Allowances aren't modelled, so adjust inputs if you plan to shelter part of the return.`;
+}
 
 const profilePickers = {};
 let importFileContent = null;
@@ -470,6 +621,7 @@ function saveCurrentProfile() {
   activeProfile.fireForecastFrequency = fireForecastFrequency;
   activeProfile.fireForecastInflation = fireForecastInflation;
   activeProfile.fireForecastRetireDate = fireForecastRetireDate;
+  activeProfile.taxSettings = { ...normalizeTaxSettings(taxSettings) };
 }
 function persist() {
   saveCurrentProfile();
@@ -552,6 +704,7 @@ function loadDemoData() {
         highGrowth: 0,
         monthlyDeposit: monthlyFrom("none", 0),
         includeInPassive: true,
+        taxTreatment: "tax-free",
       },
       {
         name: "Index Fund",
@@ -565,6 +718,7 @@ function loadDemoData() {
         highGrowth: 8,
         monthlyDeposit: monthlyFrom("monthly", 500),
         includeInPassive: true,
+        taxTreatment: "capital-gains",
       },
       {
         name: "Bond Fund",
@@ -578,6 +732,7 @@ function loadDemoData() {
         highGrowth: 5,
         monthlyDeposit: monthlyFrom("monthly", 200),
         includeInPassive: true,
+        taxTreatment: "income",
       },
     ];
 
@@ -628,6 +783,8 @@ function loadDemoData() {
     fireForecastFrequency = "annual";
     fireForecastInflation = inflationRate;
     fireForecastRetireDate = goalTargetDate;
+    taxSettings = normalizeTaxSettings({ ukTaxBand: "basic" });
+    activeProfile.taxSettings = { ...taxSettings };
 
     updateFireFormInputs();
     updateFireForecastInputs();
@@ -688,6 +845,7 @@ function normalizeData() {
     if (a.lowGrowth == null) a.lowGrowth = ret;
     if (a.highGrowth == null) a.highGrowth = ret;
     if (a.includeInPassive === undefined) a.includeInPassive = true;
+    a.taxTreatment = getAssetTaxTreatment(a);
   });
   liabilities.forEach((l) => {
     if (!l || typeof l !== "object") return;
@@ -715,10 +873,21 @@ function normalizeData() {
     ev.isPercent = !!ev.isPercent;
   });
   simEvents.sort((a, b) => a.date - b.date);
+  taxSettings = normalizeTaxSettings(
+    activeProfile?.taxSettings || taxSettings || DEFAULT_TAX_SETTINGS,
+  );
+  if (activeProfile) activeProfile.taxSettings = { ...taxSettings };
 }
 
 function initProfiles() {
   profiles = load(LS.profiles, null);
+  if (Array.isArray(profiles)) {
+    profiles.forEach((profile) => {
+      if (!profile || typeof profile !== "object") return;
+      if (!profile.taxSettings)
+        profile.taxSettings = { ...DEFAULT_TAX_SETTINGS };
+    });
+  }
   let id = localStorage.getItem(LS.activeProfile);
   if (!profiles) {
     const def = {
@@ -738,6 +907,7 @@ function initProfiles() {
       fireForecastFrequency: "annual",
       fireForecastInflation: 2.5,
       fireForecastRetireDate: null,
+      taxSettings: { ...DEFAULT_TAX_SETTINGS },
     };
     profiles = [def];
     id = def.id;
@@ -908,7 +1078,7 @@ const calculatePassiveAssetValueAt = (
   if (targetTs <= referenceTime) return value || 0;
 
   let prevTime = referenceTime;
-  const annualRate = parseFloat(asset.return) || 0;
+  const annualRate = getNetAnnualRate(asset, parseFloat(asset.return) || 0);
   for (let i = 0; i < relevantEvents.length; i++) {
     const ev = relevantEvents[i];
     if (ev.date <= referenceTime) continue;
@@ -1049,14 +1219,17 @@ function buildForecastScenarios(yearsOverride = null, opts = {}) {
     let valueBase = active ? principal : initialValue;
     let valueLow = valueBase;
     let valueHigh = valueBase;
-    const rateBase = (asset.return || 0) / 100 / 12;
-    const rateLow = (asset.lowGrowth || asset.return || 0) / 100 / 12;
-    const rateHigh = (asset.highGrowth || asset.return || 0) / 100 / 12;
-    const annualBase = parseFloat(asset.return) || 0;
-    const annualLow =
-      asset.lowGrowth != null ? parseFloat(asset.lowGrowth) || 0 : annualBase;
-    const annualHigh =
-      asset.highGrowth != null ? parseFloat(asset.highGrowth) || 0 : annualBase;
+    const grossBase = parseFloat(asset.return) || 0;
+    const grossLow =
+      asset.lowGrowth != null ? parseFloat(asset.lowGrowth) || 0 : grossBase;
+    const grossHigh =
+      asset.highGrowth != null ? parseFloat(asset.highGrowth) || 0 : grossBase;
+    const annualBase = getNetAnnualRate(asset, grossBase);
+    const annualLow = getNetAnnualRate(asset, grossLow);
+    const annualHigh = getNetAnnualRate(asset, grossHigh);
+    const rateBase = annualBase / 100 / 12;
+    const rateLow = annualLow / 100 / 12;
+    const rateHigh = annualHigh / 100 / 12;
     const arrBase = [];
     const arrLow = [];
     const arrHigh = [];
@@ -1310,6 +1483,8 @@ function showEditAsset(index) {
   tpl.querySelector("#editAssetReturn").value = asset.return;
   tpl.querySelector("#editLowGrowth").value = asset.lowGrowth;
   tpl.querySelector("#editHighGrowth").value = asset.highGrowth;
+  const editTax = tpl.querySelector("#editAssetTaxTreatment");
+  if (editTax) editTax.value = getAssetTaxTreatment(asset);
   const inc = asset.includeInPassive !== false;
   const incEl = tpl.querySelector("#editIncludePassive");
   if (incEl) incEl.checked = inc;
@@ -1337,6 +1512,10 @@ function showEditAsset(index) {
     a.highGrowth =
       parseFloat(f.querySelector("#editHighGrowth").value) || ret;
     a.monthlyDeposit = monthlyFrom(a.frequency, a.originalDeposit);
+    const taxSelect = f.querySelector("#editAssetTaxTreatment");
+    a.taxTreatment = getAssetTaxTreatment({
+      taxTreatment: taxSelect ? taxSelect.value : a.taxTreatment,
+    });
     const incCbx = f.querySelector("#editIncludePassive");
     a.includeInPassive = incCbx ? !!incCbx.checked : true;
     closeModal();
@@ -1436,9 +1615,10 @@ const ASSET_COLS = [
   "Start Date",
   "Value",
   "Deposit",
+  "Tax Treatment",
   "Growth Rates",
 ];
-const ASSET_KEYS = ["name", "start", "value", "deposit", "return"];
+const ASSET_KEYS = ["name", "start", "value", "deposit", "tax", "return"];
 let assetSort = { key: "name", dir: "asc" };
 
 function buildAssetHeader() {
@@ -1474,6 +1654,11 @@ function sortAssetsForView(list) {
         return (
           ((a.originalDeposit || 0) - (b.originalDeposit || 0)) * dir
         );
+      case "tax": {
+        const at = describeAssetTax(a) || "";
+        const bt = describeAssetTax(b) || "";
+        return at.localeCompare(bt, undefined, { sensitivity: "base" }) * dir;
+      }
       case "return": {
         const al = a.lowGrowth ?? a.return ?? 0;
         const bl = b.lowGrowth ?? b.return ?? 0;
@@ -1863,6 +2048,8 @@ function updatePassiveIncome() {
   const hasAssets = assets.length > 0;
   card.hidden = !hasAssets;
   if (!hasAssets) {
+    const note = $("passiveIncomeTaxNote");
+    if (note) note.textContent = "";
     updateFireForecastCard();
     return;
   }
@@ -1885,6 +2072,7 @@ function updatePassiveIncome() {
 
   const nowTs = Date.now();
   let annualIncome = 0;
+  let taxableCount = 0;
   assets.forEach((asset) => {
     if (asset?.includeInPassive === false) return;
     const valueAtDate = calculatePassiveAssetValueAt(
@@ -1893,7 +2081,9 @@ function updatePassiveIncome() {
       eventsByAsset,
       nowTs,
     );
-    const rate = (parseFloat(asset?.return) || 0) / 100;
+    const netRatePct = getNetAnnualRate(asset, parseFloat(asset?.return) || 0);
+    if (getAssetTaxTreatment(asset) !== "tax-free") taxableCount += 1;
+    const rate = netRatePct / 100;
     annualIncome += valueAtDate * rate;
   });
 
@@ -1908,6 +2098,15 @@ function updatePassiveIncome() {
   set("passiveDaily", daily || 0);
   set("passiveWeekly", weekly || 0);
   set("passiveMonthly", monthly || 0);
+  const note = $("passiveIncomeTaxNote");
+  if (note) {
+    const band = getTaxBandLabel(getActiveTaxBand());
+    if (taxableCount > 0) {
+      note.textContent = `${band} rates are applied to taxable assets before estimating income. Assets marked as tax-free keep their full return.`;
+    } else {
+      note.textContent = `All passive income assets are marked as tax-free, so no UK tax deductions were applied.`;
+    }
+  }
   updateFireForecastCard();
 }
 
@@ -2062,6 +2261,10 @@ function updateFireForecastCard() {
     summaryEl.innerHTML = `<p>We project ${passiveAssets.length} passive income asset${
       passiveAssets.length === 1 ? "" : "s"
     } using your growth assumptions and compare their annual passive income to ${costDescriptor}. ${inflationText} ${retireText} Each scenario shows when income first covers your costs, plus the same calculation without inflation.</p>`;
+  if (summaryEl)
+    summaryEl.innerHTML += `<p class="mt-2">${getTaxBandLabel(
+      getActiveTaxBand(),
+    )} rates are applied to assets you flagged as taxable, so results show after-tax passive income.</p>`;
 
   const inflationFactorText = (factor) => {
     if (!(factor > 0)) return "unchanged from today";
@@ -2301,6 +2504,8 @@ function switchProfile(id) {
     isFinite(activeProfile.fireForecastRetireDate)
       ? activeProfile.fireForecastRetireDate
       : null;
+  taxSettings = normalizeTaxSettings(activeProfile.taxSettings);
+  activeProfile.taxSettings = { ...taxSettings };
   // removed: fireUsePortfolioSWR
   fireLastInputs =
     fireExpenses > 0 && fireWithdrawalRate > 0
@@ -2330,6 +2535,7 @@ function switchProfile(id) {
   refreshFireProjection();
   persist();
   renderProfileOptions();
+  updateTaxBandSummary();
 }
 
 function addProfile(name) {
@@ -2352,6 +2558,7 @@ function addProfile(name) {
     fireForecastFrequency: "annual",
     fireForecastInflation: 2.5,
     fireForecastRetireDate: null,
+    taxSettings: { ...DEFAULT_TAX_SETTINGS },
   });
   if (
     profiles.length === 2 &&
@@ -2548,6 +2755,7 @@ function renderAssets() {
       const depositText = hasDeposit
         ? `${fmtCurrency(asset.originalDeposit)} (${asset.frequency})`
         : "-";
+      const taxSummary = describeAssetTax(asset);
       const explicitStart = toTimestamp(asset.explicitStartDate);
       let startCell = "-";
       if (explicitStart != null) {
@@ -2566,6 +2774,7 @@ function renderAssets() {
     <td class="px-6 py-4 whitespace-nowrap">${startCell}</td>
     <td class="px-6 py-4 whitespace-nowrap font-semibold">${fmtCurrency(currentValue)}</td>
     <td class="px-6 py-4 whitespace-nowrap">${depositText}</td>
+    <td class="px-6 py-4 whitespace-nowrap">${taxSummary}</td>
     <td class="px-6 py-4 whitespace-nowrap">
       <span class="text-xs text-gray-500 dark:text-gray-400">Low:</span> ${asset.lowGrowth || 0}%
       <span class="ml-3 text-xs text-gray-500 dark:text-gray-400">Exp:</span> ${asset.return || 0}%
@@ -2586,6 +2795,7 @@ function renderAssets() {
   updateTotals();
   renderEventAssetOptions();
   renderFutureValueAssetOptions();
+  renderTaxCalculatorAssetOptions();
   renderStressAssetOptions();
   persist();
   updateWealthChart();
@@ -2620,6 +2830,51 @@ function renderFutureValueAssetOptions() {
   sel.innerHTML = opts
     .map((a) => `<option value="${a.dateAdded}">${a.name}</option>`)
     .join("");
+}
+
+function renderTaxCalculatorAssetOptions() {
+  const sel = $("ukTaxAsset");
+  if (!sel) return;
+  const current = sel.value;
+  const opts = [...assets].sort((a, b) =>
+    (a.name || "").localeCompare(b.name || "", undefined, {
+      sensitivity: "base",
+    }),
+  );
+  sel.innerHTML =
+    '<option value="">Custom values</option>' +
+    opts
+      .map(
+        (a) =>
+          `<option value="${a.dateAdded}">${a.name}</option>`,
+      )
+      .join("");
+  if (current && sel.querySelector(`option[value="${current}"]`)) {
+    sel.value = current;
+    prefillUkTaxEstimator(current);
+  } else {
+    sel.value = "";
+  }
+}
+
+function prefillUkTaxEstimator(assetId) {
+  if (!assetId) return;
+  const asset = assets.find((a) => String(a.dateAdded) === String(assetId));
+  if (!asset) return;
+  const valueInput = $("ukTaxValue");
+  const returnInput = $("ukTaxReturn");
+  const treatmentSelect = $("ukTaxTreatment");
+  if (valueInput) {
+    const value = calculateCurrentValue(asset);
+    valueInput.value = Number.isFinite(value)
+      ? value.toFixed(2)
+      : valueInput.value;
+  }
+  if (returnInput) {
+    const gross = parseFloat(asset.return) || 0;
+    returnInput.value = Number.isFinite(gross) ? gross : returnInput.value;
+  }
+  if (treatmentSelect) treatmentSelect.value = getAssetTaxTreatment(asset);
 }
 
 function updateStressAssetsButtonLabel() {
@@ -3662,6 +3917,9 @@ function navigateTo(viewId) {
     const sel = document.getElementById("themeSelect");
     if (sel)
       sel.value = ["inverted", "glass"].includes(val) ? val : "default";
+    const taxSel = $("ukTaxBand");
+    if (taxSel) taxSel.value = getActiveTaxBand();
+    updateTaxBandSummary();
   }
 
   // Ensure Inflation Impact card only shows on Portfolio Insights
@@ -3855,6 +4113,9 @@ function handleFormSubmit(e) {
       const explicitAssetStart = toTimestamp(form.assetStartDate?.value);
       newAsset.explicitStartDate = explicitAssetStart;
       newAsset.startDate = explicitAssetStart ?? startOfToday();
+      newAsset.taxTreatment = getAssetTaxTreatment({
+        taxTreatment: form.assetTaxTreatment?.value,
+      });
       newAsset.includeInPassive = form.includePassive
         ? !!form.includePassive.checked
         : true;
@@ -4067,24 +4328,18 @@ function handleFormSubmit(e) {
       const years = (target - now) / (1000 * 60 * 60 * 24 * 365.25);
       const principal = calculateCurrentValue(asset);
       const monthly = asset.monthlyDeposit || 0;
-      const low = calculateFutureValue(
-        principal,
-        monthly,
-        asset.lowGrowth || 0,
-        years,
+      const lowRate = getNetAnnualRate(
+        asset,
+        asset.lowGrowth != null ? asset.lowGrowth : asset.return || 0,
       );
-      const exp = calculateFutureValue(
-        principal,
-        monthly,
-        asset.return || 0,
-        years,
+      const expRate = getNetAnnualRate(asset, asset.return || 0);
+      const highRate = getNetAnnualRate(
+        asset,
+        asset.highGrowth != null ? asset.highGrowth : asset.return || 0,
       );
-      const high = calculateFutureValue(
-        principal,
-        monthly,
-        asset.highGrowth || 0,
-        years,
-      );
+      const low = calculateFutureValue(principal, monthly, lowRate, years);
+      const exp = calculateFutureValue(principal, monthly, expRate, years);
+      const high = calculateFutureValue(principal, monthly, highRate, years);
       $("fvLow").textContent = fmtCurrency(low);
       $("fvExpected").textContent = fmtCurrency(exp);
       $("fvHigh").textContent = fmtCurrency(high);
@@ -4122,6 +4377,89 @@ function handleFormSubmit(e) {
       </table>
     </div>
   </div>`;
+      break;
+    }
+    case "ukTaxEstimatorForm": {
+      const resultEl = $("ukTaxEstimatorResult");
+      if (!resultEl) break;
+      const rawValue = parseFloat(form.ukTaxValue.value);
+      const grossRate = parseFloat(form.ukTaxReturn.value);
+      const treatment = getAssetTaxTreatment({
+        taxTreatment: form.ukTaxTreatment?.value,
+      });
+      if (!(rawValue > 0) || !Number.isFinite(grossRate)) {
+        resultEl.innerHTML =
+          '<p class="text-sm text-red-600 dark:text-red-400">Enter an asset value above 0 and a valid expected annual return to estimate tax.</p>';
+        break;
+      }
+      const bandKey = getActiveTaxBand();
+      const cfg = getTaxBandConfig(bandKey);
+      const rateKey = TAX_TREATMENT_RATE_KEY[treatment];
+      const taxRate = rateKey ? Number(cfg?.[rateKey]) || 0 : 0;
+      const outcome = estimateAnnualTax({
+        value: rawValue,
+        grossRate,
+        treatment,
+        bandKey,
+      });
+      const netRate = rawValue > 0 ? (outcome.netGrowth / rawValue) * 100 : 0;
+      const grossRateText = Number.isFinite(grossRate)
+        ? grossRate.toFixed(2)
+        : "0.00";
+      const taxRateText = (taxRate * 100).toLocaleString(undefined, {
+        minimumFractionDigits: taxRate && taxRate < 0.1 ? 2 : 1,
+        maximumFractionDigits: taxRate && taxRate < 0.1 ? 2 : 1,
+      });
+      const netRateText = Number.isFinite(netRate)
+        ? netRate.toFixed(2)
+        : "0.00";
+      const grossGrowth = fmtCurrency(outcome.grossGrowth || 0);
+      const taxDue = fmtCurrency(outcome.taxDue || 0);
+      const netGrowth = fmtCurrency(outcome.netGrowth || 0);
+      const treatmentLabel = TAX_TREATMENT_LABELS[treatment];
+      const bandLabel = getTaxBandLabel(bandKey);
+      const taxNote =
+        !rateKey || taxRate === 0
+          ? "No UK tax is deducted for this selection."
+          : `${taxRateText}% ${treatmentLabel.toLowerCase()} tax applied (${bandLabel}).`;
+      resultEl.innerHTML = `
+      <div class="mt-4 space-y-4">
+        <div class="p-4 rounded-lg bg-green-50 dark:bg-green-900/20 text-green-900 dark:text-green-100">
+          <p class="text-lg font-semibold">Net annual return after tax: ${netGrowth}</p>
+          <p class="text-sm">Equivalent after-tax rate: ${netRateText}%</p>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-left text-sm">
+            <thead class="bg-gray-200 dark:bg-gray-700">
+              <tr>
+                <th class="table-header">Step</th>
+                <th class="table-header">Amount</th>
+                <th class="table-header">How it's calculated</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+              <tr>
+                <td class="px-6 py-3">Expected gross return</td>
+                <td class="px-6 py-3">${grossGrowth}</td>
+                <td class="px-6 py-3">£${rawValue.toLocaleString()} × ${grossRateText}%</td>
+              </tr>
+              <tr>
+                <td class="px-6 py-3">UK tax deduction</td>
+                <td class="px-6 py-3">${taxDue}</td>
+                <td class="px-6 py-3">${taxNote}</td>
+              </tr>
+              <tr>
+                <td class="px-6 py-3 font-semibold">Net return retained</td>
+                <td class="px-6 py-3 font-semibold">${netGrowth}</td>
+                <td class="px-6 py-3">Gross return − tax deduction</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="text-xs text-gray-600 dark:text-gray-400">
+          Allowances (Personal Savings, Dividend, Capital Gains) and specialist rates are not automatically applied. Adjust the expected return or asset value if you plan to shelter part of the growth inside wrappers such as ISAs or pensions.
+        </p>
+      </div>`;
       break;
     }
 
@@ -4847,6 +5185,21 @@ window.addEventListener("load", () => {
     } catch (_) {}
     updateChartTheme();
   });
+  const taxBandSelect = $("ukTaxBand");
+  if (taxBandSelect)
+    on(taxBandSelect, "change", (e) => {
+      const selected = e.target.value || DEFAULT_TAX_SETTINGS.ukTaxBand;
+      taxSettings = normalizeTaxSettings({ ukTaxBand: selected });
+      if (activeProfile) activeProfile.taxSettings = { ...taxSettings };
+      renderAssets();
+      updateTaxBandSummary();
+    });
+  const taxAssetSelect = $("ukTaxAsset");
+  if (taxAssetSelect)
+    on(taxAssetSelect, "change", (e) => {
+      const id = e.target.value;
+      if (id) prefillUkTaxEstimator(id);
+    });
   on($("goalBtn"), "click", () => {
     const prevGoalValue = goalValue;
     const prevGoalTargetDate = goalTargetDate;
