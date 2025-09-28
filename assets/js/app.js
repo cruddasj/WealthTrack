@@ -61,6 +61,13 @@ const LS = {
 };
 const save = (k, v) => localStorage.setItem(k, JSON.stringify(v));
 const load = (k, d) => JSON.parse(localStorage.getItem(k)) || d;
+const getLocalStorageItem = (key) => {
+  try {
+    return localStorage.getItem(key);
+  } catch (_) {
+    return null;
+  }
+};
 
 function normalizeCardHeadings(root = document) {
   root
@@ -265,8 +272,17 @@ const currencyOptions = {
   EUR: { label: "Euros (€)", locale: "en-IE", currency: "EUR", symbol: "€" },
 };
 
-let currencyCode = load(LS.currency, "GBP");
-if (!currencyOptions[currencyCode]) currencyCode = "GBP";
+const sanitizeCurrencyCode = (code) =>
+  currencyOptions[code] ? code : "GBP";
+
+const sanitizeThemeChoice = (val) =>
+  val === "inverted" || val === "glass" ? val : "default";
+
+let currencyCode = sanitizeCurrencyCode(load(LS.currency, "GBP"));
+let currentThemeChoice = sanitizeThemeChoice(
+  getLocalStorageItem(LS.themeChoice) || "default",
+);
+let isDarkMode = getLocalStorageItem(LS.theme) === "1";
 
 const getCurrencyConfig = () =>
   currencyOptions[currencyCode] || currencyOptions.GBP;
@@ -304,11 +320,24 @@ const updateCurrencySymbols = () => {
 
 const currencyTick = (v) => fmtCurrency(v);
 
-function applyCurrencyChoice(code, { persistChoice = true } = {}) {
-  if (!currencyOptions[code]) return;
-  currencyCode = code;
-  if (persistChoice) save(LS.currency, currencyCode);
-  refreshCurrencyDisplays();
+function applyCurrencyChoice(
+  code,
+  { persistChoice = true, refresh = true } = {},
+) {
+  const normalized = sanitizeCurrencyCode(code);
+  currencyCode = normalized;
+  if (activeProfile) activeProfile.currencyCode = currencyCode;
+  if (persistChoice) {
+    save(LS.currency, currencyCode);
+    if (activeProfile) persist();
+  }
+  if (refresh) {
+    refreshCurrencyDisplays();
+  } else {
+    updateCurrencySymbols();
+    const select = document.getElementById("currencySelect");
+    if (select && select.value !== currencyCode) select.value = currencyCode;
+  }
 }
 
 function refreshCurrencyDisplays() {
@@ -663,6 +692,10 @@ function updateTaxSettingsUI() {
 
 function applyTaxSettingsChanges({ refreshUI = false, clearCalculator = false } = {}) {
   taxSettings = normalizeTaxSettings(taxSettings);
+  if (activeProfile) {
+    activeProfile.taxSettings = taxSettings;
+    persist();
+  }
   invalidateTaxCache();
   if (refreshUI) updateTaxSettingsUI();
   renderAssets();
@@ -715,6 +748,12 @@ function normalizeImportedProfile(profile, index = 0) {
       isFinite(profile.fireForecastRetireDate)
         ? profile.fireForecastRetireDate
         : null,
+    taxSettings: normalizeTaxSettings(profile?.taxSettings),
+    currencyCode: sanitizeCurrencyCode(
+      profile?.currencyCode || profile?.currency || currencyCode,
+    ),
+    themeChoice: sanitizeThemeChoice(profile?.themeChoice),
+    darkMode: !!profile?.darkMode,
   };
 }
 
@@ -818,6 +857,9 @@ function saveCurrentProfile() {
   activeProfile.fireForecastInflation = fireForecastInflation;
   activeProfile.fireForecastRetireDate = fireForecastRetireDate;
   activeProfile.taxSettings = normalizeTaxSettings(taxSettings);
+  activeProfile.currencyCode = currencyCode;
+  activeProfile.themeChoice = currentThemeChoice;
+  activeProfile.darkMode = isDarkMode;
 }
 function persist() {
   saveCurrentProfile();
@@ -1097,12 +1139,21 @@ function initProfiles() {
       fireForecastInflation: 2.5,
       fireForecastRetireDate: null,
       taxSettings: normalizeTaxSettings(),
+      currencyCode: sanitizeCurrencyCode(load(LS.currency, "GBP")),
+      themeChoice: sanitizeThemeChoice(
+        localStorage.getItem(LS.themeChoice) || "default",
+      ),
+      darkMode: localStorage.getItem(LS.theme) === "1",
     };
     profiles = [def];
     id = def.id;
     save(LS.profiles, profiles);
   }
   if (profiles) {
+    const fallbackCurrency = currencyCode;
+    const fallbackThemeChoice = currentThemeChoice;
+    const fallbackDarkMode = isDarkMode;
+    let profilesUpdated = false;
     profiles.forEach((p) => {
       p.taxSettings = normalizeTaxSettings(p.taxSettings);
       if (p.fireExpenses == null) p.fireExpenses = 0;
@@ -1119,7 +1170,47 @@ function initProfiles() {
         !isFinite(p.fireForecastRetireDate)
       )
         p.fireForecastRetireDate = null;
+      if (p.currencyCode != null) {
+        const sanitizedCurrency = sanitizeCurrencyCode(p.currencyCode);
+        if (sanitizedCurrency !== p.currencyCode) {
+          p.currencyCode = sanitizedCurrency;
+          profilesUpdated = true;
+        }
+      } else if (p.currency != null) {
+        const sanitizedCurrency = sanitizeCurrencyCode(p.currency);
+        if (p.currencyCode !== sanitizedCurrency) {
+          p.currencyCode = sanitizedCurrency;
+          profilesUpdated = true;
+        }
+      } else if (fallbackCurrency && p.currencyCode !== fallbackCurrency) {
+        p.currencyCode = fallbackCurrency;
+        profilesUpdated = true;
+      }
+      if (p.themeChoice != null && p.themeChoice !== "") {
+        const sanitizedTheme = sanitizeThemeChoice(p.themeChoice);
+        if (sanitizedTheme !== p.themeChoice) {
+          p.themeChoice = sanitizedTheme;
+          profilesUpdated = true;
+        }
+      } else if (
+        fallbackThemeChoice != null &&
+        p.themeChoice !== fallbackThemeChoice
+      ) {
+        p.themeChoice = fallbackThemeChoice;
+        profilesUpdated = true;
+      }
+      if (p.darkMode != null) {
+        const normalizedDark = !!p.darkMode;
+        if (normalizedDark !== p.darkMode) {
+          p.darkMode = normalizedDark;
+          profilesUpdated = true;
+        }
+      } else if (p.darkMode !== fallbackDarkMode) {
+        p.darkMode = fallbackDarkMode;
+        profilesUpdated = true;
+      }
     });
+    if (profilesUpdated) save(LS.profiles, profiles);
   }
   activeProfile = profiles.find((p) => p.id == id) || profiles[0];
   assets = activeProfile.assets || [];
@@ -1177,6 +1268,7 @@ function initProfiles() {
   taxSettings = normalizeTaxSettings(activeProfile.taxSettings);
   activeProfile.taxSettings = taxSettings;
   invalidateTaxCache();
+  applyProfilePreferences(activeProfile);
   localStorage.setItem(LS.activeProfile, activeProfile.id);
 }
 initProfiles();
@@ -2234,20 +2326,83 @@ function updateChartTheme() {
   });
 }
 
-function applyThemeChoice(val) {
+function applyThemeChoice(val, { persistChoice = true } = {}) {
+  currentThemeChoice = sanitizeThemeChoice(val);
   const root = document.documentElement;
   ["theme-inverted", "theme-glass"].forEach((cls) =>
     root.classList.remove(cls),
   );
-  if (val === "inverted") root.classList.add("theme-inverted");
-  if (val === "glass") root.classList.add("theme-glass");
-  try {
-    localStorage.setItem(LS.themeChoice, val || "default");
-  } catch (_) {}
+  if (currentThemeChoice === "inverted") root.classList.add("theme-inverted");
+  if (currentThemeChoice === "glass") root.classList.add("theme-glass");
+  const select = document.getElementById("themeSelect");
+  if (select && select.value !== currentThemeChoice)
+    select.value = currentThemeChoice;
+  if (activeProfile) activeProfile.themeChoice = currentThemeChoice;
+  if (persistChoice) {
+    try {
+      localStorage.setItem(LS.themeChoice, currentThemeChoice);
+    } catch (_) {}
+    if (activeProfile) persist();
+  }
   // Refresh charts for any spacing/colour changes
   try {
     updateChartTheme();
   } catch (_) {}
+}
+
+function applyDarkMode(
+  enabled,
+  { persistChoice = true, withTransition = false } = {},
+) {
+  isDarkMode = !!enabled;
+  const root = document.documentElement;
+  if (withTransition) root.classList.add("theme-transition");
+  root.classList.toggle("dark", isDarkMode);
+  if (withTransition) {
+    setTimeout(() => root.classList.remove("theme-transition"), 500);
+  } else {
+    root.classList.remove("theme-transition");
+  }
+  if (typeof Chart !== "undefined") {
+    Chart.defaults.color = isDarkMode ? "#ffffff" : "#374151";
+  }
+  try {
+    updateChartTheme();
+  } catch (_) {}
+  const toggle = document.getElementById("themeToggle");
+  if (toggle && toggle.checked !== isDarkMode) toggle.checked = isDarkMode;
+  if (activeProfile) activeProfile.darkMode = isDarkMode;
+  if (persistChoice) {
+    try {
+      localStorage.setItem(LS.theme, isDarkMode ? "1" : "0");
+    } catch (_) {}
+    if (activeProfile) persist();
+  }
+}
+
+function applyProfilePreferences(profile) {
+  const storedCurrency = load(LS.currency, "GBP");
+  const currencyPref = sanitizeCurrencyCode(
+    profile?.currencyCode || profile?.currency || storedCurrency,
+  );
+  applyCurrencyChoice(currencyPref, { persistChoice: false, refresh: false });
+  if (profile) profile.currencyCode = currencyCode;
+
+  const storedThemeChoice = localStorage.getItem(LS.themeChoice) || "default";
+  const themePref =
+    profile?.themeChoice != null && profile.themeChoice !== ""
+      ? profile.themeChoice
+      : storedThemeChoice;
+  applyThemeChoice(themePref, { persistChoice: false });
+  if (profile) profile.themeChoice = currentThemeChoice;
+
+  const storedDarkRaw = localStorage.getItem(LS.theme);
+  const darkPref =
+    profile?.darkMode == null
+      ? storedDarkRaw === "1"
+      : !!profile.darkMode;
+  applyDarkMode(darkPref, { persistChoice: false, withTransition: false });
+  if (profile) profile.darkMode = isDarkMode;
 }
 
 // Passive income summary (based on expected returns)
@@ -2657,7 +2812,7 @@ function renderProfileOptions() {
   }
 }
 
-function switchProfile(id) {
+function switchProfile(id, { showFeedback = false } = {}) {
   saveCurrentProfile();
   activeProfile = profiles.find((p) => p.id == id);
   if (!activeProfile) return;
@@ -2705,6 +2860,7 @@ function switchProfile(id) {
     fireExpenses > 0 && fireWithdrawalRate > 0
       ? { annualExpenses: fireExpenses, withdrawalRate: fireWithdrawalRate }
       : null;
+  applyProfilePreferences(activeProfile);
   $("goalValue").value = goalValue || "";
   $("goalYear").value = goalTargetDate
     ? new Date(goalTargetDate).getFullYear()
@@ -2733,6 +2889,10 @@ function switchProfile(id) {
   refreshFireProjection();
   persist();
   renderProfileOptions();
+  if (showFeedback && activeProfile) {
+    const name = (activeProfile.name || "").trim() || "Unnamed profile";
+    showAlert(`Switched to profile: ${name}`);
+  }
 }
 
 function addProfile(name) {
@@ -2756,6 +2916,9 @@ function addProfile(name) {
     fireForecastInflation: 2.5,
     fireForecastRetireDate: null,
     taxSettings: normalizeTaxSettings(),
+    currencyCode,
+    themeChoice: currentThemeChoice,
+    darkMode: isDarkMode,
   });
   if (
     profiles.length === 2 &&
@@ -4136,10 +4299,8 @@ function navigateTo(viewId) {
   }
 
   if (viewId === "settings") {
-    const val = localStorage.getItem(LS.themeChoice) || "default";
     const sel = document.getElementById("themeSelect");
-    if (sel)
-      sel.value = ["inverted", "glass"].includes(val) ? val : "default";
+    if (sel) sel.value = currentThemeChoice;
   }
 
   // Ensure Inflation Impact card only shows on Portfolio Insights
@@ -4158,7 +4319,7 @@ function setupCardCollapsing() {
       .replace(/(^-|-$)/g, "");
   document
     .querySelectorAll(
-      "#data-entry .card, #forecasts .card, #portfolio-analysis .card, #snapshots .card",
+      "#data-entry .card, #forecasts .card, #portfolio-analysis .card, #snapshots .card, #calculators .card, #settings .card",
     )
     .forEach((card, idx) => {
       card.classList.add("is-collapsible");
@@ -4835,9 +4996,9 @@ window.addEventListener("load", () => {
   Chart.register(ChartZoom);
   Chart.register(LegendPad);
   Chart.defaults.font.family = "Inter";
-  const isDark = document.documentElement.classList.contains("dark");
-  $("themeToggle").checked = isDark;
-  Chart.defaults.color = isDark ? "#ffffff" : "#374151";
+  if ($("themeToggle")) $("themeToggle").checked = isDarkMode;
+  if (typeof Chart !== "undefined")
+    Chart.defaults.color = isDarkMode ? "#ffffff" : "#374151";
   updateChartContainers();
 
   updateCurrencySymbols();
@@ -4908,12 +5069,6 @@ window.addEventListener("load", () => {
   if (taxScenarioSelect)
     on(taxScenarioSelect, "change", () => clearTaxCalculatorResult());
 
-  // Apply saved theme choice
-  (function () {
-    const choice = localStorage.getItem(LS.themeChoice) || "default";
-    applyThemeChoice(choice);
-  })();
-
   buildAssetHeader();
   renderAssets();
   renderLiabilities();
@@ -4923,7 +5078,9 @@ window.addEventListener("load", () => {
   renderProfileOptions();
   updateFireFormInputs();
   refreshFireProjection();
-  on($("profileSelect"), "change", (e) => switchProfile(e.target.value));
+  on($("profileSelect"), "change", (e) =>
+    switchProfile(e.target.value, { showFeedback: true }),
+  );
   const inflEl = $("inflationRate");
   if (inflEl) inflEl.value = inflationRate;
   const inflForm = $("inflationForm");
@@ -5387,6 +5544,7 @@ window.addEventListener("load", () => {
                 activeProfile.fireForecastFrequency = fireForecastFrequency;
                 activeProfile.fireForecastInflation = fireForecastInflation;
                 activeProfile.fireForecastRetireDate = fireForecastRetireDate;
+                applyProfilePreferences(activeProfile);
                 const inflEl = $("inflationRate");
                 if (inflEl) inflEl.value = inflationRate;
                 $("goalValue").value = goalValue || "";
@@ -5464,34 +5622,9 @@ window.addEventListener("load", () => {
     }
   });
 
-  // Apply saved theme on load (default to light)
-  try {
-    const saved = localStorage.getItem(LS.theme);
-    const initialDark = saved === "1";
-    document.documentElement.classList.toggle("dark", initialDark);
-    if ($("themeToggle")) $("themeToggle").checked = initialDark;
-    if (typeof Chart !== "undefined") {
-      Chart.defaults.color = initialDark ? "#ffffff" : "#374151";
-    }
-    // Ensure any already-initialized charts pick up the correct theme
-    try {
-      updateChartTheme();
-    } catch (_) {}
-  } catch (_) {}
-
-  on($("themeToggle"), "change", (e) => {
-    const isDark = !!e.target.checked;
-    document.documentElement.classList.add("theme-transition");
-    document.documentElement.classList.toggle("dark", isDark);
-    setTimeout(
-      () => document.documentElement.classList.remove("theme-transition"),
-      500
-    );
-    try {
-      localStorage.setItem(LS.theme, isDark ? "1" : "0");
-    } catch (_) {}
-    updateChartTheme();
-  });
+  on($("themeToggle"), "change", (e) =>
+    applyDarkMode(e.target.checked, { withTransition: true }),
+  );
   on($("goalBtn"), "click", () => {
     const prevGoalValue = goalValue;
     const prevGoalTargetDate = goalTargetDate;
