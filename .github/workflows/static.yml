@@ -24,6 +24,7 @@ concurrency:
 jobs:
   # Single deploy job since we're just deploying
   deploy:
+    if: github.event_name != 'push' || !startsWith(github.event.head_commit.message || '', 'chore: release v')
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -36,21 +37,64 @@ jobs:
       - name: Determine release version
         id: version
         run: |
-          epoch=$(date +%s)
-          version="1.0.${epoch}"
+          latest_tag=$(git tag --list 'v*' --sort=-v:refname | head -n 1)
+          if [ -n "$latest_tag" ]; then
+            version=${latest_tag#v}
+            IFS='.' read -r major minor patch <<< "$version"
+            : "${patch:=0}"
+          else
+            base=$(cat VERSION_BASE 2>/dev/null | tr -d '\r')
+            if [ -z "$base" ]; then
+              base="1.0"
+            fi
+            IFS='.' read -r major minor extra <<< "$base"
+            if [ -z "$minor" ]; then
+              minor=0
+            fi
+            patch=-1
+          fi
+          next_patch=$((patch + 1))
+          version="$major.$minor.$next_patch"
           echo "version=$version" >> "$GITHUB_OUTPUT"
           echo "tag=v$version" >> "$GITHUB_OUTPUT"
-      - name: Update version file
+      - name: Update version assets
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
         run: |
-          cat <<'JSON' > assets/version.json
-          {
-            "version": "${{ steps.version.outputs.version }}"
+          node <<'NODE'
+          const fs = require('fs');
+          const version = process.env.VERSION;
+          if (!version) {
+            throw new Error('Missing VERSION');
           }
-          JSON
-      - name: Stamp service worker cache version
+
+          fs.writeFileSync('assets/version.json', JSON.stringify({ version }, null, 2) + '\n');
+
+          const swPath = 'service-worker.js';
+          const source = fs.readFileSync(swPath, 'utf8');
+          const updated = source.replace(/const APP_VERSION = "[^"]*";/, `const APP_VERSION = "${version}";`);
+          if (source === updated) {
+            throw new Error('Failed to update service worker version constant');
+          }
+          fs.writeFileSync(swPath, updated);
+          NODE
+      - name: Commit release artifacts
+        id: commit_release
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
         run: |
-          perl -0pi -e 's/__APP_VERSION__/${{ steps.version.outputs.version }}/g' service-worker.js
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/version.json service-worker.js
+          if git diff --cached --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            git commit -m "chore: release v${VERSION}"
+            git push origin HEAD
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
       - name: Create tag and release
+        if: steps.commit_release.outputs.changed == 'true'
         id: create_release
         uses: actions/create-release@v1
         env:
@@ -60,6 +104,7 @@ jobs:
           release_name: ${{ steps.version.outputs.tag }}
           body: "Automated release for ${{ steps.version.outputs.version }}"
       - name: Prune old releases
+        if: steps.commit_release.outputs.changed == 'true'
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}

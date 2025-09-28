@@ -1,5 +1,7 @@
-const APP_VERSION = "__APP_VERSION__";
-const CACHE_VERSION = APP_VERSION === "__APP_VERSION__" ? "dev" : APP_VERSION;
+const APP_VERSION = "0.0.0-dev";
+const CACHE_VERSION = APP_VERSION && APP_VERSION.endsWith("-dev")
+  ? "dev"
+  : APP_VERSION;
 const CACHE_NAME = `wealthtrack-cache-${CACHE_VERSION}`;
 
 const CORE_ASSETS = [
