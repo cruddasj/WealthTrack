@@ -1709,6 +1709,119 @@
           </div>
         </div>
 
+        <div class="card">
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100">
+            Theme
+          </h3>
+          <div class="card-body">
+            <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
+              Choose a look and feel. Your choice is saved for next time.
+            </p>
+            <div class="max-w-xs">
+              <label for="themeSelect" class="form-label">Theme</label>
+              <select id="themeSelect" class="input-field">
+                <option value="default">Default</option>
+                <option value="inverted">Inverted</option>
+                <option value="glass">Glass</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100">
+            UK Tax Settings
+          </h3>
+          <div class="card-body">
+            <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
+              Choose your UK tax band and adjust annual allowances. Forecasts and passive income
+              use these values to model net, after-tax growth for taxable assets.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4">
+              <div>
+                <label for="taxBandSelect" class="form-label">Tax band</label>
+                <select id="taxBandSelect" class="input-field">
+                  <option value="basic">Basic rate (20%)</option>
+                  <option value="higher">Higher rate (40%)</option>
+                  <option value="additional">Additional rate (45%)</option>
+                </select>
+              </div>
+              <div>
+                <label for="taxIncomeAllowance" class="form-label">
+                  Savings allowance (<span data-currency-symbol>£</span>)
+                </label>
+                <input
+                  type="number"
+                  step="any"
+                  id="taxIncomeAllowance"
+                  class="input-field"
+                />
+              </div>
+              <div>
+                <label for="taxDividendAllowance" class="form-label">
+                  Dividend allowance (<span data-currency-symbol>£</span>)
+                </label>
+                <input
+                  type="number"
+                  step="any"
+                  id="taxDividendAllowance"
+                  class="input-field"
+                />
+              </div>
+              <div>
+                <label for="taxCapitalAllowance" class="form-label">
+                  Capital gains allowance (<span data-currency-symbol>£</span>)
+                </label>
+                <input
+                  type="number"
+                  step="any"
+                  id="taxCapitalAllowance"
+                  class="input-field"
+                />
+              </div>
+            </div>
+            <p id="taxBandSummary" class="text-sm text-gray-600 dark:text-gray-300 mt-3"></p>
+            <p id="taxAllowanceSummary" class="text-xs text-gray-500 dark:text-gray-400 mt-1"></p>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
+              Allowances apply per tax year across all assets marked as taxable. Changes update forecasts automatically.
+            </p>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Currency</h3>
+          <div class="card-body">
+            <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
+              Choose the currency used throughout the app. Labels and values
+              will update immediately.
+            </p>
+            <div class="max-w-xs">
+              <label for="currencySelect" class="form-label">Currency</label>
+              <select id="currencySelect" class="input-field">
+                <option value="GBP">Pounds (£)</option>
+                <option value="USD">Dollars ($)</option>
+                <option value="EUR">Euros (€)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div id="welcomeCard" class="card">
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Welcome Page</h3>
+          <div class="card-body">
+            <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
+              Show or hide the welcome page in the navigation.
+            </p>
+            <label class="dark-mode-toggle">
+              <span class="mr-3 font-semibold text-gray-500 dark:text-gray-400"
+                >Show Welcome Page</span
+              >
+              <input type="checkbox" id="welcomeToggle" class="peer" />
+              <span class="toggle-track"><span class="toggle-thumb"></span></span>
+            </label>
+          </div>
+        </div>
+
         <div id="exportCard" class="card">
           <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100">
             Export Your Data
@@ -1879,119 +1992,6 @@
                 </svg>
                 Import Data
               </button>
-            </div>
-          </div>
-        </div>
-
-        <div class="card">
-          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100">
-            Theme
-          </h3>
-          <div class="card-body">
-            <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
-              Choose a look and feel. Your choice is saved for next time.
-            </p>
-            <div class="max-w-xs">
-              <label for="themeSelect" class="form-label">Theme</label>
-              <select id="themeSelect" class="input-field">
-                <option value="default">Default</option>
-                <option value="inverted">Inverted</option>
-                <option value="glass">Glass</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <div class="card">
-          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100">
-            UK Tax Settings
-          </h3>
-          <div class="card-body">
-            <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
-              Choose your UK tax band and adjust annual allowances. Forecasts and passive income
-              use these values to model net, after-tax growth for taxable assets.
-            </p>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4">
-              <div>
-                <label for="taxBandSelect" class="form-label">Tax band</label>
-                <select id="taxBandSelect" class="input-field">
-                  <option value="basic">Basic rate (20%)</option>
-                  <option value="higher">Higher rate (40%)</option>
-                  <option value="additional">Additional rate (45%)</option>
-                </select>
-              </div>
-              <div>
-                <label for="taxIncomeAllowance" class="form-label">
-                  Savings allowance (<span data-currency-symbol>£</span>)
-                </label>
-                <input
-                  type="number"
-                  step="any"
-                  id="taxIncomeAllowance"
-                  class="input-field"
-                />
-              </div>
-              <div>
-                <label for="taxDividendAllowance" class="form-label">
-                  Dividend allowance (<span data-currency-symbol>£</span>)
-                </label>
-                <input
-                  type="number"
-                  step="any"
-                  id="taxDividendAllowance"
-                  class="input-field"
-                />
-              </div>
-              <div>
-                <label for="taxCapitalAllowance" class="form-label">
-                  Capital gains allowance (<span data-currency-symbol>£</span>)
-                </label>
-                <input
-                  type="number"
-                  step="any"
-                  id="taxCapitalAllowance"
-                  class="input-field"
-                />
-              </div>
-            </div>
-            <p id="taxBandSummary" class="text-sm text-gray-600 dark:text-gray-300 mt-3"></p>
-            <p id="taxAllowanceSummary" class="text-xs text-gray-500 dark:text-gray-400 mt-1"></p>
-            <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
-              Allowances apply per tax year across all assets marked as taxable. Changes update forecasts automatically.
-            </p>
-          </div>
-        </div>
-
-        <div id="welcomeCard" class="card">
-          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Welcome Page</h3>
-          <div class="card-body">
-            <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
-              Show or hide the welcome page in the navigation.
-            </p>
-            <label class="dark-mode-toggle">
-              <span class="mr-3 font-semibold text-gray-500 dark:text-gray-400"
-                >Show Welcome Page</span
-              >
-              <input type="checkbox" id="welcomeToggle" class="peer" />
-              <span class="toggle-track"><span class="toggle-thumb"></span></span>
-            </label>
-          </div>
-        </div>
-
-        <div class="card">
-          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Currency</h3>
-          <div class="card-body">
-            <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
-              Choose the currency used throughout the app. Labels and values
-              will update immediately.
-            </p>
-            <div class="max-w-xs">
-              <label for="currencySelect" class="form-label">Currency</label>
-              <select id="currencySelect" class="input-field">
-                <option value="GBP">Pounds (£)</option>
-                <option value="USD">Dollars ($)</option>
-                <option value="EUR">Euros (€)</option>
-              </select>
             </div>
           </div>
         </div>
