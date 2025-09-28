@@ -285,7 +285,10 @@
         <h2 class="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-6">
           Assets & Goals
         </h2>
-        <div class="mb-6 p-4 rounded-lg bg-gray-100 dark:bg-gray-700 stat-box text-gray-700 dark:text-gray-300">
+        <div
+          id="firstTimeGuidance"
+          class="mb-6 p-4 rounded-lg bg-gray-100 dark:bg-gray-700 stat-box text-gray-700 dark:text-gray-300"
+        >
           <p class="text-sm">
             The data you enter here powers your projections and analysis. Add
             assets, liabilities, and a wealth goal with a target year to drive your Forecasts and
@@ -1860,14 +1863,17 @@
         </div>
 
         <div id="welcomeCard" class="card">
-          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Welcome Page</h3>
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
+            First-time Use Content
+          </h3>
           <div class="card-body">
             <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
-              Show or hide the welcome page in the navigation.
+              Hide the welcome page navigation button and the guidance banner on Assets &amp;
+              Goals.
             </p>
             <label class="dark-mode-toggle">
               <span class="mr-3 font-semibold text-gray-500 dark:text-gray-400"
-                >Show Welcome Page</span
+                >Hide first-time use content</span
               >
               <input type="checkbox" id="welcomeToggle" class="peer" />
               <span class="toggle-track"><span class="toggle-thumb"></span></span>

@@ -6012,15 +6012,20 @@ window.addEventListener("load", () => {
   const welcomeBtn = document.querySelector(
     'nav button[data-target="welcome"]',
   );
+  const firstTimeGuidance = $("firstTimeGuidance");
   if (welcomeBtn) welcomeBtn.classList.toggle("hidden", welcomeDisabled);
+  if (firstTimeGuidance)
+    firstTimeGuidance.classList.toggle("hidden", welcomeDisabled);
   if (welcomeToggle) {
-    welcomeToggle.checked = !welcomeDisabled;
+    welcomeToggle.checked = welcomeDisabled;
     on(welcomeToggle, "change", (e) => {
-      const hide = !e.target.checked;
+      const hide = e.target.checked;
       try {
         localStorage.setItem(LS.welcomeDisabled, hide ? "1" : "0");
       } catch (_) {}
       if (welcomeBtn) welcomeBtn.classList.toggle("hidden", hide);
+      if (firstTimeGuidance)
+        firstTimeGuidance.classList.toggle("hidden", hide);
       if (hide && $("welcome").classList.contains("active"))
         navigateTo("data-entry");
     });
