@@ -71,6 +71,50 @@ const getLocalStorageItem = (key) => {
   }
 };
 
+const getStoredFirstTimeHidden = () => {
+  try {
+    return localStorage.getItem(LS.welcomeDisabled) === "1";
+  } catch (_) {
+    return false;
+  }
+};
+
+const setStoredFirstTimeHidden = (hidden) => {
+  try {
+    localStorage.setItem(LS.welcomeDisabled, hidden ? "1" : "0");
+  } catch (_) {}
+};
+
+function isFirstTimeContentHidden(profile = activeProfile) {
+  if (profile && Object.prototype.hasOwnProperty.call(profile, "firstTimeContentHidden")) {
+    return !!profile.firstTimeContentHidden;
+  }
+  return getStoredFirstTimeHidden();
+}
+
+function updateFirstTimeContentVisibility(hidden) {
+  const welcomeBtn = document.querySelector('nav button[data-target="welcome"]');
+  if (welcomeBtn) welcomeBtn.classList.toggle("hidden", hidden);
+  document
+    .querySelectorAll("[data-first-time]")
+    .forEach((el) => el.classList.toggle("hidden", hidden));
+  const welcomeToggle = $("welcomeToggle");
+  if (welcomeToggle && welcomeToggle.checked !== hidden) {
+    welcomeToggle.checked = hidden;
+  }
+}
+
+function applyFirstTimeContentHidden(hidden, { persistProfile = true } = {}) {
+  const normalized = !!hidden;
+  setStoredFirstTimeHidden(normalized);
+  if (activeProfile) {
+    activeProfile.firstTimeContentHidden = normalized;
+    if (persistProfile) persist();
+  }
+  updateFirstTimeContentVisibility(normalized);
+  return normalized;
+}
+
 function normalizeCardHeadings(root = document) {
   root
     .querySelectorAll(".card > h3, .card > h4")
@@ -1400,6 +1444,7 @@ function initProfiles() {
       ),
       darkMode: localStorage.getItem(LS.theme) === "1",
       passiveIncomeAssetSelection: null,
+      firstTimeContentHidden: getStoredFirstTimeHidden(),
     };
     profiles = [def];
     id = def.id;
@@ -1463,6 +1508,16 @@ function initProfiles() {
         }
       } else if (p.darkMode !== fallbackDarkMode) {
         p.darkMode = fallbackDarkMode;
+        profilesUpdated = true;
+      }
+      if (Object.prototype.hasOwnProperty.call(p, "firstTimeContentHidden")) {
+        const normalizedHidden = !!p.firstTimeContentHidden;
+        if (normalizedHidden !== p.firstTimeContentHidden) {
+          p.firstTimeContentHidden = normalizedHidden;
+          profilesUpdated = true;
+        }
+      } else {
+        p.firstTimeContentHidden = getStoredFirstTimeHidden();
         profilesUpdated = true;
       }
       const normalizedSelection = sanitizePassiveSelection(
@@ -1543,6 +1598,9 @@ function initProfiles() {
   activeProfile.taxSettings = taxSettings;
   invalidateTaxCache();
   applyProfilePreferences(activeProfile);
+  applyFirstTimeContentHidden(isFirstTimeContentHidden(activeProfile), {
+    persistProfile: false,
+  });
   localStorage.setItem(LS.activeProfile, activeProfile.id);
 }
 initProfiles();
@@ -3165,6 +3223,9 @@ function switchProfile(id, { showFeedback = false } = {}) {
       ? { annualExpenses: fireExpenses, withdrawalRate: fireWithdrawalRate }
       : null;
   applyProfilePreferences(activeProfile);
+  applyFirstTimeContentHidden(isFirstTimeContentHidden(activeProfile), {
+    persistProfile: false,
+  });
   $("goalValue").value = goalValue || "";
   $("goalYear").value = goalTargetDate
     ? new Date(goalTargetDate).getFullYear()
@@ -3225,6 +3286,7 @@ function addProfile(name) {
     themeChoice: currentThemeChoice,
     darkMode: isDarkMode,
     passiveIncomeAssetSelection: null,
+    firstTimeContentHidden: isFirstTimeContentHidden(),
   });
   if (
     profiles.length === 2 &&
@@ -3290,6 +3352,7 @@ function deleteActiveProfile() {
     updateFireForecastCard();
     refreshFireProjection();
     updateEmptyStates();
+    applyFirstTimeContentHidden(false, { persistProfile: false });
     persist();
     renderProfileOptions();
   }
@@ -4572,8 +4635,9 @@ function navigateTo(viewId) {
     try {
       const pending = localStorage.getItem(LS.onboardPending) === "1";
       const seen = localStorage.getItem(LS.onboardSeen) === "1";
+      const firstTimeHidden = isFirstTimeContentHidden();
       // Show onboarding if user explicitly asked (pending) OR hasn't seen it before
-      if (pending || !seen) {
+      if (!firstTimeHidden && (pending || !seen)) {
         const tpl = document.importNode(
           $("tpl-onboard-data").content,
           true,
@@ -4581,6 +4645,9 @@ function navigateTo(viewId) {
         openModalNode(tpl);
         localStorage.setItem(LS.onboardPending, "0");
         localStorage.setItem(LS.onboardSeen, "1");
+      } else {
+        if (pending) localStorage.setItem(LS.onboardPending, "0");
+        if (!seen) localStorage.setItem(LS.onboardSeen, "1");
       }
     } catch (_) {}
     // Keep empty states fresh when navigating back to Assets & Goals
@@ -4589,12 +4656,14 @@ function navigateTo(viewId) {
     updateEmptyStates();
     try {
       const seen = localStorage.getItem(LS.forecastTip) === "1";
-      if (!seen) {
+      if (!seen && !isFirstTimeContentHidden()) {
         const tpl = document.importNode(
           $("tpl-onboard-forecast").content,
           true,
         );
         openModalNode(tpl);
+        localStorage.setItem(LS.forecastTip, "1");
+      } else if (!seen) {
         localStorage.setItem(LS.forecastTip, "1");
       }
     } catch (_) {}
@@ -5519,7 +5588,7 @@ window.addEventListener("load", () => {
   if (brandHome)
     on(brandHome, "click", () => {
       const seen = localStorage.getItem(LS.welcome) === "1";
-      const disabled = localStorage.getItem(LS.welcomeDisabled) === "1";
+      const disabled = isFirstTimeContentHidden();
       if (!seen && !disabled) {
         navigateTo("welcome");
         try {
@@ -5824,6 +5893,19 @@ window.addEventListener("load", () => {
                     ? filteredProfiles[0]?.id
                     : parsed.activeProfileId;
                 profiles = filteredProfiles.map((profile) => ({ ...profile }));
+                profiles.forEach((profile) => {
+                  if (!profile || typeof profile !== "object") return;
+                  if (
+                    Object.prototype.hasOwnProperty.call(
+                      profile,
+                      "firstTimeContentHidden",
+                    )
+                  ) {
+                    profile.firstTimeContentHidden = !!profile.firstTimeContentHidden;
+                  } else {
+                    profile.firstTimeContentHidden = getStoredFirstTimeHidden();
+                  }
+                });
                 activeProfile =
                   profiles.find((p) => p.id == nextActiveId) || profiles[0];
                 assets = activeProfile.assets || [];
@@ -5882,6 +5964,10 @@ window.addEventListener("load", () => {
                 activeProfile.fireForecastInflation = fireForecastInflation;
                 activeProfile.fireForecastRetireDate = fireForecastRetireDate;
                 applyProfilePreferences(activeProfile);
+                applyFirstTimeContentHidden(
+                  isFirstTimeContentHidden(activeProfile),
+                  { persistProfile: false },
+                );
                 const inflEl = $("inflationRate");
                 if (inflEl) inflEl.value = inflationRate;
                 $("goalValue").value = goalValue || "";
@@ -6034,27 +6120,11 @@ window.addEventListener("load", () => {
 
   // First-time content toggle
   const welcomeToggle = $("welcomeToggle");
-  const welcomeDisabled =
-    localStorage.getItem(LS.welcomeDisabled) === "1";
-  const welcomeBtn = document.querySelector(
-    'nav button[data-target="welcome"]',
-  );
-  const firstTimeContent = document.querySelectorAll("[data-first-time]");
-  if (welcomeBtn) welcomeBtn.classList.toggle("hidden", welcomeDisabled);
-  firstTimeContent.forEach((el) =>
-    el.classList.toggle("hidden", welcomeDisabled),
-  );
+  updateFirstTimeContentVisibility(isFirstTimeContentHidden());
   if (welcomeToggle) {
-    welcomeToggle.checked = welcomeDisabled;
     on(welcomeToggle, "change", (e) => {
       const hide = e.target.checked;
-      try {
-        localStorage.setItem(LS.welcomeDisabled, hide ? "1" : "0");
-      } catch (_) {}
-      if (welcomeBtn) welcomeBtn.classList.toggle("hidden", hide);
-      firstTimeContent.forEach((el) =>
-        el.classList.toggle("hidden", hide),
-      );
+      applyFirstTimeContentHidden(hide);
       if (hide && $("welcome").classList.contains("active"))
         navigateTo("data-entry");
     });
@@ -6101,7 +6171,7 @@ window.addEventListener("load", () => {
   if (fvDate) fvDate.min = new Date().toISOString().split("T")[0];
   // First-run welcome routing
   const seen = localStorage.getItem(LS.welcome) === "1";
-  if (!seen && !welcomeDisabled) {
+  if (!seen && !isFirstTimeContentHidden()) {
     navigateTo("welcome");
     localStorage.setItem(LS.welcome, "1");
   } else {
