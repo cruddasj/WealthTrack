@@ -3219,7 +3219,7 @@ function switchProfile(id, { showFeedback = false } = {}) {
   renderProfileOptions();
   if (showFeedback && activeProfile) {
     const name = (activeProfile.name || "").trim() || "Unnamed profile";
-    showAlert(`Switched to profile: ${name}`);
+    showAlert(`Switched to profile ${name}`);
   }
 }
 
