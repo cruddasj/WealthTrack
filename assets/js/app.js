@@ -6005,22 +6005,29 @@ window.addEventListener("load", () => {
   if (themeSel)
     on(themeSel, "change", (e) => applyThemeChoice(e.target.value));
 
-  // Welcome page toggle
+  // First-time content toggle
   const welcomeToggle = $("welcomeToggle");
   const welcomeDisabled =
     localStorage.getItem(LS.welcomeDisabled) === "1";
   const welcomeBtn = document.querySelector(
     'nav button[data-target="welcome"]',
   );
+  const firstTimeContent = document.querySelectorAll("[data-first-time]");
   if (welcomeBtn) welcomeBtn.classList.toggle("hidden", welcomeDisabled);
+  firstTimeContent.forEach((el) =>
+    el.classList.toggle("hidden", welcomeDisabled),
+  );
   if (welcomeToggle) {
-    welcomeToggle.checked = !welcomeDisabled;
+    welcomeToggle.checked = welcomeDisabled;
     on(welcomeToggle, "change", (e) => {
-      const hide = !e.target.checked;
+      const hide = e.target.checked;
       try {
         localStorage.setItem(LS.welcomeDisabled, hide ? "1" : "0");
       } catch (_) {}
       if (welcomeBtn) welcomeBtn.classList.toggle("hidden", hide);
+      firstTimeContent.forEach((el) =>
+        el.classList.toggle("hidden", hide),
+      );
       if (hide && $("welcome").classList.contains("active"))
         navigateTo("data-entry");
     });
