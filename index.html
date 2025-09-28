@@ -421,6 +421,22 @@
               </p>
             </div>
 
+            <div class="md:col-span-full">
+              <label for="assetTaxTreatment" class="form-label">
+                Tax treatment for UK forecasts
+              </label>
+              <select id="assetTaxTreatment" class="input-field">
+                <option value="tax-free">Tax-free or sheltered (ISA, pension)</option>
+                <option value="income">Taxed as income (interest, rent, bond coupons)</option>
+                <option value="dividend">Taxed as dividends</option>
+                <option value="capital-gains">Capital gains tax on sale</option>
+              </select>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                Determines how this asset uses your UK allowances and tax band in
+                projections. Adjust the defaults from the Settings page.
+              </p>
+            </div>
+
             <div
               class="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-4 md:col-span-full"
             >
@@ -948,7 +964,8 @@
         <div class="card" id="passiveIncomeCard">
           <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Estimated Passive Income</h3>
           <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
-            Based on expected annual returns and current values.
+            Based on expected annual returns after tax and current values. Update your tax
+            settings to change these net figures.
           </p>
           <div class="mb-4">
             <label for="passiveIncomeDate" class="form-label"
@@ -1206,6 +1223,9 @@
             </button>
             <button class="tab-btn" data-tab-target="simple-interest">
               Simple Interest
+            </button>
+            <button class="tab-btn" data-tab-target="tax-impact">
+              UK Tax Impact
             </button>
             <button class="tab-btn" data-tab-target="fire-calculator">
               FIRE (Simple)
@@ -1475,6 +1495,76 @@
               </div>
             </form>
             <div id="simpleInterestResult" class="mt-4"></div>
+          </div>
+
+          <div id="tax-impact" class="tab-content hidden">
+            <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
+              UK Tax Impact Estimator
+            </h3>
+            <p class="text-sm text-gray-600 dark:text-gray-300 mb-4">
+              Estimate the annual tax due on an asset using your tax settings. Select an existing
+              asset to use its current value and growth assumptions, or keep manual entry to model a
+              what-if scenario.
+            </p>
+            <form id="taxImpactForm" class="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4">
+              <div class="md:col-span-2">
+                <label for="taxAssetSelect" class="form-label">Asset</label>
+                <select id="taxAssetSelect" class="input-field">
+                  <option value="">Manual entry</option>
+                </select>
+                <p id="taxCalculatorSourceNotice" class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Manual scenario. The allowances above are applied entirely to this asset.
+                </p>
+              </div>
+              <div>
+                <label for="taxAssetValue" class="form-label">
+                  Asset value (<span data-currency-symbol>£</span>)
+                </label>
+                <input
+                  type="number"
+                  step="any"
+                  id="taxAssetValue"
+                  class="input-field"
+                  placeholder="e.g. 10000"
+                />
+              </div>
+              <div>
+                <label for="taxAssetReturn" class="form-label">
+                  Expected annual return (%)
+                </label>
+                <input
+                  type="number"
+                  step="any"
+                  id="taxAssetReturn"
+                  class="input-field"
+                  placeholder="e.g. 4"
+                />
+              </div>
+              <div>
+                <label for="taxAssetTreatment" class="form-label">Tax treatment</label>
+                <select id="taxAssetTreatment" class="input-field">
+                  <option value="income">Taxed as income (interest, rent, bond coupons)</option>
+                  <option value="dividend">Taxed as dividends</option>
+                  <option value="capital-gains">Capital gains tax on sale</option>
+                  <option value="tax-free">Tax-free or sheltered (ISA, pension)</option>
+                </select>
+              </div>
+              <div>
+                <label for="taxScenario" class="form-label">Scenario</label>
+                <select id="taxScenario" class="input-field">
+                  <option value="base">Expected growth</option>
+                  <option value="low">Low growth</option>
+                  <option value="high">High growth</option>
+                </select>
+              </div>
+              <div class="md:col-span-2 flex items-end">
+                <button type="submit" class="btn btn-block btn-green">Estimate tax</button>
+              </div>
+            </form>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
+              Results are annual and use the allowances set above. Tax estimates are illustrative and assume UK rules.
+            </p>
+            <div id="taxCalculatorResult" class="mt-4"></div>
           </div>
 
           <div id="fire-calculator" class="tab-content hidden">
@@ -1979,6 +2069,64 @@
           </div>
         </div>
 
+        <div class="card">
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
+            UK Tax Settings
+          </h3>
+          <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
+            Choose your UK tax band and adjust annual allowances. Forecasts and passive income
+            use these values to model net, after-tax growth for taxable assets.
+          </p>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4">
+            <div>
+              <label for="taxBandSelect" class="form-label">Tax band</label>
+              <select id="taxBandSelect" class="input-field">
+                <option value="basic">Basic rate (20%)</option>
+                <option value="higher">Higher rate (40%)</option>
+                <option value="additional">Additional rate (45%)</option>
+              </select>
+            </div>
+            <div>
+              <label for="taxIncomeAllowance" class="form-label">
+                Savings allowance (<span data-currency-symbol>£</span>)
+              </label>
+              <input
+                type="number"
+                step="any"
+                id="taxIncomeAllowance"
+                class="input-field"
+              />
+            </div>
+            <div>
+              <label for="taxDividendAllowance" class="form-label">
+                Dividend allowance (<span data-currency-symbol>£</span>)
+              </label>
+              <input
+                type="number"
+                step="any"
+                id="taxDividendAllowance"
+                class="input-field"
+              />
+            </div>
+            <div>
+              <label for="taxCapitalAllowance" class="form-label">
+                Capital gains allowance (<span data-currency-symbol>£</span>)
+              </label>
+              <input
+                type="number"
+                step="any"
+                id="taxCapitalAllowance"
+                class="input-field"
+              />
+            </div>
+          </div>
+          <p id="taxBandSummary" class="text-sm text-gray-600 dark:text-gray-300 mt-3"></p>
+          <p id="taxAllowanceSummary" class="text-xs text-gray-500 dark:text-gray-400 mt-1"></p>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
+            Allowances apply per tax year across all assets marked as taxable. Changes update forecasts automatically.
+          </p>
+        </div>
+
         <div id="welcomeCard" class="card">
           <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Welcome Page</h3>
           <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
@@ -2130,6 +2278,20 @@
                 ><span class="toggle-thumb"></span
               ></span>
             </label>
+          </div>
+          <div class="sm:col-span-2">
+            <label for="editAssetTaxTreatment" class="form-label">
+              Tax treatment for UK forecasts
+            </label>
+            <select id="editAssetTaxTreatment" class="input-field">
+              <option value="tax-free">Tax-free or sheltered (ISA, pension)</option>
+              <option value="income">Taxed as income (interest, rent, bond coupons)</option>
+              <option value="dividend">Taxed as dividends</option>
+              <option value="capital-gains">Capital gains tax on sale</option>
+            </select>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              Matches the options on the add asset form and controls how UK tax is applied.
+            </p>
           </div>
           <div>
             <label for="editLowGrowth" class="form-label">Low Growth (%)</label>
