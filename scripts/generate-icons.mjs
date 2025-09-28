@@ -6,10 +6,11 @@ const root = path.resolve(process.cwd());
 const srcSvg = path.join(root, 'assets', 'icons', 'app-logo.svg');
 const outDir = path.join(root, 'assets', 'icons');
 
-const sizes = [192, 256, 384, 512];
+const sizes = [192, 256, 384, 512, 1024];
 const brandBg = '#111827';
 const SCALE_MASKABLE = 0.8; // safe zone recommended
 const SCALE_ANY = 0.9; // slightly larger for launcher
+const MIN_DENSITY = 1024; // ensure sharp rasterization for large outputs
 
 async function run() {
   const svgRaw = await fs.promises.readFile(srcSvg, 'utf8');
@@ -20,7 +21,8 @@ async function run() {
     // Maskable (splash): dark tile + white logo centered
     {
       const outMaskable = path.join(outDir, `icon-${size}-maskable.png`);
-      const logoBuf = await sharp(svgWhite, { density: 512 })
+      const density = Math.max(MIN_DENSITY, size);
+      const logoBuf = await sharp(svgWhite, { density })
         .resize(Math.round(size * SCALE_MASKABLE), Math.round(size * SCALE_MASKABLE), { fit: 'contain' })
         .png()
         .toBuffer();
@@ -40,7 +42,8 @@ async function run() {
     // Launcher (home screen): transparent + white logo, slightly bigger
     {
       const outAny = path.join(outDir, `icon-${size}.png`);
-      const logoBuf = await sharp(svgWhite, { density: 512 })
+      const density = Math.max(MIN_DENSITY, size);
+      const logoBuf = await sharp(svgWhite, { density })
         .resize(Math.round(size * SCALE_ANY), Math.round(size * SCALE_ANY), { fit: 'contain' })
         .png()
         .toBuffer();
