@@ -6,6 +6,7 @@ WealthTrack is a personal wealth projection and planning tool built as a single-
 
 - **Assets & Goals** – Track assets, liabilities, and savings targets.
 - **Forecasts** – Model future balances with configurable growth assumptions, one-off events, and stress tests.
+- **UK tax modelling** – Configure allowances and taxpayer band, choose per-asset tax treatments, and review detailed after-tax estimates.
 - **Portfolio Insights** – Visualise allocations, income projections, and stress scenarios.
 - **Snapshots** – Save checkpoints and review progress over time.
 - **Custom Themes** – Switch between dark mode and alternate visual themes.
@@ -33,6 +34,17 @@ WealthTrack is installable as a Progressive Web App (PWA):
 3. The `index.html` file registers the service worker and includes the manifest and icon references.
 
 To install the app, open it in a supporting browser (Chrome, Edge, or mobile equivalents) and use the “Install”/“Add to Home Screen” option.
+
+## UK tax modelling
+
+WealthTrack includes tooling to model UK taxes across interest, dividends, and capital gains so projections show after-tax growth.
+
+- **Tax settings card** – Set your taxpayer band (basic or higher/additional) and update the annual allowances that apply to savings interest, dividends, and capital gains. These allowances are stored per profile and reset each April in real life, so adjust them whenever the rules change.
+- **Per-asset tax treatment** – When adding or editing an asset, pick whether the holding is tax-free, income-taxable, dividend-taxable, or subject to capital gains (standard or the higher property band). The model shares allowances evenly between assets with the same treatment and applies the relevant rates for your band.
+- **After-tax forecasts** – Forecasts, passive income summaries, and the FIRE projection all deduct tax before reinvesting growth so you can see realistic net outcomes.
+- **Asset tax calculator** – Use the calculator button in the assets table to open a detailed breakdown of the allowance share, taxable amount, and estimated tax due for the next year based on your expected returns.
+
+If you need a different allowance split across assets, update the allowance values in Settings and the calculator will reflect the new share immediately.
 
 ## Deploying to GitHub Pages
 

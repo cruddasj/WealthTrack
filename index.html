@@ -90,6 +90,11 @@
             d="M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"
           />
         </symbol>
+        <symbol id="i-calculator" viewBox="0 0 24 24">
+          <path
+            d="M7 3a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2H7zm0 2h10v4H7V5zm2 6a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-1a1 1 0 0 0-1-1H9zm5 0a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-1a1 1 0 0 0-1-1h-1zm-5 5a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-1a1 1 0 0 0-1-1H9zm5 0a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-1a1 1 0 0 0-1-1h-1z"
+          />
+        </symbol>
       </defs>
     </svg>
 
@@ -418,6 +423,22 @@
               <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
                 If off, this asset will be excluded from Estimated Passive
                 Income on the Portfolio Insights page.
+              </p>
+            </div>
+
+            <div class="md:col-span-full">
+              <label for="assetTaxTreatment" class="form-label"
+                >Tax treatment</label
+              >
+              <select id="assetTaxTreatment" class="input-field">
+                <option value="none">Tax-free wrapper or fully sheltered</option>
+                <option value="income">Income tax (interest)</option>
+                <option value="dividend">Dividend tax</option>
+                <option value="capital">Capital gains tax (shares &amp; funds)</option>
+                <option value="capital-property">Capital gains tax (residential property)</option>
+              </select>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                This choice drives how UK tax is applied in forecasts. Assets marked as taxable will have returns reduced by the selected rates after the allowances in Settings are considered.
               </p>
             </div>
 
@@ -948,7 +969,7 @@
         <div class="card" id="passiveIncomeCard">
           <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Estimated Passive Income</h3>
           <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
-            Based on expected annual returns and current values.
+            Based on expected annual returns and current values after applying your UK tax settings.
           </p>
           <div class="mb-4">
             <label for="passiveIncomeDate" class="form-label"
@@ -984,8 +1005,8 @@
             </div>
           </div>
           <p class="text-xs text-gray-500 dark:text-gray-400 mt-3">
-            Excludes new contributions; shows growth from appreciation only,
-            using your selected date when provided.
+            Excludes new contributions. Shows growth from appreciation only,
+            net of any income, dividend, or capital gains tax triggered by the selected treatment.
           </p>
         </div>
 
@@ -1801,6 +1822,129 @@
           </div>
         </div>
 
+        <div class="card mb-6">
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
+            UK Tax Settings
+          </h3>
+          <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
+            Choose your taxpayer band and allowances so WealthTrack can model UK income tax, dividend tax, and capital gains on taxable assets.
+          </p>
+          <form
+            id="taxSettingsForm"
+            class="grid grid-cols-1 md:grid-cols-2 gap-4"
+          >
+            <div class="md:col-span-full">
+              <p class="text-sm font-semibold text-gray-700 dark:text-gray-200">
+                Current taxpayer band
+              </p>
+              <p
+                id="taxBandSummary"
+                class="text-sm text-gray-600 dark:text-gray-300 mt-1"
+              ></p>
+            </div>
+            <div class="md:col-span-full">
+              <span class="form-label">Taxpayer type</span>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-1">
+                <label
+                  class="flex items-start gap-3 p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
+                >
+                  <input
+                    type="radio"
+                    name="taxpayerType"
+                    value="basic"
+                    class="mt-1"
+                  />
+                  <span>
+                    <span class="font-semibold text-gray-900 dark:text-gray-100"
+                      >Basic rate</span
+                    >
+                    <span class="block text-xs text-gray-500 dark:text-gray-400"
+                      >20% income · 8.75% dividends · 10% capital gains</span
+                    >
+                  </span>
+                </label>
+                <label
+                  class="flex items-start gap-3 p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
+                >
+                  <input
+                    type="radio"
+                    name="taxpayerType"
+                    value="higher"
+                    class="mt-1"
+                  />
+                  <span>
+                    <span class="font-semibold text-gray-900 dark:text-gray-100"
+                      >Higher / additional rate</span
+                    >
+                    <span class="block text-xs text-gray-500 dark:text-gray-400"
+                      >40% income · 33.75% dividends · 20% capital gains</span
+                    >
+                  </span>
+                </label>
+              </div>
+            </div>
+            <div>
+              <label for="taxIncomeAllowance" class="form-label"
+                >Personal savings allowance (<span data-currency-symbol>£</span>)</label
+              >
+              <input
+                type="number"
+                step="any"
+                min="0"
+                id="taxIncomeAllowance"
+                class="input-field"
+              />
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                Defaults to £1,000 for basic-rate taxpayers and £500 for higher-rate taxpayers.
+              </p>
+            </div>
+            <div>
+              <label for="taxDividendAllowance" class="form-label"
+                >Dividend allowance (<span data-currency-symbol>£</span>)</label
+              >
+              <input
+                type="number"
+                step="any"
+                min="0"
+                id="taxDividendAllowance"
+                class="input-field"
+              />
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                Default £500 for the 2024/25 tax year.
+              </p>
+            </div>
+            <div>
+              <label for="taxCapitalAllowance" class="form-label"
+                >Capital gains allowance (<span data-currency-symbol>£</span>)</label
+              >
+              <input
+                type="number"
+                step="any"
+                min="0"
+                id="taxCapitalAllowance"
+                class="input-field"
+              />
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                Default £3,000 for the 2024/25 tax year.
+              </p>
+            </div>
+            <div class="md:col-span-full text-xs text-gray-500 dark:text-gray-400">
+              Allowances reset each tax year. WealthTrack splits them evenly across assets with the same tax treatment and applies them to monthly forecasts for a consistent view of after-tax growth. Enter allowance values in your selected currency.
+            </div>
+            <div class="md:col-span-full flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <button type="submit" class="btn btn-green w-full sm:w-auto">
+                Save tax settings
+              </button>
+              <span
+                class="text-sm text-green-600 dark:text-green-400 hidden"
+                data-tax-saved
+              >
+                Saved! Forecasts refreshed with the new tax assumptions.
+              </span>
+            </div>
+          </form>
+        </div>
+
         <div id="exportCard" class="card flex flex-col">
           <div class="flex-grow">
             <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Export Your Data</h3>
@@ -2131,6 +2275,18 @@
               ></span>
             </label>
           </div>
+          <div class="sm:col-span-2">
+            <label for="editAssetTaxTreatment" class="form-label"
+              >Tax treatment</label
+            >
+            <select id="editAssetTaxTreatment" class="input-field">
+              <option value="none">Tax-free wrapper or fully sheltered</option>
+              <option value="income">Income tax (interest)</option>
+              <option value="dividend">Dividend tax</option>
+              <option value="capital">Capital gains tax (shares &amp; funds)</option>
+              <option value="capital-property">Capital gains tax (residential property)</option>
+            </select>
+          </div>
           <div>
             <label for="editLowGrowth" class="form-label">Low Growth (%)</label>
             <input
@@ -2170,6 +2326,92 @@
             <button type="submit" class="btn btn-green">Save Changes</button>
           </div>
         </form>
+      </div>
+    </template>
+
+    <template id="tpl-asset-tax">
+      <div class="space-y-4">
+        <div>
+          <h4 class="text-xl font-bold text-gray-900 dark:text-gray-100">
+            Tax estimate for <span data-asset-name></span>
+          </h4>
+          <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">
+            Taxpayer band: <span class="font-medium" data-tax-band></span>
+          </p>
+          <p class="text-sm text-gray-600 dark:text-gray-300">
+            Tax treatment: <span class="font-medium" data-tax-treatment></span>
+          </p>
+        </div>
+        <p class="text-sm text-gray-600 dark:text-gray-300" data-tax-summary></p>
+        <div
+          class="overflow-x-auto"
+          data-tax-table
+        >
+          <table
+            class="min-w-full text-sm divide-y divide-gray-200 dark:divide-gray-700"
+          >
+            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+              <tr>
+                <th class="text-left px-4 py-2 font-medium text-gray-700 dark:text-gray-200">
+                  Current value (today)
+                </th>
+                <td class="px-4 py-2 text-gray-700 dark:text-gray-300" data-current-value></td>
+              </tr>
+              <tr>
+                <th class="text-left px-4 py-2 font-medium text-gray-700 dark:text-gray-200">
+                  Expected annual return
+                </th>
+                <td class="px-4 py-2 text-gray-700 dark:text-gray-300" data-expected-rate></td>
+              </tr>
+              <tr>
+                <th class="text-left px-4 py-2 font-medium text-gray-700 dark:text-gray-200">
+                  Gross return before tax
+                </th>
+                <td class="px-4 py-2 text-gray-700 dark:text-gray-300" data-gross-return></td>
+              </tr>
+              <tr>
+                <th class="text-left px-4 py-2 font-medium text-gray-700 dark:text-gray-200">
+                  Allowance share for this asset
+                </th>
+                <td class="px-4 py-2 text-gray-700 dark:text-gray-300" data-allowance-share></td>
+              </tr>
+              <tr>
+                <th class="text-left px-4 py-2 font-medium text-gray-700 dark:text-gray-200">
+                  Allowance used by this return
+                </th>
+                <td class="px-4 py-2 text-gray-700 dark:text-gray-300" data-allowance-used></td>
+              </tr>
+              <tr>
+                <th class="text-left px-4 py-2 font-medium text-gray-700 dark:text-gray-200">
+                  Taxable amount
+                </th>
+                <td class="px-4 py-2 text-gray-700 dark:text-gray-300" data-taxable-amount></td>
+              </tr>
+              <tr>
+                <th class="text-left px-4 py-2 font-medium text-gray-700 dark:text-gray-200">
+                  Tax rate applied
+                </th>
+                <td class="px-4 py-2 text-gray-700 dark:text-gray-300" data-tax-rate></td>
+              </tr>
+              <tr>
+                <th class="text-left px-4 py-2 font-medium text-gray-700 dark:text-gray-200">
+                  Estimated tax due
+                </th>
+                <td class="px-4 py-2 text-gray-700 dark:text-gray-300" data-tax-due></td>
+              </tr>
+              <tr>
+                <th class="text-left px-4 py-2 font-medium text-gray-700 dark:text-gray-200">
+                  Net return after tax
+                </th>
+                <td class="px-4 py-2 text-gray-700 dark:text-gray-300" data-net-return></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="text-xs text-gray-500 dark:text-gray-400" data-tax-note></p>
+        <div class="flex justify-end">
+          <button class="btn btn-gray" data-close>Close</button>
+        </div>
       </div>
     </template>
 
@@ -2335,6 +2577,10 @@
           <li>
             Set expected growth rates (low / expected / high) for better
             scenarios.
+          </li>
+          <li>
+            Pick the tax treatment (tax-free, income, dividends, or capital gains)
+            so the model can deduct UK taxes accurately.
           </li>
           <li>
             Set a wealth goal and target year to unlock Forecasts and track progress.

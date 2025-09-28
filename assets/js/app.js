@@ -34,6 +34,74 @@ const getImportFileToken = (file) =>
     ? `${file.name}|${file.size}|${file.lastModified}`
     : null;
 
+const TAX_TREATMENTS = {
+  none: {
+    key: "none",
+    label: "Tax-free wrapper",
+    shortLabel: "Tax-free",
+    description:
+      "Use this for ISAs, pensions within allowances, or other holdings where returns are not taxed.",
+    allowanceKey: null,
+    rateBasic: 0,
+    rateHigher: 0,
+  },
+  income: {
+    key: "income",
+    label: "Income tax (interest)",
+    shortLabel: "Income tax",
+    description:
+      "Applies the savings income rates. Suitable for cash interest held outside a tax wrapper.",
+    allowanceKey: "income",
+    rateBasic: 0.2,
+    rateHigher: 0.4,
+  },
+  dividend: {
+    key: "dividend",
+    label: "Dividend tax",
+    shortLabel: "Dividend tax",
+    description:
+      "Use for share or fund dividends that are taxable.",
+    allowanceKey: "dividend",
+    rateBasic: 0.0875,
+    rateHigher: 0.3375,
+  },
+  capital: {
+    key: "capital",
+    label: "Capital gains tax",
+    shortLabel: "Capital gains",
+    description:
+      "Applies the standard capital gains tax rates for shares and funds outside wrappers.",
+    allowanceKey: "capital",
+    rateBasic: 0.1,
+    rateHigher: 0.2,
+  },
+  "capital-property": {
+    key: "capital-property",
+    label: "Capital gains (property)",
+    shortLabel: "CGT property",
+    description:
+      "Higher capital gains tax band used for residential property that isn't your main home.",
+    allowanceKey: "capital",
+    rateBasic: 0.18,
+    rateHigher: 0.28,
+  },
+};
+
+const TAX_ALLOWANCE_PROPS = {
+  income: "incomeAllowance",
+  dividend: "dividendAllowance",
+  capital: "capitalGainsAllowance",
+};
+
+const getDefaultTaxSettings = () => ({
+  taxpayerType: "basic",
+  incomeAllowance: 1000,
+  dividendAllowance: 500,
+  capitalGainsAllowance: 3000,
+});
+
+let taxSettings = getDefaultTaxSettings();
+
 // --- DOM helpers ---
 const $ = (id) => document.getElementById(id);
 const on = (el, ev, fn) => el.addEventListener(ev, fn);
@@ -368,6 +436,7 @@ function normalizeImportedProfile(profile, index = 0) {
       isFinite(profile.fireForecastRetireDate)
         ? profile.fireForecastRetireDate
         : null,
+    taxSettings: normalizeTaxSettings(profile?.taxSettings),
   };
 }
 
@@ -402,6 +471,7 @@ function prepareImportedProfiles(data) {
       fireForecastFrequency: data?.fireForecastFrequency,
       fireForecastInflation: data?.fireForecastInflation,
       fireForecastRetireDate: data?.fireForecastRetireDate,
+      taxSettings: data?.taxSettings,
     },
     0,
   );
@@ -470,6 +540,7 @@ function saveCurrentProfile() {
   activeProfile.fireForecastFrequency = fireForecastFrequency;
   activeProfile.fireForecastInflation = fireForecastInflation;
   activeProfile.fireForecastRetireDate = fireForecastRetireDate;
+  activeProfile.taxSettings = taxSettings;
 }
 function persist() {
   saveCurrentProfile();
@@ -483,6 +554,27 @@ function updateGoalButton() {
   if (btn) btn.textContent = goalValue > 0 && goalTargetDate ? "Update" : "Set";
 }
 
+function updateTaxSettingsForm() {
+  const form = $("taxSettingsForm");
+  if (!form) return;
+  const type = taxSettings.taxpayerType === "higher" ? "higher" : "basic";
+  const radios = form.querySelectorAll('input[name="taxpayerType"]');
+  radios.forEach((radio) => {
+    radio.checked = radio.value === type;
+  });
+  const setValue = (id, value) => {
+    const input = $(id);
+    if (!input) return;
+    const safe = Number.isFinite(value) ? value : 0;
+    input.value = safe;
+  };
+  setValue("taxIncomeAllowance", taxSettings.incomeAllowance);
+  setValue("taxDividendAllowance", taxSettings.dividendAllowance);
+  setValue("taxCapitalAllowance", taxSettings.capitalGainsAllowance);
+  const summary = $("taxBandSummary");
+  if (summary) summary.textContent = formatTaxBandSummary();
+}
+
 const perYear = { none: 0, monthly: 12, quarterly: 4, yearly: 1 };
 const MS_PER_YEAR = 1000 * 60 * 60 * 24 * 365.25;
 const monthlyFrom = (freq, amount) =>
@@ -492,6 +584,129 @@ const monthlyFrom = (freq, amount) =>
     quarterly: amount / 3,
     yearly: amount / 12,
   })[freq] || 0;
+
+const normalizeTaxSettings = (settings) => {
+  const defaults = getDefaultTaxSettings();
+  if (!settings || typeof settings !== "object") return { ...defaults };
+  const next = { ...defaults };
+  const type = settings.taxpayerType === "higher" ? "higher" : "basic";
+  next.taxpayerType = type;
+  ["incomeAllowance", "dividendAllowance", "capitalGainsAllowance"].forEach(
+    (key) => {
+      const raw = parseFloat(settings[key]);
+      next[key] = Number.isFinite(raw) && raw >= 0 ? raw : defaults[key];
+    },
+  );
+  return next;
+};
+
+const formatPercent = (value, { decimals } = {}) => {
+  if (!Number.isFinite(value)) return "0%";
+  const pct = value * 100;
+  const places =
+    typeof decimals === "number"
+      ? decimals
+      : Math.abs(pct) >= 10
+        ? 1
+        : 2;
+  return `${pct.toFixed(places)}%`;
+};
+
+const formatTaxBandSummary = () => {
+  const band = taxSettings.taxpayerType === "higher" ? "Higher / additional" : "Basic";
+  const incomeRate =
+    taxSettings.taxpayerType === "higher"
+      ? TAX_TREATMENTS.income.rateHigher
+      : TAX_TREATMENTS.income.rateBasic;
+  const dividendRate =
+    taxSettings.taxpayerType === "higher"
+      ? TAX_TREATMENTS.dividend.rateHigher
+      : TAX_TREATMENTS.dividend.rateBasic;
+  const capitalRate =
+    taxSettings.taxpayerType === "higher"
+      ? TAX_TREATMENTS.capital.rateHigher
+      : TAX_TREATMENTS.capital.rateBasic;
+  return `${band} rate taxpayer · Interest ${formatPercent(incomeRate)} · Dividends ${formatPercent(dividendRate)} · Capital gains ${formatPercent(capitalRate)}`;
+};
+
+const getTaxTreatmentMeta = (key) => TAX_TREATMENTS[key] || TAX_TREATMENTS.none;
+
+const getAnnualAllowance = (allowanceKey) => {
+  const prop = TAX_ALLOWANCE_PROPS[allowanceKey];
+  if (!prop) return 0;
+  const raw = parseFloat((taxSettings || {})[prop]);
+  return Number.isFinite(raw) && raw >= 0 ? raw : 0;
+};
+
+const getAssetTaxInfo = (asset) => {
+  const meta = getTaxTreatmentMeta(asset?.taxTreatment);
+  const rate =
+    taxSettings.taxpayerType === "higher"
+      ? meta.rateHigher || 0
+      : meta.rateBasic || 0;
+  const allowanceKey = meta.allowanceKey;
+  const allowance = allowanceKey ? getAnnualAllowance(allowanceKey) : 0;
+  const taxable = meta.key !== "none" && rate > 0;
+  return {
+    ...meta,
+    rate,
+    ratePercent: formatPercent(rate, { decimals: 1 }),
+    allowanceKey,
+    allowance,
+    taxable,
+  };
+};
+
+const computeAllowanceShares = () => {
+  const counts = { income: 0, dividend: 0, capital: 0 };
+  assets.forEach((asset) => {
+    const info = getAssetTaxInfo(asset);
+    if (info.allowanceKey) counts[info.allowanceKey]++;
+  });
+  const shares = new Map();
+  assets.forEach((asset) => {
+    const info = getAssetTaxInfo(asset);
+    const key = info.allowanceKey;
+    if (!key) {
+      shares.set(asset.dateAdded, { annual: 0, monthly: 0 });
+      return;
+    }
+    const count = counts[key] || 0;
+    const allowance = getAnnualAllowance(key);
+    const annualShare = count > 0 ? allowance / count : 0;
+    shares.set(asset.dateAdded, {
+      annual: annualShare,
+      monthly: annualShare / 12,
+    });
+  });
+  return shares;
+};
+
+const getAllowanceShareForAsset = (assetId, sharesMap) => {
+  if (!sharesMap) return { annual: 0, monthly: 0 };
+  const share = sharesMap.get(assetId);
+  if (!share) return { annual: 0, monthly: 0 };
+  return {
+    annual: Number.isFinite(share.annual) ? share.annual : 0,
+    monthly: Number.isFinite(share.monthly) ? share.monthly : 0,
+  };
+};
+
+const adjustGrowthForTax = (grossGrowth, monthlyAllowance, rate, taxable) => {
+  if (!taxable || !(grossGrowth > 0) || !(rate > 0)) {
+    return { netGrowth: grossGrowth, tax: 0, allowanceUsed: 0 };
+  }
+  const allowance = Math.max(0, monthlyAllowance || 0);
+  const allowanceUsed = Math.min(grossGrowth, allowance);
+  const taxableAmount = Math.max(0, grossGrowth - allowance);
+  const tax = taxableAmount * rate;
+  return {
+    netGrowth: grossGrowth - tax,
+    tax,
+    allowanceUsed,
+  };
+};
+
 
 const startOfToday = () => {
   const d = new Date();
@@ -552,6 +767,7 @@ function loadDemoData() {
         highGrowth: 0,
         monthlyDeposit: monthlyFrom("none", 0),
         includeInPassive: true,
+        taxTreatment: "income",
       },
       {
         name: "Index Fund",
@@ -565,6 +781,7 @@ function loadDemoData() {
         highGrowth: 8,
         monthlyDeposit: monthlyFrom("monthly", 500),
         includeInPassive: true,
+        taxTreatment: "capital",
       },
       {
         name: "Bond Fund",
@@ -578,6 +795,7 @@ function loadDemoData() {
         highGrowth: 5,
         monthlyDeposit: monthlyFrom("monthly", 200),
         includeInPassive: true,
+        taxTreatment: "income",
       },
     ];
 
@@ -628,6 +846,10 @@ function loadDemoData() {
     fireForecastFrequency = "annual";
     fireForecastInflation = inflationRate;
     fireForecastRetireDate = goalTargetDate;
+
+    taxSettings = getDefaultTaxSettings();
+    activeProfile.taxSettings = taxSettings;
+    updateTaxSettingsForm();
 
     updateFireFormInputs();
     updateFireForecastInputs();
@@ -688,6 +910,7 @@ function normalizeData() {
     if (a.lowGrowth == null) a.lowGrowth = ret;
     if (a.highGrowth == null) a.highGrowth = ret;
     if (a.includeInPassive === undefined) a.includeInPassive = true;
+    if (!a.taxTreatment) a.taxTreatment = "none";
   });
   liabilities.forEach((l) => {
     if (!l || typeof l !== "object") return;
@@ -738,6 +961,7 @@ function initProfiles() {
       fireForecastFrequency: "annual",
       fireForecastInflation: 2.5,
       fireForecastRetireDate: null,
+      taxSettings: getDefaultTaxSettings(),
     };
     profiles = [def];
     id = def.id;
@@ -759,6 +983,7 @@ function initProfiles() {
         !isFinite(p.fireForecastRetireDate)
       )
         p.fireForecastRetireDate = null;
+      p.taxSettings = normalizeTaxSettings(p.taxSettings);
     });
   }
   activeProfile = profiles.find((p) => p.id == id) || profiles[0];
@@ -805,6 +1030,7 @@ function initProfiles() {
     fireExpenses > 0 && fireWithdrawalRate > 0
       ? { annualExpenses: fireExpenses, withdrawalRate: fireWithdrawalRate }
       : null;
+  taxSettings = normalizeTaxSettings(activeProfile.taxSettings);
   activeProfile.fireExpenses = fireExpenses;
   activeProfile.fireExpensesFrequency = fireExpensesFrequency;
   activeProfile.fireWithdrawalRate = fireWithdrawalRate;
@@ -813,10 +1039,12 @@ function initProfiles() {
   activeProfile.fireForecastFrequency = fireForecastFrequency;
   activeProfile.fireForecastInflation = fireForecastInflation;
   activeProfile.fireForecastRetireDate = fireForecastRetireDate;
+  activeProfile.taxSettings = taxSettings;
   normalizeData();
   localStorage.setItem(LS.activeProfile, activeProfile.id);
 }
 initProfiles();
+updateTaxSettingsForm();
 
 const depositsSoFar = (asset, now = Date.now()) => {
   if (!asset) return 0;
@@ -923,6 +1151,34 @@ const calculatePassiveAssetValueAt = (
   return value || 0;
 };
 
+const calculateAssetTaxEstimate = (asset) => {
+  const info = getAssetTaxInfo(asset);
+  const shares = computeAllowanceShares();
+  const share = getAllowanceShareForAsset(asset?.dateAdded, shares);
+  const currentValue = calculateCurrentValue(asset);
+  const annualRate = parseFloat(asset?.return) || 0;
+  const gross = (currentValue * annualRate) / 100;
+  const positiveGross = Math.max(0, gross);
+  let allowanceApplied = 0;
+  let taxableAmount = 0;
+  let taxDue = 0;
+  if (info.taxable && positiveGross > 0) {
+    allowanceApplied = Math.min(positiveGross, share.annual || 0);
+    taxableAmount = Math.max(0, positiveGross - (share.annual || 0));
+    taxDue = taxableAmount * info.rate;
+  }
+  const net = gross - taxDue;
+  return {
+    info,
+    gross,
+    allowanceShare: share.annual || 0,
+    allowanceApplied,
+    taxableAmount,
+    taxDue,
+    net,
+  };
+};
+
 const liabilityBalanceAfterMonths = (liability, months) => {
   let balance = liability.value;
   const rate = (liability.interest || 0) / 100 / 12;
@@ -1023,6 +1279,7 @@ function buildForecastScenarios(yearsOverride = null, opts = {}) {
     ? assets.filter((a) => a && a.includeInPassive !== false)
     : assets;
   const assetIds = new Set(consideredAssets.map((a) => a.dateAdded));
+  const allowanceShares = computeAllowanceShares();
 
   simEvents.forEach((ev) => {
     if (ev.assetId && assetIds.has(ev.assetId)) {
@@ -1057,6 +1314,12 @@ function buildForecastScenarios(yearsOverride = null, opts = {}) {
       asset.lowGrowth != null ? parseFloat(asset.lowGrowth) || 0 : annualBase;
     const annualHigh =
       asset.highGrowth != null ? parseFloat(asset.highGrowth) || 0 : annualBase;
+    const taxInfo = getAssetTaxInfo(asset);
+    const allowanceShare = getAllowanceShareForAsset(
+      asset.dateAdded,
+      allowanceShares,
+    );
+    const monthlyAllowance = allowanceShare.monthly || 0;
     const arrBase = [];
     const arrLow = [];
     const arrHigh = [];
@@ -1104,9 +1367,30 @@ function buildForecastScenarios(yearsOverride = null, opts = {}) {
       low[i] += lowVal;
       high[i] += highVal;
       if (active) {
-        valueBase = valueBase * (1 + rateBase) + monthlyContribution;
-        valueLow = valueLow * (1 + rateLow) + monthlyContribution;
-        valueHigh = valueHigh * (1 + rateHigh) + monthlyContribution;
+        const growthBase = valueBase * rateBase;
+        const growthLow = valueLow * rateLow;
+        const growthHigh = valueHigh * rateHigh;
+        const adjBase = adjustGrowthForTax(
+          growthBase,
+          monthlyAllowance,
+          taxInfo.rate,
+          taxInfo.taxable,
+        );
+        const adjLow = adjustGrowthForTax(
+          growthLow,
+          monthlyAllowance,
+          taxInfo.rate,
+          taxInfo.taxable,
+        );
+        const adjHigh = adjustGrowthForTax(
+          growthHigh,
+          monthlyAllowance,
+          taxInfo.rate,
+          taxInfo.taxable,
+        );
+        valueBase = valueBase + adjBase.netGrowth + monthlyContribution;
+        valueLow = valueLow + adjLow.netGrowth + monthlyContribution;
+        valueHigh = valueHigh + adjHigh.netGrowth + monthlyContribution;
       }
     }
     nextAssetForecasts.set(asset.dateAdded, {
@@ -1295,6 +1579,63 @@ function showSnapshotDetails(snapshot) {
   openModalNode(tpl);
 }
 
+function showAssetTaxDetails(index) {
+  const asset = assets[index];
+  if (!asset) return;
+  const tpl = document.importNode($("tpl-asset-tax").content, true);
+  const estimate = calculateAssetTaxEstimate(asset);
+  const info = estimate.info;
+  const currentValue = calculateCurrentValue(asset);
+  const expectedRate = parseFloat(asset.return) || 0;
+  tpl.querySelector("[data-asset-name]").textContent = asset.name || "Asset";
+  tpl.querySelector("[data-tax-band]").textContent = formatTaxBandSummary();
+  tpl.querySelector("[data-tax-treatment]").textContent = info.label;
+  const summary = tpl.querySelector("[data-tax-summary]");
+  const table = tpl.querySelector("[data-tax-table]");
+  const note = tpl.querySelector("[data-tax-note]");
+  const allowanceShareText = fmtCurrency(estimate.allowanceShare || 0);
+
+  const populateRow = (selector, value) => {
+    const el = tpl.querySelector(selector);
+    if (el) el.textContent = value;
+  };
+
+  populateRow("[data-current-value]", fmtCurrency(currentValue));
+  populateRow(
+    "[data-expected-rate]",
+    formatPercent((expectedRate || 0) / 100, { decimals: 1 }),
+  );
+
+  if (!info.taxable) {
+    summary.textContent =
+      "This asset is treated as tax-free, so no deductions are applied in forecasts.";
+    table.classList.add("hidden");
+    note.textContent =
+      "Use the tax treatment selector on the asset to model income tax, dividend tax, or capital gains instead.";
+  } else if (!(estimate.gross > 0)) {
+    summary.textContent =
+      "The expected return for the next year is zero or negative, so no tax is due at the moment.";
+    table.classList.add("hidden");
+    note.textContent =
+      "Positive returns will automatically have tax deducted using the selected taxpayer band and allowance share.";
+  } else {
+    summary.textContent =
+      "Returns are reduced by the tax shown below before being reinvested in projections.";
+    populateRow("[data-gross-return]", fmtCurrency(estimate.gross));
+    populateRow("[data-allowance-share]", allowanceShareText);
+    populateRow("[data-allowance-used]", fmtCurrency(estimate.allowanceApplied));
+    populateRow("[data-taxable-amount]", fmtCurrency(estimate.taxableAmount));
+    populateRow("[data-tax-rate]", info.ratePercent);
+    populateRow("[data-tax-due]", fmtCurrency(estimate.taxDue));
+    populateRow("[data-net-return]", fmtCurrency(estimate.net));
+    note.textContent =
+      "Allowances are shared evenly across assets with the same tax treatment. Adjust the allowance figures in Settings if you want this asset to receive a larger or smaller share.";
+  }
+
+  tpl.querySelector("[data-close]").onclick = closeModal;
+  openModalNode(tpl);
+}
+
 function showEditAsset(index) {
   const asset = assets[index];
   if (!asset) return;
@@ -1310,6 +1651,8 @@ function showEditAsset(index) {
   tpl.querySelector("#editAssetReturn").value = asset.return;
   tpl.querySelector("#editLowGrowth").value = asset.lowGrowth;
   tpl.querySelector("#editHighGrowth").value = asset.highGrowth;
+  const taxSel = tpl.querySelector("#editAssetTaxTreatment");
+  if (taxSel) taxSel.value = asset.taxTreatment || "none";
   const inc = asset.includeInPassive !== false;
   const incEl = tpl.querySelector("#editIncludePassive");
   if (incEl) incEl.checked = inc;
@@ -1337,6 +1680,8 @@ function showEditAsset(index) {
     a.highGrowth =
       parseFloat(f.querySelector("#editHighGrowth").value) || ret;
     a.monthlyDeposit = monthlyFrom(a.frequency, a.originalDeposit);
+    const taxField = f.querySelector("#editAssetTaxTreatment");
+    a.taxTreatment = taxField ? taxField.value : a.taxTreatment || "none";
     const incCbx = f.querySelector("#editIncludePassive");
     a.includeInPassive = incCbx ? !!incCbx.checked : true;
     closeModal();
@@ -1437,8 +1782,9 @@ const ASSET_COLS = [
   "Value",
   "Deposit",
   "Growth Rates",
+  "Tax treatment",
 ];
-const ASSET_KEYS = ["name", "start", "value", "deposit", "return"];
+const ASSET_KEYS = ["name", "start", "value", "deposit", "return", "tax"];
 let assetSort = { key: "name", dir: "asc" };
 
 function buildAssetHeader() {
@@ -1486,6 +1832,17 @@ function sortAssetsForView(list) {
         const ah = a.highGrowth ?? a.return ?? 0;
         const bh = b.highGrowth ?? b.return ?? 0;
         return (ah - bh) * dir; // tertiary: high growth
+      }
+      case "tax": {
+        const aInfo = getAssetTaxInfo(a);
+        const bInfo = getAssetTaxInfo(b);
+        const labelCmp = (aInfo.shortLabel || aInfo.label || "").localeCompare(
+          bInfo.shortLabel || bInfo.label || "",
+          undefined,
+          { sensitivity: "base" },
+        );
+        if (labelCmp !== 0) return labelCmp * dir;
+        return (getAnnualAllowance(aInfo.allowanceKey) - getAnnualAllowance(bInfo.allowanceKey)) * dir;
       }
       case "current":
         return (
@@ -1885,6 +2242,7 @@ function updatePassiveIncome() {
 
   const nowTs = Date.now();
   let annualIncome = 0;
+  const allowanceShares = computeAllowanceShares();
   assets.forEach((asset) => {
     if (asset?.includeInPassive === false) return;
     const valueAtDate = calculatePassiveAssetValueAt(
@@ -1894,7 +2252,17 @@ function updatePassiveIncome() {
       nowTs,
     );
     const rate = (parseFloat(asset?.return) || 0) / 100;
-    annualIncome += valueAtDate * rate;
+    const gross = valueAtDate * rate;
+    const info = getAssetTaxInfo(asset);
+    const share = getAllowanceShareForAsset(asset.dateAdded, allowanceShares);
+    let net = gross;
+    if (info.taxable && gross > 0) {
+      const allowance = share.annual || 0;
+      const taxable = Math.max(0, gross - allowance);
+      const tax = taxable * info.rate;
+      net = gross - tax;
+    }
+    annualIncome += net;
   });
 
   const daily = annualIncome / 365.25;
@@ -2306,6 +2674,8 @@ function switchProfile(id) {
     fireExpenses > 0 && fireWithdrawalRate > 0
       ? { annualExpenses: fireExpenses, withdrawalRate: fireWithdrawalRate }
       : null;
+  taxSettings = normalizeTaxSettings(activeProfile.taxSettings);
+  activeProfile.taxSettings = taxSettings;
   $("goalValue").value = goalValue || "";
   $("goalYear").value = goalTargetDate
     ? new Date(goalTargetDate).getFullYear()
@@ -2315,6 +2685,7 @@ function switchProfile(id) {
   updateFireFormInputs();
   updateFireForecastInputs();
   updateGoalButton();
+  updateTaxSettingsForm();
   normalizeData();
   renderAssets();
   renderLiabilities();
@@ -2352,6 +2723,7 @@ function addProfile(name) {
     fireForecastFrequency: "annual",
     fireForecastInflation: 2.5,
     fireForecastRetireDate: null,
+    taxSettings: getDefaultTaxSettings(),
   });
   if (
     profiles.length === 2 &&
@@ -2397,11 +2769,13 @@ function deleteActiveProfile() {
     fireForecastFrequency = "annual";
     fireForecastInflation = 2.5;
     fireForecastRetireDate = null;
+    taxSettings = getDefaultTaxSettings();
     $("goalYear").value = "";
     $("goalValue").value = "";
     updateFireFormInputs();
     updateFireForecastInputs();
     updateGoalButton();
+    updateTaxSettingsForm();
     renderAssets();
     renderLiabilities();
     renderEvents();
@@ -2539,6 +2913,8 @@ function renderAssets() {
       ? sortAssetsForView([...assets])
       : [...assets].sort((a, b) => a.name.localeCompare(b.name));
 
+  const allowanceShares = computeAllowanceShares();
+
   tableBody.innerHTML = sorted
     .map((asset) => {
       const originalIndex = assets.findIndex((a) => a === asset);
@@ -2561,6 +2937,14 @@ function renderAssets() {
         asset.includeInPassive !== false
           ? '<span class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100" title="Included in Current Passive Income Estimates">Passive Income</span>'
           : "";
+      const taxInfo = getAssetTaxInfo(asset);
+      const share = getAllowanceShareForAsset(
+        asset.dateAdded,
+        allowanceShares,
+      );
+      const taxSummary = taxInfo.taxable
+        ? `<div class="flex flex-col"><span>${taxInfo.shortLabel || taxInfo.label}</span><span class="text-xs text-gray-500 dark:text-gray-400">Tax rate: ${taxInfo.ratePercent}</span><span class="text-xs text-gray-500 dark:text-gray-400">Allowance share: ${fmtCurrency(share.annual || 0)}</span></div>`
+        : `<span>${taxInfo.label}</span>`;
       return `<tr class="text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
     <td class="px-6 py-4 whitespace-nowrap">${asset.name}${passiveBadge}</td>
     <td class="px-6 py-4 whitespace-nowrap">${startCell}</td>
@@ -2571,7 +2955,11 @@ function renderAssets() {
       <span class="ml-3 text-xs text-gray-500 dark:text-gray-400">Exp:</span> ${asset.return || 0}%
       <span class="ml-3 text-xs text-gray-500 dark:text-gray-400">High:</span> ${asset.highGrowth || 0}%
     </td>
+    <td class="px-6 py-4 whitespace-normal">${taxSummary}</td>
     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium flex items-center gap-2">
+      <button data-action="asset-tax" data-index="${originalIndex}" class="btn-icon text-blue-600 hover:text-blue-800 dark:text-blue-300 dark:hover:text-blue-200" title="View tax estimate" aria-label="View tax estimate">
+        <svg class="h-5 w-5" fill="currentColor"><use href="#i-calculator"/></svg>
+      </button>
       <button data-action="edit-asset" data-index="${originalIndex}" class="btn-icon" title="Edit Asset">
         <svg class="h-5 w-5" fill="currentColor"><use href="#i-edit"/></svg>
       </button>
@@ -3662,6 +4050,7 @@ function navigateTo(viewId) {
     const sel = document.getElementById("themeSelect");
     if (sel)
       sel.value = ["inverted", "glass"].includes(val) ? val : "default";
+    updateTaxSettingsForm();
   }
 
   // Ensure Inflation Impact card only shows on Portfolio Insights
@@ -3843,6 +4232,9 @@ function handleFormSubmit(e) {
         originalDeposit: parseFloat(form.depositAmount.value) || 0,
         frequency: form.depositFrequency.value,
         dateAdded: Date.now(),
+        taxTreatment: form.assetTaxTreatment
+          ? form.assetTaxTreatment.value
+          : "none",
       };
       const ret = parseFloat(form.assetReturn.value) || 0;
       newAsset.return = ret;
@@ -3863,6 +4255,28 @@ function handleFormSubmit(e) {
       updateWealthChart();
       updateEmptyStates();
       form.reset();
+      break;
+    }
+    case "taxSettingsForm": {
+      const selectedType = form.querySelector(
+        'input[name="taxpayerType"]:checked',
+      );
+      const next = {
+        taxpayerType:
+          selectedType && selectedType.value === "higher" ? "higher" : "basic",
+        incomeAllowance: parseFloat(form.taxIncomeAllowance.value),
+        dividendAllowance: parseFloat(form.taxDividendAllowance.value),
+        capitalGainsAllowance: parseFloat(form.taxCapitalAllowance.value),
+      };
+      taxSettings = normalizeTaxSettings(next);
+      if (activeProfile) activeProfile.taxSettings = taxSettings;
+      updateTaxSettingsForm();
+      renderAssets();
+      const savedMsg = form.querySelector("[data-tax-saved]");
+      if (savedMsg) {
+        savedMsg.classList.remove("hidden");
+        setTimeout(() => savedMsg.classList.add("hidden"), 2500);
+      }
       break;
     }
     case "liabilityForm": {
@@ -4466,6 +4880,9 @@ window.addEventListener("load", () => {
         case "edit-asset":
           showEditAsset(+index);
           break;
+        case "asset-tax":
+          showAssetTaxDetails(+index);
+          break;
         case "edit-liability":
           showEditLiability(+index);
           break;
@@ -4738,6 +5155,8 @@ window.addEventListener("load", () => {
                   isFinite(activeProfile.fireForecastRetireDate)
                     ? activeProfile.fireForecastRetireDate
                     : null;
+                taxSettings = normalizeTaxSettings(activeProfile.taxSettings);
+                activeProfile.taxSettings = taxSettings;
                 activeProfile.fireForecastCosts = fireForecastCosts;
                 activeProfile.fireForecastFrequency = fireForecastFrequency;
                 activeProfile.fireForecastInflation = fireForecastInflation;
@@ -4751,6 +5170,7 @@ window.addEventListener("load", () => {
                 updateFireFormInputs();
                 updateFireForecastInputs();
                 updateGoalButton();
+                updateTaxSettingsForm();
                 normalizeData();
                 renderAssets();
                 renderLiabilities();
