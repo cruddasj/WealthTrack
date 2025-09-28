@@ -1206,34 +1206,10 @@
           Calculators
         </h2>
         <div class="card">
-          <div
-            class="tab-buttons flex flex-col sm:flex-row border-b border-gray-200 dark:border-gray-700 mb-6"
-          >
-            <button
-              class="tab-btn tab-btn-active"
-              data-tab-target="stock-profit"
-            >
-              Share Target Profit (%)
-            </button>
-            <button class="tab-btn" data-tab-target="stock-profit-amount">
-              Share Target Profit (<span data-currency-symbol>£</span>)
-            </button>
-            <button class="tab-btn" data-tab-target="compound-interest">
-              Compound Interest
-            </button>
-            <button class="tab-btn" data-tab-target="simple-interest">
-              Simple Interest
-            </button>
-            <button class="tab-btn" data-tab-target="tax-impact">
-              UK Tax Impact
-            </button>
-            <button class="tab-btn" data-tab-target="fire-calculator">
-              FIRE (Simple)
-            </button>
-          </div>
-
-          <div id="stock-profit" class="tab-content">
-            <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Share Target Profit (%)</h3>
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100">
+            Share Target Profit (%)
+          </h3>
+          <div class="card-body">
             <form
               id="stockProfitForm"
               class="grid grid-cols-1 md:grid-cols-2 gap-4"
@@ -1292,11 +1268,13 @@
             </form>
             <div id="stockProfitResult" class="mt-4 text-center"></div>
           </div>
+        </div>
 
-          <div id="stock-profit-amount" class="tab-content hidden">
-            <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
-              Share Target Profit (<span data-currency-symbol>£</span>)
-            </h3>
+        <div class="card">
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100">
+            Share Target Profit (<span data-currency-symbol>£</span>)
+          </h3>
+          <div class="card-body">
             <form
               id="stockProfitAmountForm"
               class="grid grid-cols-1 md:grid-cols-2 gap-4"
@@ -1371,9 +1349,13 @@
             </form>
             <div id="stockProfitAmountResult" class="mt-4 text-center"></div>
           </div>
+        </div>
 
-          <div id="compound-interest" class="tab-content hidden">
-            <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Compound Interest Calculator</h3>
+        <div class="card">
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100">
+            Compound Interest Calculator
+          </h3>
+          <div class="card-body">
             <form
               id="compoundForm"
               class="grid grid-cols-1 md:grid-cols-2 gap-4"
@@ -1445,9 +1427,13 @@
             </form>
             <div id="compoundResult" class="mt-4"></div>
           </div>
+        </div>
 
-          <div id="simple-interest" class="tab-content hidden">
-            <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Simple Interest Calculator</h3>
+        <div class="card">
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100">
+            Simple Interest Calculator
+          </h3>
+          <div class="card-body">
             <form
               id="simpleInterestForm"
               class="grid grid-cols-1 md:grid-cols-2 gap-4"
@@ -1496,11 +1482,13 @@
             </form>
             <div id="simpleInterestResult" class="mt-4"></div>
           </div>
+        </div>
 
-          <div id="tax-impact" class="tab-content hidden">
-            <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
-              UK Tax Impact Estimator
-            </h3>
+        <div class="card">
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100">
+            UK Tax Impact Estimator
+          </h3>
+          <div class="card-body">
             <p class="text-sm text-gray-600 dark:text-gray-300 mb-4">
               Estimate the annual tax due on an asset using your tax settings. Select an existing
               asset to use its current value and growth assumptions, or keep manual entry to model a
@@ -1566,13 +1554,18 @@
             </p>
             <div id="taxCalculatorResult" class="mt-4"></div>
           </div>
+        </div>
 
-          <div id="fire-calculator" class="tab-content hidden">
-            <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">FIRE (Simple)</h3>
+        <div class="card">
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100">
+            FIRE (Simple)
+          </h3>
+          <div class="card-body">
             <div class="mb-4 p-4 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 stat-box">
               <h4 class="font-semibold mb-2">How this works</h4>
               <p class="text-sm mb-2">
-                Your FIRE (Financial Independence, Retire Early) number is the lump sum you need so your investments can pay for your living costs throughout retirement.
+                Your FIRE (Financial Independence, Retire Early) number is the lump sum you need so your investments can pay for
+                your living costs throughout retirement.
               </p>
               <p class="text-sm mb-2">This simple version uses:</p>
               <ul class="list-disc ml-5 text-sm">
@@ -1627,7 +1620,6 @@
                   Classic rule-of-thumb is 4%. Adjust to your preference.
                 </p>
               </div>
-              
               <div class="md:col-span-2 flex items-end">
                 <button type="submit" class="btn btn-block btn-green">
                   Calculate
@@ -1720,251 +1712,11 @@
             </div>
           </div>
 
-          <div class="card flex flex-col">
-            <div class="flex-grow">
-              <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Import Your Data</h3>
-              <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
-                Import previously saved data to restore your information.
-              </p>
-              <div>
-                <label for="importFile" class="form-label">Select File</label>
-                <label
-                  for="importFile"
-                  class="flex items-center justify-center w-full px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600"
-                >
-                  <svg
-                    class="h-5 w-5 mr-2 text-gray-500"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                  >
-                    <path
-                      d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zM6 20V4h7v5h5v11H6z"
-                    />
-                  </svg>
-                  <span
-                    class="text-gray-900 dark:text-gray-100"
-                    data-import-filename
-                    >No file chosen</span
-                  >
-                  <input
-                    type="file"
-                    id="importFile"
-                    accept=".json"
-                    class="hidden"
-                  />
-                </label>
-              </div>
-              <div class="mt-4">
-                <label for="importPassword" class="form-label"
-                  >Password (Optional)</label
-                >
-                <input
-                  type="password"
-                  id="importPassword"
-                  placeholder="Enter password for file"
-                  class="input-field"
-                />
-              </div>
-              <div class="mt-4">
-                <label class="form-label" for="importProfileToggle"
-                  >Profiles to Import</label
-                >
-                <div id="importProfilePicker" class="relative">
-                  <button
-                    type="button"
-                    id="importProfileToggle"
-                    class="input-field flex items-center justify-between"
-                    aria-haspopup="listbox"
-                    aria-expanded="false"
-                    disabled
-                  >
-                    <span id="importProfileSummary"
-                      >Select a file to choose profiles</span
-                    >
-                    <i class="fa-solid fa-chevron-down text-gray-400 ml-2"></i>
-                  </button>
-                  <div
-                    id="importProfileMenu"
-                    class="absolute z-20 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-48 overflow-y-auto hidden"
-                  >
-                    <div id="importProfileOptions"></div>
-                  </div>
-                </div>
-                <p
-                  id="importProfileHint"
-                  class="text-xs text-gray-500 dark:text-gray-400 mt-2"
-                >
-                  Profiles from the selected file will appear here once the
-                  password (if any) is provided.
-                </p>
-              </div>
-            </div>
-            <div class="mt-4">
-              <button
-                data-action="import-data"
-                class="btn btn-block btn-blue flex items-center justify-center"
-              >
-                <svg
-                  class="h-5 w-5 mr-2"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                >
-                  <path
-                    d="M19 15h-4v4h-2v-4h-4v-2h4v-4h2v4h4v2zM5 19V5h14v8h2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2h8v-2H5z"
-                  />
-                </svg>
-                Import Data
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- One modal shell + templates -->
-        <div id="modal" class="modal modal-hidden modal-overlay">
-          <div
-            class="modal-panel max-w-xl sm:max-w-2xl w-full relative"
-          >
-            <button
-              class="modal-close absolute top-3 right-3 btn-icon"
-              data-action="close-modal"
-            >
-              ×
-            </button>
-            <div id="modal-body" class="overflow-y-auto max-h-[80vh]"></div>
-          </div>
-        </div>
-
-      <div id="settings" class="content-section">
-        <h2
-          class="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-6 text-left"
-        >
-          Settings & Data
-        </h2>
-        <div class="card mb-6">
-          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Profiles</h3>
-          <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
-            Create and switch between profiles to keep scenarios separate.
-            Assets, events, snapshots, and goals are saved per profile.
-          </p>
-          <div class="grid grid-cols-1 sm:grid-cols-4 gap-2 sm:gap-4 items-end">
-            <div class="sm:col-span-3">
-              <label for="profileSelect" class="form-label">Profile</label>
-              <div class="flex items-center gap-2">
-                <select id="profileSelect" class="input-field flex-1"></select>
-                <div class="hidden sm:flex gap-2">
-                  <button
-                    id="addProfileBtn"
-                    class="btn-icon"
-                    title="Add Profile"
-                  >
-                    <i class="fa-solid fa-plus"></i>
-                  </button>
-                  <button
-                    id="renameProfileBtn"
-                    class="btn-icon"
-                    title="Rename Profile"
-                  >
-                    <i class="fa-solid fa-pen"></i>
-                  </button>
-                  <button
-                    id="deleteProfileBtn"
-                    class="btn-icon"
-                    title="Delete Profile"
-                  >
-                    <i class="fa-solid fa-trash"></i>
-                  </button>
-                </div>
-              </div>
-              <div class="mt-2 flex flex-col gap-2 sm:hidden">
-                <button id="addProfileBtnMobile" class="btn btn-green w-full">
-                  <i class="fa-solid fa-plus mr-2"></i>Add Profile
-                </button>
-                <button id="renameProfileBtnMobile" class="btn btn-gray w-full">
-                  <i class="fa-solid fa-pen mr-2"></i>Rename Profile
-                </button>
-                <button id="deleteProfileBtnMobile" class="btn btn-red w-full">
-                  <i class="fa-solid fa-trash mr-2"></i>Delete Profile
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div id="exportCard" class="card flex flex-col">
-          <div class="flex-grow">
-            <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Export Your Data</h3>
-            <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
-              Export your data with an optional password for backup or use on
-              another device.
-            </p>
-            <div>
-              <label for="exportPassword" class="form-label"
-                >Password (Optional)</label
-              >
-              <input
-                type="password"
-                id="exportPassword"
-                placeholder="Enter a password to encrypt"
-                class="input-field"
-              />
-            </div>
-            <div class="mt-4">
-              <label class="form-label" for="exportProfileToggle"
-                >Profiles to Export</label
-              >
-              <div id="exportProfilePicker" class="relative">
-                <button
-                  type="button"
-                  id="exportProfileToggle"
-                  class="input-field flex items-center justify-between"
-                  aria-haspopup="listbox"
-                  aria-expanded="false"
-                >
-                  <span id="exportProfileSummary">All profiles selected</span>
-                  <i class="fa-solid fa-chevron-down text-gray-400 ml-2"></i>
-                </button>
-                <div
-                  id="exportProfileMenu"
-                  class="absolute z-20 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-48 overflow-y-auto hidden"
-                >
-                  <div id="exportProfileOptions"></div>
-                </div>
-              </div>
-              <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                All profiles are selected by default. Deselect any you don't
-                want to include.
-              </p>
-            </div>
-          </div>
-          <div class="mt-4">
-            <button
-              id="exportBtn"
-              data-action="export-data"
-              class="btn btn-block btn-purple flex items-center justify-center"
-            >
-              <svg
-                class="h-5 w-5 mr-2"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-              >
-                <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
-              </svg>
-              Export Data
-            </button>
-            <p
-              id="exportEmptyHint"
-              class="text-xs text-gray-500 dark:text-gray-400 mt-2 hidden"
-            >
-              No data to export yet. Add assets, liabilities, events, or
-              snapshots first.
-            </p>
-          </div>
-        </div>
-
-        <div class="card flex flex-col">
-          <div class="flex-grow">
-            <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Import Your Data</h3>
+        <div class="card">
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100">
+            Import Your Data
+          </h3>
+          <div class="card-body flex flex-col">
             <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
               Import previously saved data to restore your information.
             </p>
@@ -1988,6 +1740,12 @@
                   data-import-filename
                   >No file chosen</span
                 >
+                <input
+                  type="file"
+                  id="importFile"
+                  accept=".json"
+                  class="hidden"
+                />
               </label>
             </div>
             <div class="mt-4">
@@ -2034,138 +1792,299 @@
                 password (if any) is provided.
               </p>
             </div>
-          </div>
-          <div class="mt-4">
-            <button
-              data-action="import-data"
-              class="btn btn-block btn-blue flex items-center justify-center"
-            >
-              <svg
-                class="h-5 w-5 mr-2"
-                viewBox="0 0 24 24"
-                fill="currentColor"
+            <div class="mt-4">
+              <button
+                data-action="import-data"
+                class="btn btn-block btn-blue flex items-center justify-center"
               >
-                <path
-                  d="M19 15h-4v4h-2v-4h-4v-2h4v-4h2v4h4v2zM5 19V5h14v8h2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2h8v-2H5z"
-                />
-              </svg>
-              Import Data
+                <svg
+                  class="h-5 w-5 mr-2"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
+                  <path
+                    d="M19 15h-4v4h-2v-4h-4v-2h4v-4h2v4h4v2zM5 19V5h14v8h2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2h8v-2H5z"
+                  />
+                </svg>
+                Import Data
+              </button>
+            </div>
+          </div>
+        </div>
+        </div>
+      </div>
+
+      <!-- One modal shell + templates -->
+        <div id="modal" class="modal modal-hidden modal-overlay">
+          <div
+            class="modal-panel max-w-xl sm:max-w-2xl w-full relative"
+          >
+            <button
+              class="modal-close absolute top-3 right-3 btn-icon"
+              data-action="close-modal"
+            >
+              ×
             </button>
+            <div id="modal-body" class="overflow-y-auto max-h-[80vh]"></div>
           </div>
         </div>
 
+      <div id="settings" class="content-section">
+        <h2
+          class="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-6 text-left"
+        >
+          Settings & Data
+        </h2>
         <div class="card">
-          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Theme</h3>
-          <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
-            Choose a look and feel. Your choice is saved for next time.
-          </p>
-          <div class="max-w-xs">
-            <label for="themeSelect" class="form-label">Theme</label>
-            <select id="themeSelect" class="input-field">
-              <option value="default">Default</option>
-              <option value="inverted">Inverted</option>
-              <option value="glass">Glass</option>
-            </select>
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100">Profiles</h3>
+          <div class="card-body">
+            <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
+              Create and switch between profiles to keep scenarios separate.
+              Assets, events, snapshots, and goals are saved per profile.
+            </p>
+            <div class="grid grid-cols-1 sm:grid-cols-4 gap-2 sm:gap-4 items-end">
+              <div class="sm:col-span-3">
+                <label for="profileSelect" class="form-label">Profile</label>
+                <div class="flex items-center gap-2">
+                  <select id="profileSelect" class="input-field flex-1"></select>
+                  <div class="hidden sm:flex gap-2">
+                    <button
+                      id="addProfileBtn"
+                      class="btn-icon"
+                      title="Add Profile"
+                    >
+                      <i class="fa-solid fa-plus"></i>
+                    </button>
+                    <button
+                      id="renameProfileBtn"
+                      class="btn-icon"
+                      title="Rename Profile"
+                    >
+                      <i class="fa-solid fa-pen"></i>
+                    </button>
+                    <button
+                      id="deleteProfileBtn"
+                      class="btn-icon"
+                      title="Delete Profile"
+                    >
+                      <i class="fa-solid fa-trash"></i>
+                    </button>
+                  </div>
+                </div>
+                <div class="mt-2 flex flex-col gap-2 sm:hidden">
+                  <button id="addProfileBtnMobile" class="btn btn-green w-full">
+                    <i class="fa-solid fa-plus mr-2"></i>Add Profile
+                  </button>
+                  <button id="renameProfileBtnMobile" class="btn btn-gray w-full">
+                    <i class="fa-solid fa-pen mr-2"></i>Rename Profile
+                  </button>
+                  <button id="deleteProfileBtnMobile" class="btn btn-red w-full">
+                    <i class="fa-solid fa-trash mr-2"></i>Delete Profile
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div class="card">
-          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
-            UK Tax Settings
+        <div id="exportCard" class="card">
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100">
+            Export Your Data
           </h3>
-          <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
-            Choose your UK tax band and adjust annual allowances. Forecasts and passive income
-            use these values to model net, after-tax growth for taxable assets.
-          </p>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4">
+          <div class="card-body flex flex-col">
+            <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
+              Export your data with an optional password for backup or use on
+              another device.
+            </p>
             <div>
-              <label for="taxBandSelect" class="form-label">Tax band</label>
-              <select id="taxBandSelect" class="input-field">
-                <option value="basic">Basic rate (20%)</option>
-                <option value="higher">Higher rate (40%)</option>
-                <option value="additional">Additional rate (45%)</option>
+              <label for="exportPassword" class="form-label"
+                >Password (Optional)</label
+              >
+              <input
+                type="password"
+                id="exportPassword"
+                placeholder="Enter a password to encrypt"
+                class="input-field"
+              />
+            </div>
+            <div class="mt-4">
+              <label class="form-label" for="exportProfileToggle"
+                >Profiles to Export</label
+              >
+              <div id="exportProfilePicker" class="relative">
+                <button
+                  type="button"
+                  id="exportProfileToggle"
+                  class="input-field flex items-center justify-between"
+                  aria-haspopup="listbox"
+                  aria-expanded="false"
+                >
+                  <span id="exportProfileSummary">All profiles selected</span>
+                  <i class="fa-solid fa-chevron-down text-gray-400 ml-2"></i>
+                </button>
+                <div
+                  id="exportProfileMenu"
+                  class="absolute z-20 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-48 overflow-y-auto hidden"
+                >
+                  <div id="exportProfileOptions"></div>
+                </div>
+              </div>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                All profiles are selected by default. Deselect any you don't
+                want to include.
+              </p>
+            </div>
+            <div class="mt-4">
+              <button
+                id="exportBtn"
+                data-action="export-data"
+                class="btn btn-block btn-purple flex items-center justify-center"
+              >
+                <svg
+                  class="h-5 w-5 mr-2"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
+                  <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
+                </svg>
+                Export Data
+              </button>
+              <p
+                id="exportEmptyHint"
+                class="text-xs text-gray-500 dark:text-gray-400 mt-2 hidden"
+              >
+                No data to export yet. Add assets, liabilities, events, or
+                snapshots first.
+              </p>
+            </div>
+          </div>
+        </div>
+
+
+        <div class="card">
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100">
+            Theme
+          </h3>
+          <div class="card-body">
+            <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
+              Choose a look and feel. Your choice is saved for next time.
+            </p>
+            <div class="max-w-xs">
+              <label for="themeSelect" class="form-label">Theme</label>
+              <select id="themeSelect" class="input-field">
+                <option value="default">Default</option>
+                <option value="inverted">Inverted</option>
+                <option value="glass">Glass</option>
               </select>
             </div>
-            <div>
-              <label for="taxIncomeAllowance" class="form-label">
-                Savings allowance (<span data-currency-symbol>£</span>)
-              </label>
-              <input
-                type="number"
-                step="any"
-                id="taxIncomeAllowance"
-                class="input-field"
-              />
-            </div>
-            <div>
-              <label for="taxDividendAllowance" class="form-label">
-                Dividend allowance (<span data-currency-symbol>£</span>)
-              </label>
-              <input
-                type="number"
-                step="any"
-                id="taxDividendAllowance"
-                class="input-field"
-              />
-            </div>
-            <div>
-              <label for="taxCapitalAllowance" class="form-label">
-                Capital gains allowance (<span data-currency-symbol>£</span>)
-              </label>
-              <input
-                type="number"
-                step="any"
-                id="taxCapitalAllowance"
-                class="input-field"
-              />
-            </div>
           </div>
-          <p id="taxBandSummary" class="text-sm text-gray-600 dark:text-gray-300 mt-3"></p>
-          <p id="taxAllowanceSummary" class="text-xs text-gray-500 dark:text-gray-400 mt-1"></p>
-          <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
-            Allowances apply per tax year across all assets marked as taxable. Changes update forecasts automatically.
-          </p>
+        </div>
+
+        <div class="card">
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100">
+            UK Tax Settings
+          </h3>
+          <div class="card-body">
+            <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
+              Choose your UK tax band and adjust annual allowances. Forecasts and passive income
+              use these values to model net, after-tax growth for taxable assets.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4">
+              <div>
+                <label for="taxBandSelect" class="form-label">Tax band</label>
+                <select id="taxBandSelect" class="input-field">
+                  <option value="basic">Basic rate (20%)</option>
+                  <option value="higher">Higher rate (40%)</option>
+                  <option value="additional">Additional rate (45%)</option>
+                </select>
+              </div>
+              <div>
+                <label for="taxIncomeAllowance" class="form-label">
+                  Savings allowance (<span data-currency-symbol>£</span>)
+                </label>
+                <input
+                  type="number"
+                  step="any"
+                  id="taxIncomeAllowance"
+                  class="input-field"
+                />
+              </div>
+              <div>
+                <label for="taxDividendAllowance" class="form-label">
+                  Dividend allowance (<span data-currency-symbol>£</span>)
+                </label>
+                <input
+                  type="number"
+                  step="any"
+                  id="taxDividendAllowance"
+                  class="input-field"
+                />
+              </div>
+              <div>
+                <label for="taxCapitalAllowance" class="form-label">
+                  Capital gains allowance (<span data-currency-symbol>£</span>)
+                </label>
+                <input
+                  type="number"
+                  step="any"
+                  id="taxCapitalAllowance"
+                  class="input-field"
+                />
+              </div>
+            </div>
+            <p id="taxBandSummary" class="text-sm text-gray-600 dark:text-gray-300 mt-3"></p>
+            <p id="taxAllowanceSummary" class="text-xs text-gray-500 dark:text-gray-400 mt-1"></p>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
+              Allowances apply per tax year across all assets marked as taxable. Changes update forecasts automatically.
+            </p>
+          </div>
         </div>
 
         <div id="welcomeCard" class="card">
           <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Welcome Page</h3>
-          <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
-            Show or hide the welcome page in the navigation.
-          </p>
-          <label class="dark-mode-toggle">
-            <span class="mr-3 font-semibold text-gray-500 dark:text-gray-400"
-              >Show Welcome Page</span
-            >
-            <input type="checkbox" id="welcomeToggle" class="peer" />
-            <span class="toggle-track"><span class="toggle-thumb"></span></span>
-          </label>
+          <div class="card-body">
+            <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
+              Show or hide the welcome page in the navigation.
+            </p>
+            <label class="dark-mode-toggle">
+              <span class="mr-3 font-semibold text-gray-500 dark:text-gray-400"
+                >Show Welcome Page</span
+              >
+              <input type="checkbox" id="welcomeToggle" class="peer" />
+              <span class="toggle-track"><span class="toggle-thumb"></span></span>
+            </label>
+          </div>
         </div>
 
         <div class="card">
           <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Currency</h3>
-          <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
-            Choose the currency used throughout the app. Labels and values
-            will update immediately.
-          </p>
-          <div class="max-w-xs">
-            <label for="currencySelect" class="form-label">Currency</label>
-            <select id="currencySelect" class="input-field">
-              <option value="GBP">Pounds (£)</option>
-              <option value="USD">Dollars ($)</option>
-              <option value="EUR">Euros (€)</option>
-            </select>
+          <div class="card-body">
+            <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
+              Choose the currency used throughout the app. Labels and values
+              will update immediately.
+            </p>
+            <div class="max-w-xs">
+              <label for="currencySelect" class="form-label">Currency</label>
+              <select id="currencySelect" class="input-field">
+                <option value="GBP">Pounds (£)</option>
+                <option value="USD">Dollars ($)</option>
+                <option value="EUR">Euros (€)</option>
+              </select>
+            </div>
           </div>
         </div>
 
         <div class="card">
           <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Reset App</h3>
-          <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
-            Clear all locally stored data and restart the app.
-          </p>
-          <button class="btn btn-red flex items-center" data-action="clear-data">
-            <i class="fa-solid fa-trash mr-2"></i>
-            Clear Data
-          </button>
+          <div class="card-body">
+            <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
+              Clear all locally stored data and restart the app.
+            </p>
+            <button class="btn btn-red flex items-center" data-action="clear-data">
+              <i class="fa-solid fa-trash mr-2"></i>
+              Clear Data
+            </button>
+          </div>
         </div>
       </div>
     </main>
