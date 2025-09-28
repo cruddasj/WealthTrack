@@ -1636,184 +1636,6 @@
         </div>
       </div>
 
-      <div id="data-management" class="content-section hidden">
-        <h2 class="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-6">
-          Data & Backup
-        </h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div id="exportCard" class="card flex flex-col">
-            <div class="flex-grow">
-              <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Export Your Data</h3>
-              <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
-                Export your data with an optional password for backup or use on
-                another device.
-              </p>
-              <div>
-                <label for="exportPassword" class="form-label"
-                  >Password (Optional)</label
-                >
-                <input
-                  type="password"
-                  id="exportPassword"
-                  placeholder="Enter a password to encrypt"
-                  class="input-field"
-                />
-              </div>
-              <div class="mt-4">
-                <label class="form-label" for="exportProfileToggle"
-                  >Profiles to Export</label
-                >
-                <div id="exportProfilePicker" class="relative">
-                  <button
-                    type="button"
-                    id="exportProfileToggle"
-                    class="input-field flex items-center justify-between"
-                    aria-haspopup="listbox"
-                    aria-expanded="false"
-                  >
-                    <span id="exportProfileSummary">All profiles selected</span>
-                    <i class="fa-solid fa-chevron-down text-gray-400 ml-2"></i>
-                  </button>
-                  <div
-                    id="exportProfileMenu"
-                    class="absolute z-20 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-48 overflow-y-auto hidden"
-                  >
-                    <div id="exportProfileOptions"></div>
-                  </div>
-                </div>
-                <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                  All profiles are selected by default. Deselect any you don't
-                  want to include.
-                </p>
-              </div>
-            </div>
-            <div class="mt-4">
-              <button
-                id="exportBtn"
-                data-action="export-data"
-                class="btn btn-block btn-purple flex items-center justify-center"
-              >
-                <svg
-                  class="h-5 w-5 mr-2"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                >
-                  <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
-                </svg>
-                Export Data
-              </button>
-              <p
-                id="exportEmptyHint"
-                class="text-xs text-gray-500 dark:text-gray-400 mt-2 hidden"
-              >
-                No data to export yet. Add assets, liabilities, events, or
-                snapshots first.
-              </p>
-            </div>
-          </div>
-
-        <div class="card">
-          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100">
-            Import Your Data
-          </h3>
-          <div class="card-body flex flex-col">
-            <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
-              Import previously saved data to restore your information.
-            </p>
-            <div>
-              <label for="importFile" class="form-label">Select File</label>
-              <label
-                for="importFile"
-                class="flex items-center justify-center w-full px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600"
-              >
-                <svg
-                  class="h-5 w-5 mr-2 text-gray-500"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                >
-                  <path
-                    d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zM6 20V4h7v5h5v11H6z"
-                  />
-                </svg>
-                <span
-                  class="text-gray-900 dark:text-gray-100"
-                  data-import-filename
-                  >No file chosen</span
-                >
-                <input
-                  type="file"
-                  id="importFile"
-                  accept=".json"
-                  class="hidden"
-                />
-              </label>
-            </div>
-            <div class="mt-4">
-              <label for="importPassword" class="form-label"
-                >Password (Optional)</label
-              >
-              <input
-                type="password"
-                id="importPassword"
-                placeholder="Enter password for file"
-                class="input-field"
-              />
-            </div>
-            <div class="mt-4">
-              <label class="form-label" for="importProfileToggle"
-                >Profiles to Import</label
-              >
-              <div id="importProfilePicker" class="relative">
-                <button
-                  type="button"
-                  id="importProfileToggle"
-                  class="input-field flex items-center justify-between"
-                  aria-haspopup="listbox"
-                  aria-expanded="false"
-                  disabled
-                >
-                  <span id="importProfileSummary"
-                    >Select a file to choose profiles</span
-                  >
-                  <i class="fa-solid fa-chevron-down text-gray-400 ml-2"></i>
-                </button>
-                <div
-                  id="importProfileMenu"
-                  class="absolute z-20 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-48 overflow-y-auto hidden"
-                >
-                  <div id="importProfileOptions"></div>
-                </div>
-              </div>
-              <p
-                id="importProfileHint"
-                class="text-xs text-gray-500 dark:text-gray-400 mt-2"
-              >
-                Profiles from the selected file will appear here once the
-                password (if any) is provided.
-              </p>
-            </div>
-            <div class="mt-4">
-              <button
-                data-action="import-data"
-                class="btn btn-block btn-blue flex items-center justify-center"
-              >
-                <svg
-                  class="h-5 w-5 mr-2"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                >
-                  <path
-                    d="M19 15h-4v4h-2v-4h-4v-2h4v-4h2v4h4v2zM5 19V5h14v8h2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2h8v-2H5z"
-                  />
-                </svg>
-                Import Data
-              </button>
-            </div>
-          </div>
-        </div>
-        </div>
-      </div>
-
       <!-- One modal shell + templates -->
         <div id="modal" class="modal modal-hidden modal-overlay">
           <div
@@ -1960,6 +1782,106 @@
           </div>
         </div>
 
+
+        <div class="card">
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100">
+            Import Your Data
+          </h3>
+          <div class="card-body flex flex-col">
+            <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
+              Import previously saved data to restore your information.
+            </p>
+            <div>
+              <label for="importFile" class="form-label">Select File</label>
+              <label
+                for="importFile"
+                class="flex items-center justify-center w-full px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600"
+              >
+                <svg
+                  class="h-5 w-5 mr-2 text-gray-500"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
+                  <path
+                    d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zM6 20V4h7v5h5v11H6z"
+                  />
+                </svg>
+                <span
+                  class="text-gray-900 dark:text-gray-100"
+                  data-import-filename
+                  >No file chosen</span
+                >
+                <input
+                  type="file"
+                  id="importFile"
+                  accept=".json"
+                  class="hidden"
+                />
+              </label>
+            </div>
+            <div class="mt-4">
+              <label for="importPassword" class="form-label"
+                >Password (Optional)</label
+              >
+              <input
+                type="password"
+                id="importPassword"
+                placeholder="Enter password for file"
+                class="input-field"
+              />
+            </div>
+            <div class="mt-4">
+              <label class="form-label" for="importProfileToggle"
+                >Profiles to Import</label
+              >
+              <div id="importProfilePicker" class="relative">
+                <button
+                  type="button"
+                  id="importProfileToggle"
+                  class="input-field flex items-center justify-between"
+                  aria-haspopup="listbox"
+                  aria-expanded="false"
+                  disabled
+                >
+                  <span id="importProfileSummary"
+                    >Select a file to choose profiles</span
+                  >
+                  <i class="fa-solid fa-chevron-down text-gray-400 ml-2"></i>
+                </button>
+                <div
+                  id="importProfileMenu"
+                  class="absolute z-20 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-48 overflow-y-auto hidden"
+                >
+                  <div id="importProfileOptions"></div>
+                </div>
+              </div>
+              <p
+                id="importProfileHint"
+                class="text-xs text-gray-500 dark:text-gray-400 mt-2"
+              >
+                Profiles from the selected file will appear here once the
+                password (if any) is provided.
+              </p>
+            </div>
+            <div class="mt-4">
+              <button
+                data-action="import-data"
+                class="btn btn-block btn-blue flex items-center justify-center"
+              >
+                <svg
+                  class="h-5 w-5 mr-2"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
+                  <path
+                    d="M19 15h-4v4h-2v-4h-4v-2h4v-4h2v4h4v2zM5 19V5h14v8h2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2h8v-2H5z"
+                  />
+                </svg>
+                Import Data
+              </button>
+            </div>
+          </div>
+        </div>
 
         <div class="card">
           <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100">
