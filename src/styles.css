@@ -96,6 +96,45 @@
     margin-bottom: 0 !important;
     @apply pt-6 pb-5;
   }
+  .stat-box {
+    min-width: 0;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+  .stat-box .text-3xl,
+  .stat-box .text-2xl,
+  .stat-box .text-xl {
+    line-height: 1.1;
+    word-break: inherit;
+  }
+  .stat-box .text-3xl {
+    font-size: clamp(1.75rem, 1.1rem + 1.6vw, 2.5rem);
+  }
+  .stat-box .text-2xl {
+    font-size: clamp(1.5rem, 1.05rem + 1.1vw, 2rem);
+  }
+  .stat-box .text-xl {
+    font-size: clamp(1.25rem, 0.95rem + 0.7vw, 1.5rem);
+  }
+  .stat-box > * {
+    overflow-wrap: inherit;
+    word-break: inherit;
+  }
+  @media (min-width: 480px) and (max-width: 956px) {
+    .stat-box {
+      font-size: clamp(0.9rem, 0.8rem + 0.3vw, 1rem);
+    }
+    .stat-box .text-3xl {
+      font-size: clamp(1.55rem, 1.1rem + 1.1vw, 2.1rem);
+    }
+    .stat-box .text-2xl {
+      font-size: clamp(1.35rem, 1rem + 0.8vw, 1.75rem);
+    }
+    .stat-box .text-xl {
+      font-size: clamp(1.15rem, 0.9rem + 0.6vw, 1.4rem);
+    }
+  }
   /* Tighter spacing between title and content when expanded */
   .card.is-collapsible:not(.collapsed) > h3,
   .card.is-collapsible:not(.collapsed) > h4 {

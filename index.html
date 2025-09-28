@@ -718,13 +718,20 @@
             Events affect forecasts once you have at least one asset.
           </p>
           <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">
-            Enter negative amounts or percentages (e.g., -5000 or -5) to
-            simulate an unexpected loss.
+            Choose whether the event is a gain or loss, then enter the
+            absolute amount or percentage impact you want to simulate.
           </p>
           <form
             id="eventForm"
-            class="grid grid-cols-1 md:grid-cols-4 gap-2 md:gap-4"
+            class="grid grid-cols-1 gap-3"
           >
+            <div>
+              <label for="eventDirection" class="form-label">Event Impact</label>
+              <select id="eventDirection" class="input-field">
+                <option value="gain">Gain</option>
+                <option value="loss">Loss</option>
+              </select>
+            </div>
             <div>
               <label for="eventName" class="form-label">Event Name</label>
               <input type="text" id="eventName" class="input-field" required />
@@ -757,7 +764,7 @@
                 <option value="">None</option>
               </select>
             </div>
-            <div class="flex items-end md:col-span-full">
+            <div class="flex items-end">
               <button
                 type="submit"
                 id="eventSubmitBtn"
@@ -2328,11 +2335,17 @@
     <template id="tpl-edit-event">
       <div>
         <h4 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">Edit Event</h4>
-        <form
-          id="editEventForm"
-          class="grid grid-cols-1 md:grid-cols-4 gap-2 md:gap-4"
-        >
+        <form id="editEventForm" class="grid grid-cols-1 gap-3">
           <input type="hidden" id="editEventIndex" />
+          <div>
+            <label for="editEventDirection" class="form-label required-label"
+              >Event Impact</label
+            >
+            <select id="editEventDirection" class="input-field" required>
+              <option value="gain">Gain</option>
+              <option value="loss">Loss</option>
+            </select>
+          </div>
           <div>
             <label for="editEventName" class="form-label required-label"
               >Event Name</label
@@ -2379,7 +2392,7 @@
             >
             <select id="editEventAsset" class="input-field"></select>
           </div>
-          <div class="md:col-span-4 mt-4 flex justify-end gap-3">
+          <div class="mt-4 flex justify-end gap-3">
             <button type="button" class="btn btn-gray" data-close>
               Cancel
             </button>

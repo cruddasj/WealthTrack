@@ -2201,7 +2201,8 @@ function showEditEvent(index) {
   const tpl = document.importNode($("tpl-edit-event").content, true);
   tpl.querySelector("#editEventIndex").value = index;
   tpl.querySelector("#editEventName").value = ev.name;
-  tpl.querySelector("#editEventAmount").value = ev.amount;
+  tpl.querySelector("#editEventDirection").value = ev.amount < 0 ? "loss" : "gain";
+  tpl.querySelector("#editEventAmount").value = Math.abs(ev.amount);
   tpl.querySelector("#editEventType").value = ev.isPercent
     ? "percent"
     : "absolute";
@@ -2219,7 +2220,16 @@ function showEditEvent(index) {
     const evt = simEvents[i];
     if (!evt) return;
     evt.name = f.querySelector("#editEventName").value;
-    evt.amount = parseFloat(f.querySelector("#editEventAmount").value);
+    const dir = f.querySelector("#editEventDirection").value === "loss"
+      ? "loss"
+      : "gain";
+    const editAmountRaw = parseFloat(
+      f.querySelector("#editEventAmount").value,
+    );
+    const editAmount = Number.isFinite(editAmountRaw)
+      ? Math.abs(editAmountRaw)
+      : NaN;
+    evt.amount = dir === "loss" ? -editAmount : editAmount;
     evt.isPercent = f.querySelector("#editEventType").value === "percent";
     evt.date = new Date(
       f.querySelector("#editEventDate").value,
@@ -2229,6 +2239,9 @@ function showEditEvent(index) {
       evt.assetId = Number(assetVal);
     } else {
       delete evt.assetId;
+    }
+    if (!evt.name || !Number.isFinite(evt.amount) || !evt.date) {
+      return;
     }
     simEvents.sort((a, b) => a.date - b.date);
     closeModal();
@@ -4911,20 +4924,27 @@ function handleFormSubmit(e) {
       break;
     }
     case "eventForm": {
+      const direction = form.eventDirection?.value === "loss" ? "loss" : "gain";
+      const rawAmount = parseFloat(form.eventAmount.value);
+      const normalizedAmount = Number.isFinite(rawAmount)
+        ? Math.abs(rawAmount)
+        : NaN;
       const ev = {
         name: form.eventName.value,
-        amount: parseFloat(form.eventAmount.value),
+        amount:
+          direction === "loss" ? -normalizedAmount : normalizedAmount,
         isPercent: form.eventType.value === "percent",
         date: new Date(form.eventDate.value).getTime(),
       };
       const assetId = form.eventAsset.value;
       if (assetId) ev.assetId = Number(assetId);
-      if (!ev.name || isNaN(ev.amount) || !ev.date) return;
+      if (!ev.name || !Number.isFinite(ev.amount) || !ev.date) return;
       simEvents.push(ev);
       simEvents.sort((a, b) => a.date - b.date);
       renderEvents();
       updateEmptyStates();
       form.reset();
+      if (form.eventDirection) form.eventDirection.value = "gain";
       break;
     }
     case "fireForm": {
