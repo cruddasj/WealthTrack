@@ -1662,8 +1662,8 @@ function showSnapshotDetails(snapshot) {
       .sort((a, b) => (a?.name || "").localeCompare(b?.name || ""))
       .map(
         (a) => `<tr class="text-sm text-gray-700 dark:text-gray-300">
-      <td class="px-6 py-4 whitespace-nowrap">${a.name}</td>
-      <td class="px-6 py-4 whitespace-nowrap">${fmtCurrency(a.value)}</td>
+      <td class="table-cell whitespace-nowrap">${a.name}</td>
+      <td class="table-cell whitespace-nowrap">${fmtCurrency(a.value)}</td>
     </tr>`,
       )
       .join("")}
@@ -1939,13 +1939,13 @@ function renderStressEvents() {
       .map(
         (ev) => `
       <tr>
-        <td class="px-6 py-4 whitespace-nowrap">${ev.name}</td>
-        <td class="px-6 py-4 whitespace-nowrap">${fmtDate(new Date(ev.date))}</td>
-        <td class="px-6 py-4 whitespace-nowrap">${ev.amount.toFixed(1)}%</td>
+        <td class="table-cell whitespace-nowrap">${ev.name}</td>
+        <td class="table-cell whitespace-nowrap">${fmtDate(new Date(ev.date))}</td>
+        <td class="table-cell whitespace-nowrap">${ev.amount.toFixed(1)}%</td>
       </tr>`,
       )
       .join("") ||
-    `<tr><td colspan="3" class="px-6 py-4 text-sm text-gray-500 dark:text-gray-300">No random events</td></tr>`;
+    `<tr><td colspan="3" class="table-cell text-sm text-gray-500 dark:text-gray-300">No random events</td></tr>`;
   body.innerHTML = rows;
 }
 
@@ -2985,13 +2985,13 @@ function renderAssets() {
       `;
       const taxInfo = describeAssetTax(asset, taxSummary);
       return `<tr class="text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
-    <td class="px-6 py-4 whitespace-nowrap">${asset.name}${passiveBadge}</td>
-    <td class="px-6 py-4 whitespace-nowrap">${startCell}</td>
-    <td class="px-6 py-4 whitespace-nowrap font-semibold">${fmtCurrency(currentValue)}</td>
-    <td class="px-6 py-4 whitespace-nowrap">${depositText}</td>
-    <td class="px-6 py-4 whitespace-normal align-top">${growthLines}</td>
-    <td class="px-6 py-4 whitespace-normal align-top">${taxInfo}</td>
-    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium flex items-center gap-2">
+    <td class="table-cell whitespace-nowrap">${asset.name}${passiveBadge}</td>
+    <td class="table-cell whitespace-nowrap">${startCell}</td>
+    <td class="table-cell whitespace-nowrap font-semibold">${fmtCurrency(currentValue)}</td>
+    <td class="table-cell whitespace-nowrap">${depositText}</td>
+    <td class="table-cell whitespace-normal align-top">${growthLines}</td>
+    <td class="table-cell whitespace-normal align-top">${taxInfo}</td>
+    <td class="table-cell whitespace-nowrap text-right text-sm font-medium flex items-center gap-2">
       <button data-action="edit-asset" data-index="${originalIndex}" class="btn-icon" title="Edit Asset">
         <svg class="h-5 w-5" fill="currentColor"><use href="#i-edit"/></svg>
       </button>
@@ -3151,11 +3151,11 @@ function renderLiabilities() {
           : startLabel;
       }
       return `<tr class="text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
-    <td class="px-6 py-4 whitespace-nowrap">${l.name}</td>
-    <td class="px-6 py-4 whitespace-nowrap">${startCell}</td>
-    <td class="px-6 py-4 whitespace-nowrap font-semibold">${fmtCurrency(currentValue)}</td>
-    <td class="px-6 py-4 whitespace-nowrap">${payText}</td>
-    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium flex items-center gap-2">
+    <td class="table-cell whitespace-nowrap">${l.name}</td>
+    <td class="table-cell whitespace-nowrap">${startCell}</td>
+    <td class="table-cell whitespace-nowrap font-semibold">${fmtCurrency(currentValue)}</td>
+    <td class="table-cell whitespace-nowrap">${payText}</td>
+    <td class="table-cell whitespace-nowrap text-right text-sm font-medium flex items-center gap-2">
       <button data-action="edit-liability" data-index="${i}" class="btn-icon" title="Edit Liability">
         <svg class="h-5 w-5" fill="currentColor"><use href="#i-edit"/></svg>
       </button>
@@ -3198,11 +3198,11 @@ function renderEvents() {
       const amt = ev.isPercent ? `${ev.amount}%` : fmtCurrency(ev.amount);
       return `
     <tr class="text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
-      <td class="px-6 py-4 whitespace-nowrap">${ev.name}</td>
-      <td class="px-6 py-4 whitespace-nowrap">${fmtDate(new Date(ev.date))}</td>
-      <td class="px-6 py-4 whitespace-nowrap">${ev.assetId ? assetName : "-"}</td>
-      <td class="px-6 py-4 whitespace-nowrap font-semibold">${amt}</td>
-      <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium flex items-center gap-2">
+      <td class="table-cell whitespace-nowrap">${ev.name}</td>
+      <td class="table-cell whitespace-nowrap">${fmtDate(new Date(ev.date))}</td>
+      <td class="table-cell whitespace-nowrap">${ev.assetId ? assetName : "-"}</td>
+      <td class="table-cell whitespace-nowrap font-semibold">${amt}</td>
+      <td class="table-cell whitespace-nowrap text-right text-sm font-medium flex items-center gap-2">
         <button data-action="edit-event" data-index="${i}" class="btn-icon" title="Edit Event">
           <svg class="h-5 w-5" fill="currentColor"><use href="#i-edit"/></svg>
         </button>
