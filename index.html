@@ -173,7 +173,7 @@
         <button class="nav-btn active-nav-button" data-target="data-entry">
           <span class="flex items-center">
             <i class="fa-solid fa-clipboard-list h-5 w-5 mr-3"></i>
-            Assets & Goals
+            Financial Inputs
           </span>
         </button>
         <button class="nav-btn hidden" data-target="forecasts">
@@ -234,7 +234,7 @@
               <h4 class="font-semibold text-gray-900 dark:text-gray-100 mb-2">Quick start</h4>
               <ul class="list-disc pl-5 text-gray-700 dark:text-gray-300">
                 <li>Create multiple profiles to keep scenarios separate (e.g., Personal, Partner, Joint, Experiments).</li>
-                <li>Add your assets on the Assets & Goals page. The Forecasts tab unlocks once you have financial data, and setting a wealth goal adds goal-focused insights. Portfolio Insights shows up after you add your first asset.</li>
+                <li>Add your assets on the Financial Inputs page. The Forecasts tab unlocks once you have financial data, and setting a wealth goal adds goal-focused insights. Portfolio Insights shows up after you add your first asset.</li>
                 <li>Set expected growth rates to power projections.</li>
                 <li>Estimate future asset values from the Portfolio Insights page.</li>
                 <li>Add future one-off events to simulate gains/losses.</li>
@@ -247,7 +247,7 @@
               <h4 class="font-semibold text-gray-900 dark:text-gray-100 mb-2">Where to find things</h4>
               <ul class="list-disc pl-5 text-gray-700 dark:text-gray-300">
                 <li><b>Profiles</b>: manage and switch profiles from the <b>Settings & Data</b> page.</li>
-                <li><b>Assets & Goals</b>: capture assets, liabilities, and goals.</li>
+                <li><b>Financial Inputs</b>: capture assets, liabilities, and goals.</li>
                 <li><b>Forecasts</b>: run projections, simulate one-off events, and use the Progress Check card to compare against snapshots.</li>
                 <li><b>Portfolio Insights</b>: see allocation, passive income, future asset values, stress testing, and inflation impact.</li>
                 <li><b>Snapshots</b>: save your totals and review how your wealth has changed over time.</li>
@@ -1074,7 +1074,7 @@
             <canvas id="assetBreakdownChart"></canvas>
             <div id="noAssetMessage" class="text-center text-gray-500">
               <p>
-                No assets added. Add an asset on the Assets & Goals page to see
+                No assets added. Add an asset on the Financial Inputs page to see
                 your breakdown.
               </p>
             </div>
@@ -2420,13 +2420,13 @@
       </div>
     </template>
 
-    <!-- One-off onboarding for Assets & Goals after "Start Now" -->
+    <!-- One-off onboarding for Financial Inputs after "Start Now" -->
     <template id="tpl-onboard-data">
       <div class="p-4 sm:p-6 max-w-full break-words">
         <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">Get started: Add your assets</h3>
         <p class="text-gray-700 dark:text-gray-300 mb-4">
           To build your forecast, add your assets and set a target on the
-          Assets & Goals page.
+          Financial Inputs page.
         </p>
         <ul
           class="list-disc pl-5 space-y-2 text-gray-700 dark:text-gray-300 mb-4"
@@ -2488,14 +2488,14 @@
       <div class="p-4 sm:p-6 max-w-full break-words">
         <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">Quick tour (30 seconds)</h3>
         <ul class="list-disc pl-5 space-y-2 text-gray-700 dark:text-gray-300 mb-4">
-          <li><b>Assets & Goals</b>: add assets, set growth, and choose a target.</li>
+          <li><b>Financial Inputs</b>: add assets, set growth, and choose a target.</li>
           <li><b>Forecasts</b>: project your wealth, add one-off events.</li>
           <li><b>Portfolio Insights</b>: see allocation, passive income, and stress tests.</li>
           <li><b>Snapshots</b>: save totals to compare progress over time.</li>
           <li><b>Settings & Data</b>: profiles, theme, and export/import.</li>
         </ul>
         <div class="flex flex-wrap gap-2 justify-end">
-          <button class="btn btn-gray" data-action="go-assets">Open Assets & Goals</button>
+          <button class="btn btn-gray" data-action="go-assets">Open Financial Inputs</button>
           <button class="btn btn-blue" data-action="go-forecasts">Open Forecasts</button>
           <button class="btn btn-gray" data-action="go-insights">Portfolio Insights</button>
           <button class="btn btn-gray" data-action="go-settings">Settings & Data</button>

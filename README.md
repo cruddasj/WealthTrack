@@ -4,7 +4,7 @@ WealthTrack is a personal wealth projection and planning tool built as a single-
 
 ## Features
 
-- **Assets & Goals** – Track assets, liabilities, and savings targets.
+- **Financial Inputs** – Track assets, liabilities, and savings targets.
 - **Forecasts** – Model future balances with configurable growth assumptions, one-off events, and stress tests.
 - **Portfolio Insights** – Visualise allocations, income projections, and stress scenarios.
 - **Snapshots** – Save checkpoints and review progress over time.

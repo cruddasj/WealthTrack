@@ -364,7 +364,7 @@ function updatePassiveAssetSelectionMessage(totalEligible, selectedCount) {
   if (!message) return;
   if (totalEligible === 0) {
     message.textContent =
-      "Mark assets as providing passive income in Assets & Goals to include them here.";
+      "Mark assets as providing passive income in Financial Inputs to include them here.";
     message.classList.remove("hidden");
   } else if (selectedCount === 0) {
     message.textContent =
@@ -4643,7 +4643,7 @@ function navigateTo(viewId) {
     updateSnapshotChart();
   }
 
-  // One-off onboarding when arriving to Assets & Goals after "Start Now"
+  // One-off onboarding when arriving to Financial Inputs after "Start Now"
   if (viewId === "data-entry") {
     try {
       const pending = localStorage.getItem(LS.onboardPending) === "1";
@@ -4663,7 +4663,7 @@ function navigateTo(viewId) {
         if (!seen) localStorage.setItem(LS.onboardSeen, "1");
       }
     } catch (_) {}
-    // Keep empty states fresh when navigating back to Assets & Goals
+    // Keep empty states fresh when navigating back to Financial Inputs
     updateEmptyStates();
   } else if (viewId === "forecasts") {
     updateEmptyStates();
