@@ -101,6 +101,7 @@
     max-width: 100%;
     overflow-wrap: anywhere;
     word-break: break-word;
+    @apply border border-gray-200 dark:border-gray-600;
   }
   .stat-box .text-3xl,
   .stat-box .text-2xl,
