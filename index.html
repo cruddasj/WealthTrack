@@ -173,7 +173,7 @@
         <button class="nav-btn active-nav-button" data-target="data-entry">
           <span class="flex items-center">
             <i class="fa-solid fa-clipboard-list h-5 w-5 mr-3"></i>
-            Assets & Goals
+            Financial Inputs
           </span>
         </button>
         <button class="nav-btn hidden" data-target="forecasts">
@@ -234,7 +234,7 @@
               <h4 class="font-semibold text-gray-900 dark:text-gray-100 mb-2">Quick start</h4>
               <ul class="list-disc pl-5 text-gray-700 dark:text-gray-300">
                 <li>Create multiple profiles to keep scenarios separate (e.g., Personal, Partner, Joint, Experiments).</li>
-                <li>Add your assets on the Assets & Goals page. The Forecasts tab unlocks once you have financial data, and setting a wealth goal adds goal-focused insights. Portfolio Insights shows up after you add your first asset.</li>
+                <li>Add your assets on the Financial Inputs page. The Forecasts tab unlocks once you have financial data, and setting a wealth goal adds goal-focused insights. Portfolio Insights shows up after you add your first asset.</li>
                 <li>Set expected growth rates to power projections.</li>
                 <li>Estimate future asset values from the Portfolio Insights page.</li>
                 <li>Add future one-off events to simulate gains/losses.</li>
@@ -247,7 +247,7 @@
               <h4 class="font-semibold text-gray-900 dark:text-gray-100 mb-2">Where to find things</h4>
               <ul class="list-disc pl-5 text-gray-700 dark:text-gray-300">
                 <li><b>Profiles</b>: manage and switch profiles from the <b>Settings & Data</b> page.</li>
-                <li><b>Assets & Goals</b>: capture assets, liabilities, and goals.</li>
+                <li><b>Financial Inputs</b>: capture assets, liabilities, and goals.</li>
                 <li><b>Forecasts</b>: run projections, simulate one-off events, and use the Progress Check card to compare against snapshots.</li>
                 <li><b>Portfolio Insights</b>: see allocation, passive income, future asset values, stress testing, and inflation impact.</li>
                 <li><b>Snapshots</b>: save your totals and review how your wealth has changed over time.</li>
@@ -283,60 +283,18 @@
 
       <div id="data-entry" class="content-section active">
         <h2 class="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-6">
-          Assets & Goals
+          Financial Inputs
         </h2>
         <div
           class="mb-6 p-4 rounded-lg bg-gray-100 dark:bg-gray-700 stat-box text-gray-700 dark:text-gray-300"
           data-first-time
         >
           <p class="text-sm">
-            The data you enter here powers your projections and analysis. Add
-            assets, liabilities, and a wealth goal with a target year to drive your Forecasts and
-            Portfolio Insights.
+            Use this page to capture the data that powers everything else. Your
+            assets and liabilities drive the future forecasts, while the same
+            information underpins today's position on the Portfolio Insights
+            page. Add or update items here whenever your situation changes.
           </p>
-        </div>
-
-        <div class="card">
-          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Goals</h3>
-          <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
-            Set a wealth goal and target year to work toward.
-          </p>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div
-              class="flex flex-col items-center justify-center p-4 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 stat-box"
-            >
-              <label
-                for="goalValue"
-                class="text-md font-medium text-gray-700 dark:text-gray-300"
-                >Wealth Goal (<span data-currency-symbol>£</span>)</label
-              >
-              <input
-                type="number"
-                step="any"
-                id="goalValue"
-                placeholder="e.g. 1000000"
-                class="text-center text-3xl font-bold mt-2 bg-transparent border-b-2 border-gray-400 dark:border-gray-500 focus:outline-none focus:border-blue-500 w-full"
-              />
-            </div>
-            <div
-              class="flex flex-col items-center justify-center p-4 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 stat-box"
-            >
-              <label
-                for="goalYear"
-                class="text-md font-medium text-gray-700 dark:text-gray-300"
-                >Target Year</label
-              >
-              <input
-                type="number"
-                id="goalYear"
-                placeholder="e.g. 2050"
-                class="text-center text-3xl font-bold mt-2 bg-transparent border-b-2 border-gray-400 dark:border-gray-500 focus:outline-none focus:border-blue-500 w-full"
-              />
-            </div>
-            <div class="md:col-span-2">
-              <button id="goalBtn" class="btn btn-green btn-block">Set</button>
-            </div>
-          </div>
         </div>
 
         <div class="card transition">
@@ -642,67 +600,67 @@
             </table>
           </div>
         </div>
+
+        <div class="card">
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Goals</h3>
+          <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
+            Set a wealth goal and target year to work toward.
+          </p>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div
+              class="flex flex-col items-center justify-center p-4 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 stat-box"
+            >
+              <label
+                for="goalValue"
+                class="text-md font-medium text-gray-700 dark:text-gray-300"
+                >Wealth Goal (<span data-currency-symbol>£</span>)</label
+              >
+              <input
+                type="number"
+                step="any"
+                id="goalValue"
+                placeholder="e.g. 1000000"
+                class="text-center text-3xl font-bold mt-2 bg-transparent border-b-2 border-gray-400 dark:border-gray-500 focus:outline-none focus:border-blue-500 w-full"
+              />
+            </div>
+            <div
+              class="flex flex-col items-center justify-center p-4 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 stat-box"
+            >
+              <label
+                for="goalYear"
+                class="text-md font-medium text-gray-700 dark:text-gray-300"
+                >Target Year</label
+              >
+              <input
+                type="number"
+                id="goalYear"
+                placeholder="e.g. 2050"
+                class="text-center text-3xl font-bold mt-2 bg-transparent border-b-2 border-gray-400 dark:border-gray-500 focus:outline-none focus:border-blue-500 w-full"
+              />
+            </div>
+            <div class="md:col-span-2">
+              <button id="goalBtn" class="btn btn-green btn-block">Set</button>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div id="forecasts" class="content-section">
         <h2 class="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-6">
           Forecasts
         </h2>
-        <div id="forecastGoalsCard" class="card">
-          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Goal Achievement</h3>
-          <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
-            Current totals and projected goal achievement dates based on your inputs.
+        <div
+          class="mb-6 p-4 rounded-lg bg-gray-100 dark:bg-gray-700 stat-box text-gray-700 dark:text-gray-300"
+        >
+          <p class="text-sm">
+            This section looks ahead. Use these tools to model scenarios, project
+            future values, and understand how your goals may be reached under
+            different assumptions.
           </p>
-          <div class="grid grid-cols-1 gap-4">
-            <div
-              class="flex flex-col items-center justify-center gap-1 p-4 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 stat-box"
-            >
-              <h4 class="text-md font-medium text-gray-700 dark:text-gray-300">Total Current Wealth</h4>
-              <span id="totalWealthForecast" class="text-3xl font-bold">£0</span>
-            </div>
-            <div id="forecastGoalsDates" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
-          </div>
-        </div>
-        
-        <div id="ForecastCard" class="card">
-          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Wealth</h3>
-          <p class="text-gray-700 dark:text-gray-300 text-sm">
-            Click legend items to show or hide lines on the chart.
-          </p>
-          <div class="chart-container">
-            <canvas id="wealthChart"></canvas>
-            <div
-              id="wealthChartMessage"
-              class="text-center text-gray-500 hidden"
-            >
-              <p class="text-lg font-medium">Your forecast will appear here.</p>
-              <p>
-                Add at least one asset or liability to see your financial future projected.
-                Set a wealth goal to unlock goal-focused insights.
-              </p>
-            </div>
-          </div>
-          <div
-            class="mt-4 flex flex-col gap-3 text-sm text-gray-600 dark:text-gray-300 sm:flex-row sm:items-center sm:justify-between"
-          >
-            <p class="text-xs sm:text-sm">
-              Tip: On mobile you can drag to pan, pinch to zoom, and tap an empty area to hide the
-              tooltip.
-            </p>
-            <button
-              id="wealthChartReset"
-              type="button"
-              class="btn btn-gray text-sm self-start sm:self-auto"
-              style="padding: 0.4rem 0.75rem"
-            >
-              Reset view
-            </button>
-          </div>
-
         </div>
 
         <div class="card">
-          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">One-off Events</h3>
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Scenario Modelling</h3>
           <p class="text-gray-700 dark:text-gray-300 text-sm">
             Model one-off future gains or losses to see their impact on your
             forecasts.
@@ -795,121 +753,41 @@
           </div>
         </div>
 
-        <div id="progressCheckCard" class="card">
-          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Progress Check</h3>
-          <p class="text-sm text-gray-600 dark:text-gray-300">
-            Compare your current position with the forecast that was saved when
-            you took a snapshot.
-          </p>
-          <div
-            id="progressCheckEmpty"
-            class="mt-4 text-sm text-gray-500 dark:text-gray-400"
-          >
-            Take a snapshot to unlock progress comparisons.
-          </div>
-          <div
-            id="progressCheckControls"
-            class="mt-4 space-y-4 hidden"
-          >
-            <div>
-              <label for="progressCheckSelect" class="form-label"
-                >Compare against snapshot</label
-              >
-              <select
-                id="progressCheckSelect"
-                class="input-field"
-              ></select>
-            </div>
-            <div
-              id="progressCheckResult"
-              class="rounded-xl border border-gray-200 bg-gray-50 p-4 text-sm text-gray-700 dark:border-gray-700 dark:bg-gray-700/50 dark:text-gray-200"
-            >
-              Select a snapshot to see how you're tracking against its saved
-              forecast.
-            </div>
-          </div>
-        </div>
-        <div id="StressTestCard" class="card">
-          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Stress Testing (Monte Carlo Simulations)</h3>
+        <div id="ForecastCard" class="card">
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Wealth</h3>
           <p class="text-gray-700 dark:text-gray-300 text-sm">
-            Run Monte Carlo simulations with random market events (±15%) to see
-            how they affect your goal timeline.
+            Click legend items to show or hide lines on the chart.
           </p>
-          <form
-            id="stressTestForm"
-            class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end mt-2"
-          >
-            <div>
-              <label for="stressRuns" class="form-label">Simulations</label>
-              <input
-                type="number"
-                id="stressRuns"
-                class="input-field"
-                value="100"
-                min="1"
-                max="1000"
-                />
-            </div>
-            <div>
-              <label for="stressScenario" class="form-label"
-                >Scenario Baseline</label
-              >
-              <select id="stressScenario" class="input-field">
-                <option value="low">Low Growth</option>
-                <option value="base" selected>Expected Growth</option>
-                <option value="high">High Growth</option>
-              </select>
-            </div>
-            <div>
-              <label for="stressAssetsToggle" class="form-label">Assets</label>
-              <div class="relative">
-                <button
-                  type="button"
-                  id="stressAssetsToggle"
-                  class="input-field text-left"
-                >
-                  All Assets
-                </button>
-                <div
-                  id="stressAssetsMenu"
-                  class="hidden absolute z-10 w-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg mt-1 max-h-40 overflow-y-auto"
-                ></div>
-              </div>
-            </div>
-            <div class="flex md:col-span-full">
-              <button type="submit" class="btn btn-block btn-green md:mb-1">
-                Run Stress Test
-              </button>
-            </div>
-          </form>
-          <div id="stressTestResult" class="mt-4 text-sm"></div>
-        </div>
-      </div>
-
-      <div id="portfolio-analysis" class="content-section">
-        <h2 class="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-6">
-          Portfolio Insights
-        </h2>
-
-        <div class="card">
-          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Portfolio Allocation</h3>
-          <div
-            class="flex flex-col items-center justify-center gap-1 p-4 mb-6 rounded-lg bg-gray-100 dark:bg-gray-700 text-center text-gray-900 dark:text-gray-100 stat-box w-full"
-          >
-            <h4 class="text-md font-medium text-gray-700 dark:text-gray-300">
-              Current Total
-            </h4>
-            <span id="totalWealth" class="text-3xl font-bold">£0</span>
-          </div>
           <div class="chart-container">
-            <canvas id="assetBreakdownChart"></canvas>
-            <div id="noAssetMessage" class="text-center text-gray-500">
+            <canvas id="wealthChart"></canvas>
+            <div
+              id="wealthChartMessage"
+              class="text-center text-gray-500 hidden"
+            >
+              <p class="text-lg font-medium">Your forecast will appear here.</p>
               <p>
-                No assets added. Add an asset on the Assets & Goals page to see
-                your breakdown.
+                Add at least one asset or liability to see your financial future projected.
+                Set a wealth goal to unlock goal-focused insights.
               </p>
             </div>
           </div>
+          <div
+            class="mt-4 flex flex-col gap-3 text-sm text-gray-600 dark:text-gray-300 sm:flex-row sm:items-center sm:justify-between"
+          >
+            <p class="text-xs sm:text-sm">
+              Tip: On mobile you can drag to pan, pinch to zoom, and tap an empty area to hide the
+              tooltip.
+            </p>
+            <button
+              id="wealthChartReset"
+              type="button"
+              class="btn btn-gray text-sm self-start sm:self-auto"
+              style="padding: 0.4rem 0.75rem"
+            >
+              Reset view
+            </button>
+          </div>
+
         </div>
 
         <div id="futureValueCard" class="card">
@@ -965,102 +843,76 @@
           </div>
         </div>
 
-        <div class="card" id="passiveIncomeCard">
-          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Estimated Passive Income</h3>
+        <div id="forecastGoalsCard" class="card">
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Goal Achievement</h3>
           <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
-            Based on expected annual returns after tax and current values. Update your tax
-            settings to change these net figures.
+            Current totals and projected goal achievement dates based on your inputs.
           </p>
-          <div class="mb-4">
-            <label for="passiveIncomeDate" class="form-label"
-              >Estimate as of (optional)</label
+          <div class="grid grid-cols-1 gap-4">
+            <div
+              class="flex flex-col items-center justify-center gap-1 p-4 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 stat-box"
             >
-            <input type="date" id="passiveIncomeDate" class="input-field" />
-            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-              Defaults to today. Future dates apply scheduled one-off events.
-            </p>
+              <h4 class="text-md font-medium text-gray-700 dark:text-gray-300">Total Current Wealth</h4>
+              <span id="totalWealthForecast" class="text-3xl font-bold">£0</span>
+            </div>
+            <div id="forecastGoalsDates" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
           </div>
-          <div class="mb-4">
-            <label for="passiveAssetToggle" class="form-label"
-              >Assets included</label
-            >
-            <div id="passiveAssetPicker" class="relative">
-              <button
-                type="button"
-                id="passiveAssetToggle"
-                class="input-field flex items-center justify-between"
-                aria-haspopup="listbox"
-                aria-expanded="false"
-                disabled
+        </div>
+
+        <div id="StressTestCard" class="card">
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Stress Testing (Monte Carlo Simulations)</h3>
+          <p class="text-gray-700 dark:text-gray-300 text-sm">
+            Run Monte Carlo simulations with random market events (±15%) to see
+            how they affect your goal timeline.
+          </p>
+          <form
+            id="stressTestForm"
+            class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end mt-2"
+          >
+            <div>
+              <label for="stressRuns" class="form-label">Simulations</label>
+              <input
+                type="number"
+                id="stressRuns"
+                class="input-field"
+                value="100"
+                min="1"
+                max="1000"
+                />
+            </div>
+            <div>
+              <label for="stressScenario" class="form-label"
+                >Scenario Baseline</label
               >
-                <span id="passiveAssetSummary"
-                  >All passive assets selected</span
+              <select id="stressScenario" class="input-field">
+                <option value="low">Low Growth</option>
+                <option value="base" selected>Expected Growth</option>
+                <option value="high">High Growth</option>
+              </select>
+            </div>
+            <div>
+              <label for="stressAssetsToggle" class="form-label">Assets</label>
+              <div class="relative">
+                <button
+                  type="button"
+                  id="stressAssetsToggle"
+                  class="input-field text-left"
                 >
-                <i class="fa-solid fa-chevron-down text-gray-400 ml-2"></i>
-              </button>
-              <div
-                id="passiveAssetMenu"
-                class="absolute z-20 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg hidden"
-              >
+                  All Assets
+                </button>
                 <div
-                  class="flex items-center justify-between px-3 py-2 border-b border-gray-200 dark:border-gray-700"
-                >
-                  <button
-                    type="button"
-                    id="passiveAssetSelectAll"
-                    class="text-xs font-medium text-purple-600 dark:text-purple-300 hover:underline disabled:opacity-50"
-                  >
-                    Select all
-                  </button>
-                  <button
-                    type="button"
-                    id="passiveAssetClear"
-                    class="text-xs text-gray-500 dark:text-gray-400 hover:underline disabled:opacity-50"
-                  >
-                    Clear
-                  </button>
-                </div>
-                <div id="passiveAssetOptions" class="max-h-48 overflow-y-auto"></div>
+                  id="stressAssetsMenu"
+                  class="hidden absolute z-10 w-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg mt-1 max-h-40 overflow-y-auto"
+                ></div>
               </div>
             </div>
-            <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
-              Choose which passive income assets to include in this estimate.
-            </p>
-            <p
-              id="passiveAssetSelectionMessage"
-              class="text-xs text-amber-600 dark:text-amber-400 mt-2 hidden"
-            >
-              Select at least one asset to see a passive income estimate.
-            </p>
-          </div>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div
-              class="flex flex-col items-center justify-center gap-1 p-4 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 stat-box"
-            >
-              <h4 class="text-md font-medium text-gray-700 dark:text-gray-300">Daily</h4>
-              <span id="passiveDaily" class="text-3xl font-bold">£0</span>
+            <div class="flex md:col-span-full">
+              <button type="submit" class="btn btn-block btn-green md:mb-1">
+                Run Stress Test
+              </button>
             </div>
-            <div
-              class="flex flex-col items-center justify-center gap-1 p-4 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 stat-box"
-            >
-              <h4 class="text-md font-medium text-gray-700 dark:text-gray-300">Weekly</h4>
-              <span id="passiveWeekly" class="text-3xl font-bold"
-                >£0</span
-              >
-            </div>
-            <div
-              class="flex flex-col items-center justify-center gap-1 p-4 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 stat-box"
-            >
-              <h4 class="text-md font-medium text-gray-700 dark:text-gray-300">Monthly</h4>
-              <span id="passiveMonthly" class="text-3xl font-bold"
-                >£0</span
-              >
-            </div>
-          </div>
-          <p class="text-xs text-gray-500 dark:text-gray-400 mt-3">
-            Excludes new contributions; shows growth from appreciation only,
-            using your selected date when provided.
-          </p>
+          </form>
+          <div id="stressTestResult" class="mt-4 text-sm"></div>
         </div>
 
         <div class="card" id="fireForecastCard">
@@ -1194,7 +1046,140 @@
         </div>
       </div>
 
-      <div id="snapshots" class="content-section">
+      <div id="portfolio-analysis" class="content-section">
+        <h2 class="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-6">
+          Portfolio Insights
+        </h2>
+        <div
+          class="mb-6 p-4 rounded-lg bg-gray-100 dark:bg-gray-700 stat-box text-gray-700 dark:text-gray-300"
+        >
+          <p class="text-sm">
+            Everything here reflects your current position as of today. Use it to
+            understand how your assets are allocated and what your portfolio is
+            generating right now, before layering on any future assumptions.
+          </p>
+        </div>
+
+        <div class="card">
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Current Portfolio Allocation</h3>
+          <div
+            class="flex flex-col items-center justify-center gap-1 p-4 mb-6 rounded-lg bg-gray-100 dark:bg-gray-700 text-center text-gray-900 dark:text-gray-100 stat-box w-full"
+          >
+            <h4 class="text-md font-medium text-gray-700 dark:text-gray-300">
+              Current Total
+            </h4>
+            <span id="totalWealth" class="text-3xl font-bold">£0</span>
+          </div>
+          <div class="chart-container">
+            <canvas id="assetBreakdownChart"></canvas>
+            <div id="noAssetMessage" class="text-center text-gray-500">
+              <p>
+                No assets added. Add an asset on the Financial Inputs page to see
+                your breakdown.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" id="passiveIncomeCard">
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Estimated Passive Income</h3>
+          <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
+            Based on expected annual returns after tax and current values. Update your tax
+            settings to change these net figures.
+          </p>
+          <div class="mb-4">
+            <label for="passiveIncomeDate" class="form-label"
+              >Estimate as of (optional)</label
+            >
+            <input type="date" id="passiveIncomeDate" class="input-field" />
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              Defaults to today. Future dates apply scheduled one-off events.
+            </p>
+          </div>
+          <div class="mb-4">
+            <label for="passiveAssetToggle" class="form-label"
+              >Assets included</label
+            >
+            <div id="passiveAssetPicker" class="relative">
+              <button
+                type="button"
+                id="passiveAssetToggle"
+                class="input-field flex items-center justify-between"
+                aria-haspopup="listbox"
+                aria-expanded="false"
+                disabled
+              >
+                <span id="passiveAssetSummary"
+                  >All passive assets selected</span
+                >
+                <i class="fa-solid fa-chevron-down text-gray-400 ml-2"></i>
+              </button>
+              <div
+                id="passiveAssetMenu"
+                class="absolute z-20 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg hidden"
+              >
+                <div
+                  class="flex items-center justify-between px-3 py-2 border-b border-gray-200 dark:border-gray-700"
+                >
+                  <button
+                    type="button"
+                    id="passiveAssetSelectAll"
+                    class="text-xs font-medium text-purple-600 dark:text-purple-300 hover:underline disabled:opacity-50"
+                  >
+                    Select all
+                  </button>
+                  <button
+                    type="button"
+                    id="passiveAssetClear"
+                    class="text-xs text-gray-500 dark:text-gray-400 hover:underline disabled:opacity-50"
+                  >
+                    Clear
+                  </button>
+                </div>
+                <div id="passiveAssetOptions" class="max-h-48 overflow-y-auto"></div>
+              </div>
+            </div>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
+              Choose which passive income assets to include in this estimate.
+            </p>
+            <p
+              id="passiveAssetSelectionMessage"
+              class="text-xs text-amber-600 dark:text-amber-400 mt-2 hidden"
+            >
+              Select at least one asset to see a passive income estimate.
+            </p>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div
+              class="flex flex-col items-center justify-center gap-1 p-4 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 stat-box"
+            >
+              <h4 class="text-md font-medium text-gray-700 dark:text-gray-300">Daily</h4>
+              <span id="passiveDaily" class="text-3xl font-bold">£0</span>
+            </div>
+            <div
+              class="flex flex-col items-center justify-center gap-1 p-4 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 stat-box"
+            >
+              <h4 class="text-md font-medium text-gray-700 dark:text-gray-300">Weekly</h4>
+              <span id="passiveWeekly" class="text-3xl font-bold"
+                >£0</span
+              >
+            </div>
+            <div
+              class="flex flex-col items-center justify-center gap-1 p-4 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 stat-box"
+            >
+              <h4 class="text-md font-medium text-gray-700 dark:text-gray-300">Monthly</h4>
+              <span id="passiveMonthly" class="text-3xl font-bold"
+                >£0</span
+              >
+            </div>
+          </div>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-3">
+            Excludes new contributions; shows growth from appreciation only,
+            using your selected date when provided.
+          </p>
+        </div>
+
+        <div id="snapshots" class="content-section">
         <h2 class="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-6">
           Snapshots
         </h2>
@@ -1253,6 +1238,40 @@
                 No snapshots taken yet. Take a snapshot to track your wealth
                 over time.
               </p>
+            </div>
+          </div>
+        </div>
+        <div id="progressCheckCard" class="card">
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Progress Check</h3>
+          <p class="text-sm text-gray-600 dark:text-gray-300">
+            Compare your current position with the forecast that was saved when
+            you took a snapshot.
+          </p>
+          <div
+            id="progressCheckEmpty"
+            class="mt-4 text-sm text-gray-500 dark:text-gray-400"
+          >
+            Take a snapshot to unlock progress comparisons.
+          </div>
+          <div
+            id="progressCheckControls"
+            class="mt-4 space-y-4 hidden"
+          >
+            <div>
+              <label for="progressCheckSelect" class="form-label"
+                >Compare against snapshot</label
+              >
+              <select
+                id="progressCheckSelect"
+                class="input-field"
+              ></select>
+            </div>
+            <div
+              id="progressCheckResult"
+              class="rounded-xl border border-gray-200 bg-gray-50 p-4 text-sm text-gray-700 dark:border-gray-700 dark:bg-gray-700/50 dark:text-gray-200"
+            >
+              Select a snapshot to see how you're tracking against its saved
+              forecast.
             </div>
           </div>
         </div>
@@ -2402,13 +2421,13 @@
       </div>
     </template>
 
-    <!-- One-off onboarding for Assets & Goals after "Start Now" -->
+    <!-- One-off onboarding for Financial Inputs after "Start Now" -->
     <template id="tpl-onboard-data">
       <div class="p-4 sm:p-6 max-w-full break-words">
         <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">Get started: Add your assets</h3>
         <p class="text-gray-700 dark:text-gray-300 mb-4">
           To build your forecast, add your assets and set a target on the
-          Assets & Goals page.
+          Financial Inputs page.
         </p>
         <ul
           class="list-disc pl-5 space-y-2 text-gray-700 dark:text-gray-300 mb-4"
@@ -2470,14 +2489,14 @@
       <div class="p-4 sm:p-6 max-w-full break-words">
         <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">Quick tour (30 seconds)</h3>
         <ul class="list-disc pl-5 space-y-2 text-gray-700 dark:text-gray-300 mb-4">
-          <li><b>Assets & Goals</b>: add assets, set growth, and choose a target.</li>
+          <li><b>Financial Inputs</b>: add assets, set growth, and choose a target.</li>
           <li><b>Forecasts</b>: project your wealth, add one-off events.</li>
           <li><b>Portfolio Insights</b>: see allocation, passive income, and stress tests.</li>
           <li><b>Snapshots</b>: save totals to compare progress over time.</li>
           <li><b>Settings & Data</b>: profiles, theme, and export/import.</li>
         </ul>
         <div class="flex flex-wrap gap-2 justify-end">
-          <button class="btn btn-gray" data-action="go-assets">Open Assets & Goals</button>
+          <button class="btn btn-gray" data-action="go-assets">Open Financial Inputs</button>
           <button class="btn btn-blue" data-action="go-forecasts">Open Forecasts</button>
           <button class="btn btn-gray" data-action="go-insights">Portfolio Insights</button>
           <button class="btn btn-gray" data-action="go-settings">Settings & Data</button>
