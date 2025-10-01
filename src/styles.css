@@ -101,6 +101,11 @@
     max-width: 100%;
     overflow-wrap: anywhere;
     word-break: break-word;
+    background-color: var(--card-bg) !important;
+    border: 1px solid var(--card-border) !important;
+    -webkit-backdrop-filter: var(--card-filter);
+    backdrop-filter: var(--card-filter);
+    box-shadow: 0 18px 40px -32px rgba(15, 23, 42, 0.55);
   }
   .stat-box .text-3xl,
   .stat-box .text-2xl,
@@ -120,6 +125,9 @@
   .stat-box > * {
     overflow-wrap: inherit;
     word-break: inherit;
+  }
+  .content-section > .card:last-child {
+    margin-bottom: 0;
   }
   @media (min-width: 480px) and (max-width: 956px) {
     .stat-box {
