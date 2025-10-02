@@ -96,6 +96,9 @@
     margin-bottom: 0 !important;
     @apply pt-6 pb-5;
   }
+  .guidance-card {
+    @apply bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 text-gray-700 dark:text-gray-300 transition-colors duration-200;
+  }
   .stat-box {
     min-width: 0;
     max-width: 100%;

@@ -230,7 +230,7 @@
           </p>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="p-4 rounded-lg bg-gray-100 dark:bg-gray-700 stat-box">
+            <div class="guidance-card h-full">
               <h4 class="font-semibold text-gray-900 dark:text-gray-100 mb-2">Quick start</h4>
               <ul class="list-disc pl-5 text-gray-700 dark:text-gray-300">
                 <li>Create multiple profiles to keep scenarios separate (e.g., Personal, Partner, Joint, Experiments).</li>
@@ -243,7 +243,7 @@
               </ul>
             </div>
 
-            <div class="p-4 rounded-lg bg-gray-100 dark:bg-gray-700 stat-box">
+            <div class="guidance-card h-full">
               <h4 class="font-semibold text-gray-900 dark:text-gray-100 mb-2">Where to find things</h4>
               <ul class="list-disc pl-5 text-gray-700 dark:text-gray-300">
                 <li><b>Profiles</b>: manage and switch profiles from the <b>Settings & Data</b> page.</li>
@@ -257,14 +257,14 @@
             </div>
           </div>
 
-          <div class="mt-4 p-4 rounded-lg bg-gray-100 dark:bg-gray-700 stat-box">
+          <div class="guidance-card mt-4">
             <h4 class="font-semibold text-gray-900 dark:text-gray-100 mb-2">Try a demo</h4>
             <p class="text-sm text-gray-700 dark:text-gray-300 mb-3">Load sample data to explore forecasts and insights in seconds.</p>
             <button class="btn btn-purple" data-action="load-demo" aria-label="Load demo data">Load Demo Data</button>
             <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">Demo data creates a sample profile you can delete anytime.</p>
           </div>
 
-          <div class="mt-4 p-4 rounded-lg bg-gray-100 dark:bg-gray-700 stat-box">
+          <div class="guidance-card mt-4">
             <h4 class="font-semibold text-gray-900 dark:text-gray-100 mb-2">Use Profiles</h4>
             <p>
               Create unique profiles (for example, Personal vs. Joint or different strategies) and switch them from the
@@ -285,10 +285,7 @@
         <h2 class="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-6">
           Financial Inputs
         </h2>
-        <div
-          class="mb-6 p-4 rounded-lg bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 shadow-sm stat-box text-gray-700 dark:text-gray-300"
-          data-first-time
-        >
+        <div class="guidance-card mb-6" data-first-time>
           <p class="text-sm">
             Capture your assets, liabilities, and goals here. These details
             power your future-focused Forecasts and support the current position
@@ -648,9 +645,7 @@
         <h2 class="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-6">
           Forecasts
         </h2>
-        <div
-          class="mb-6 p-4 rounded-lg bg-gray-100 dark:bg-gray-700 stat-box text-gray-700 dark:text-gray-300"
-        >
+        <div class="guidance-card mb-6" data-first-time>
           <p class="text-sm">
             Explore future value forecasts powered by your inputs. Use these tools
             to model scenarios, see projected growth, and understand when goals
@@ -1049,13 +1044,11 @@
           Portfolio Insights
         </h2>
 
-        <div
-          class="mb-6 p-4 rounded-lg bg-gray-100 dark:bg-gray-700 stat-box text-gray-700 dark:text-gray-300"
-        >
+        <div class="guidance-card mb-6" data-first-time>
           <p class="text-sm">
             Review insights that reflect your current position as of today. These
             cards use the balances and settings you've entered without projecting
-            them forward. As these are based only on your current portfolio, the values do not 
+            them forward. As these are based only on your current portfolio, the values do not
             include one-off events used for scenario modelling.
           </p>
         </div>
@@ -1902,17 +1895,16 @@
             First-Time Use Content
           </h3>
           <div class="card-body">
-            <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
-              Choose whether to hide the welcome page and other first-time guidance once
-              you know your way around.
-            </p>
-            <label class="dark-mode-toggle">
-              <span class="mr-3 font-semibold text-gray-500 dark:text-gray-400"
-                >Hide first-time use content</span
-              >
-              <input type="checkbox" id="welcomeToggle" class="peer" />
-              <span class="toggle-track"><span class="toggle-thumb"></span></span>
-            </label>
+          <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
+            Show or hide the welcome page and other guidance cards once you're familiar with the app.
+          </p>
+          <label class="dark-mode-toggle">
+            <span class="mr-3 font-semibold text-gray-500 dark:text-gray-400"
+              >Show first-time use guidance</span
+            >
+            <input type="checkbox" id="welcomeToggle" class="peer" />
+            <span class="toggle-track"><span class="toggle-thumb"></span></span>
+          </label>
           </div>
         </div>
 

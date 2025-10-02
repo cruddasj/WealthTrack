@@ -99,8 +99,8 @@ function updateFirstTimeContentVisibility(hidden) {
     .querySelectorAll("[data-first-time]")
     .forEach((el) => el.classList.toggle("hidden", hidden));
   const welcomeToggle = $("welcomeToggle");
-  if (welcomeToggle && welcomeToggle.checked !== hidden) {
-    welcomeToggle.checked = hidden;
+  if (welcomeToggle && welcomeToggle.checked === hidden) {
+    welcomeToggle.checked = !hidden;
   }
 }
 
@@ -6143,7 +6143,8 @@ window.addEventListener("load", () => {
   updateFirstTimeContentVisibility(isFirstTimeContentHidden());
   if (welcomeToggle) {
     on(welcomeToggle, "change", (e) => {
-      const hide = e.target.checked;
+      const show = e.target.checked;
+      const hide = !show;
       applyFirstTimeContentHidden(hide);
       if (hide && $("welcome").classList.contains("active"))
         navigateTo("data-entry");
