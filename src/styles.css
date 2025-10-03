@@ -17,6 +17,7 @@
     min-height: 100vh;
     min-height: 100dvh;
     --mobile-safe-area-top: 0px;
+    --mobile-header-height: 0px;
     --mobile-header-offset: 0px;
   }
 
@@ -35,7 +36,11 @@
 
   @media (max-width: 767px) {
     body {
-      --mobile-header-offset: calc(4.5rem + var(--mobile-safe-area-top));
+      /* Default mobile header height; refined at runtime for precise layout */
+      --mobile-header-height: 4.5rem;
+      --mobile-header-offset: calc(
+        var(--mobile-header-height) + var(--mobile-safe-area-top)
+      );
     }
   }
 }

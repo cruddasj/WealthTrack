@@ -26,6 +26,7 @@ let fireForecastRetireDate = null;
 let passiveIncomeAsOf = null;
 let passiveAssetSelection = null;
 let passiveAssetPicker = null;
+let mobileHeaderResizeObserver = null;
 
 const profilePickers = {};
 let importFileContent = null;
@@ -4861,6 +4862,50 @@ function sizeBrandLogo() {
   } catch (_) {}
 }
 
+function parseCssNumber(value, fallback = 0) {
+  if (typeof value !== "string") return fallback;
+  const parsed = parseFloat(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+function readSafeAreaTop() {
+  if (!document?.body) return 0;
+  try {
+    const computed = getComputedStyle(document.body);
+    const raw = computed.getPropertyValue("--mobile-safe-area-top");
+    return parseCssNumber(raw, 0);
+  } catch (_) {
+    return 0;
+  }
+}
+
+function updateMobileHeaderOffset() {
+  const body = document.body;
+  if (!body) return;
+  const header = document.getElementById("mobileHeader");
+  const rect = header ? header.getBoundingClientRect() : null;
+  const height = Math.max(0, rect?.height || header?.offsetHeight || 0);
+  const safeAreaTop = readSafeAreaTop();
+  body.style.setProperty("--mobile-header-height", `${height}px`);
+  body.style.setProperty(
+    "--mobile-header-offset",
+    `${Math.max(0, height + safeAreaTop)}px`,
+  );
+}
+
+function setupMobileHeaderOffsetWatcher() {
+  updateMobileHeaderOffset();
+  const header = document.getElementById("mobileHeader");
+  if (!header || typeof ResizeObserver !== "function") return;
+  try {
+    if (mobileHeaderResizeObserver) mobileHeaderResizeObserver.disconnect();
+    mobileHeaderResizeObserver = new ResizeObserver(() => {
+      updateMobileHeaderOffset();
+    });
+    mobileHeaderResizeObserver.observe(header);
+  } catch (_) {}
+}
+
 // --- Events and init ---
 function handleFormSubmit(e) {
   e.preventDefault();
@@ -5412,6 +5457,8 @@ window.addEventListener("load", () => {
     makeLink("(prefers-color-scheme: light)", makeSvg("#111827"));
   })();
 
+  setupMobileHeaderOffsetWatcher();
+
   $("goalValue").value = goalValue || "";
   $("goalYear").value = goalTargetDate
     ? new Date(goalTargetDate).getFullYear()
@@ -5588,6 +5635,7 @@ window.addEventListener("load", () => {
 
   on(window, "resize", () => {
     if (window.innerWidth >= 768) setMenuState(false);
+    updateMobileHeaderOffset();
     updateChartContainers();
   });
 
