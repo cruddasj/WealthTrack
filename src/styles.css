@@ -323,6 +323,12 @@
 .content-section.active {
   display: block;
 }
+.content-section > .card:last-child,
+.content-section > .card:last-of-type,
+.content-section > .guidance-card:last-child,
+.content-section > .guidance-card:last-of-type {
+  margin-bottom: 0;
+}
 
 /* required asterisk */
 .required-label:after {
