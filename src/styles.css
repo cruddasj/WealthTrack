@@ -515,6 +515,8 @@
   display: none;
 }
 .dark-mode-toggle .toggle-track {
+  display: inline-block;
+  flex-shrink: 0;
   width: 56px;
   height: 28px;
   background-color: #d1d5db;
