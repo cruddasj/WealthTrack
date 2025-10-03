@@ -6281,9 +6281,9 @@ window.addEventListener("load", () => {
       }
       const message = latestVersion
         ? previousVersion && latestVersion === previousVersion
-          ? `You're already using the latest version of WealthTrack (version ${latestVersion}). Reload now to continue.`
-          : `WealthTrack has been updated to version ${latestVersion}. Reload now to start using it.`
-        : "WealthTrack has been updated. Reload now to use the latest version.";
+          ? `You're already using the latest version of WealthTrack (version ${latestVersion}).`
+          : `WealthTrack has been updated to version ${latestVersion}.`
+        : "WealthTrack has been updated to the latest version.";
       showAlert(message, () => window.location.reload());
     };
     if (!("serviceWorker" in navigator)) {
