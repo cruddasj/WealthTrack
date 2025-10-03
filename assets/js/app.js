@@ -61,6 +61,7 @@ const LS = {
   activeProfile: "activeProfile",
   forecastTip: "forecastTipSeen",
   currency: "currency",
+  view: "activeView",
 };
 const save = (k, v) => localStorage.setItem(k, JSON.stringify(v));
 const load = (k, d) => JSON.parse(localStorage.getItem(k)) || d;
@@ -4630,13 +4631,19 @@ function navigateTo(viewId) {
   document
     .querySelectorAll("nav button")
     .forEach((b) => b.classList.remove("active-nav-button"));
-  document
-    .querySelector(`nav button[data-target="${viewId}"]`)
-    .classList.add("active-nav-button");
+  const navButton = document.querySelector(
+    `nav button[data-target="${viewId}"]`,
+  );
+  if (navButton) navButton.classList.add("active-nav-button");
   document
     .querySelectorAll(".content-section")
     .forEach((s) => s.classList.remove("active"));
-  $(viewId).classList.add("active");
+  const section = $(viewId);
+  if (!section) return;
+  section.classList.add("active");
+  try {
+    localStorage.setItem(LS.view, viewId);
+  } catch (_) {}
   if (viewId === "portfolio-analysis") {
     renderAssetBreakdownChart();
   }
@@ -6240,9 +6247,21 @@ window.addEventListener("load", () => {
   if (fvDate) fvDate.min = new Date().toISOString().split("T")[0];
   // First-run welcome routing
   const seen = localStorage.getItem(LS.welcome) === "1";
+  const storedViewId = (() => {
+    try {
+      return localStorage.getItem(LS.view);
+    } catch (_) {
+      return null;
+    }
+  })();
+  const storedSection = storedViewId ? document.getElementById(storedViewId) : null;
+  const hasStoredSection =
+    storedSection && storedSection.classList.contains("content-section");
   if (!seen && !isFirstTimeContentHidden()) {
     navigateTo("welcome");
     localStorage.setItem(LS.welcome, "1");
+  } else if (hasStoredSection) {
+    navigateTo(storedViewId);
   } else {
     navigateTo("data-entry");
   }
