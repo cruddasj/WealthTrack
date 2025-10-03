@@ -60,6 +60,7 @@ const LS = {
   activeProfile: "activeProfile",
   forecastTip: "forecastTipSeen",
   currency: "currency",
+  appVersion: "appVersion",
 };
 const save = (k, v) => localStorage.setItem(k, JSON.stringify(v));
 const load = (k, d) => JSON.parse(localStorage.getItem(k)) || d;
@@ -5363,30 +5364,152 @@ function handleFormSubmit(e) {
 
 window.addEventListener("load", () => {
   const versionTargets = document.querySelectorAll("[data-app-version]");
+  const updateButton = document.getElementById("checkForUpdatesBtn");
+  const updateStatus = document.getElementById("updateStatusMessage");
   if (versionTargets.length) {
     const fallbackVersion = "0.0.0-dev";
+    const toneClassMap = {
+      info: ["text-blue-600", "dark:text-blue-300"],
+      success: ["text-green-600", "dark:text-green-300"],
+      error: ["text-red-600", "dark:text-red-400"],
+      neutral: ["text-gray-600", "dark:text-gray-300"],
+    };
+    const toneClassList = Object.values(toneClassMap).flat();
     const normalizeVersion = (value) => {
       if (typeof value !== "string") return fallbackVersion;
       const trimmed = value.trim();
       if (!trimmed) return fallbackVersion;
       return trimmed.replace(/^v/i, "");
     };
-    const applyVersion = (value) =>
+    const applyVersion = (value) => {
       versionTargets.forEach((el) => {
         el.textContent = value;
       });
+    };
+    let installedVersion = null;
+    let hasKnownVersion = false;
+    const setInstalledVersion = (value, { persist = true, markKnown = true } = {}) => {
+      const normalized = normalizeVersion(value);
+      installedVersion = normalized;
+      hasKnownVersion = !!markKnown;
+      applyVersion(normalized);
+      if (persist && markKnown) {
+        try {
+          localStorage.setItem(LS.appVersion, normalized);
+        } catch (_) {}
+      }
+      return normalized;
+    };
+    const setStatus = (message, tone = "info") => {
+      if (!updateStatus) return;
+      if (!message) {
+        updateStatus.textContent = "";
+        updateStatus.classList.add("hidden");
+        toneClassList.forEach((cls) => updateStatus.classList.remove(cls));
+        return;
+      }
+      updateStatus.textContent = message;
+      updateStatus.classList.remove("hidden");
+      toneClassList.forEach((cls) => updateStatus.classList.remove(cls));
+      const classes = toneClassMap[tone] || toneClassMap.neutral;
+      classes.forEach((cls) => updateStatus.classList.add(cls));
+    };
+    const setButtonBusy = (busy) => {
+      if (!updateButton) return;
+      updateButton.disabled = busy;
+      updateButton.setAttribute("aria-busy", busy ? "true" : "false");
+      if (busy) {
+        updateButton.setAttribute("aria-disabled", "true");
+      } else {
+        updateButton.removeAttribute("aria-disabled");
+      }
+    };
+    const refreshServiceWorker = async () => {
+      if (!("serviceWorker" in navigator)) return;
+      try {
+        const registration = await navigator.serviceWorker.getRegistration();
+        if (registration) {
+          await registration.update();
+        }
+      } catch (error) {
+        console.warn("Service worker update failed:", error);
+      }
+    };
+    const clearAppCaches = async () => {
+      if (!("caches" in window)) return;
+      try {
+        const keys = await caches.keys();
+        await Promise.all(
+          keys
+            .filter((key) => key.startsWith("wealthtrack-cache-"))
+            .map((key) => caches.delete(key))
+        );
+      } catch (error) {
+        console.warn("Cache cleanup failed:", error);
+      }
+    };
+    const applyUpdateFlow = async (latestVersion) => {
+      setStatus("Downloading update…", "info");
+      await refreshServiceWorker();
+      await clearAppCaches();
+      setInstalledVersion(latestVersion, { persist: true });
+      setStatus("Update applied! Reloading…", "success");
+      setTimeout(() => window.location.reload(), 600);
+    };
+    const storedVersion = getLocalStorageItem(LS.appVersion);
+    if (storedVersion) {
+      setInstalledVersion(storedVersion, { persist: false });
+    }
     fetch("assets/version.json", { cache: "no-store" })
       .then((response) => (response.ok ? response.json() : null))
       .then((data) => {
         if (data && data.version) {
-          applyVersion(normalizeVersion(data.version));
-        } else {
-          applyVersion(fallbackVersion);
+          setInstalledVersion(data.version, { persist: true });
+        } else if (!hasKnownVersion) {
+          setInstalledVersion(fallbackVersion, { persist: false, markKnown: false });
         }
       })
       .catch(() => {
-        applyVersion(fallbackVersion);
+        if (!hasKnownVersion) {
+          setInstalledVersion(fallbackVersion, { persist: false, markKnown: false });
+        }
       });
+    if (updateButton) {
+      updateButton.addEventListener("click", async () => {
+        if (updateButton.disabled) return;
+        setButtonBusy(true);
+        setStatus("Checking for updates…", "info");
+        try {
+          const response = await fetch(`assets/version.json?ts=${Date.now()}`, {
+            cache: "no-store",
+          });
+          if (!response.ok) {
+            throw new Error(`Update check failed: ${response.status}`);
+          }
+          const data = await response.json();
+          if (!data || !data.version) {
+            throw new Error("Update check failed: invalid payload");
+          }
+          const latestVersion = normalizeVersion(data.version);
+          if (!hasKnownVersion) {
+            setInstalledVersion(latestVersion, { persist: true });
+            setStatus("You're already on the latest version.", "success");
+            setButtonBusy(false);
+            return;
+          }
+          if (latestVersion === installedVersion) {
+            setStatus("You're already on the latest version.", "success");
+            setButtonBusy(false);
+            return;
+          }
+          await applyUpdateFlow(latestVersion);
+        } catch (error) {
+          console.error("Update check failed:", error);
+          setStatus("Update check failed. Please try again later.", "error");
+          setButtonBusy(false);
+        }
+      });
+    }
   }
 
   // Generate light/dark favicons from the inline #app-logo symbol
