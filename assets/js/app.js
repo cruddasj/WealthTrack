@@ -6222,20 +6222,49 @@ window.addEventListener("load", () => {
       button.disabled = false;
       button.removeAttribute("aria-busy");
     };
+    let updateResolved = false;
+    let timeoutId = null;
+    const cancelTimeout = () => {
+      if (timeoutId === null) return;
+      clearTimeout(timeoutId);
+      timeoutId = null;
+    };
+    const markResolved = () => {
+      if (updateResolved) return false;
+      updateResolved = true;
+      cancelTimeout();
+      return true;
+    };
+    const finishWithAlert = (message) => {
+      if (!markResolved()) return;
+      resetButtonState();
+      showAlert(message);
+    };
+    const normalizeVersion = (value) => {
+      if (typeof value !== "string") return null;
+      const trimmed = value.trim();
+      if (!trimmed) return null;
+      return trimmed.replace(/^v/i, "");
+    };
     const fetchLatestAppVersion = async () => {
       try {
         const response = await fetch("assets/version.json", { cache: "no-store" });
         if (!response || !response.ok) return null;
         const data = await response.json();
         if (!data || typeof data.version !== "string") return null;
-        const trimmed = data.version.trim();
-        if (!trimmed) return null;
-        return trimmed.replace(/^v/i, "");
+        return normalizeVersion(data.version);
       } catch (_) {
         return null;
       }
     };
+    const getDisplayedAppVersion = () => {
+      const el = document.querySelector("[data-app-version]");
+      if (!el || typeof el.textContent !== "string") return null;
+      return normalizeVersion(el.textContent);
+    };
     const notifyUpdateComplete = async () => {
+      const previousVersion = getDisplayedAppVersion();
+      if (!markResolved()) return;
       const latestVersion = await fetchLatestAppVersion();
       if (latestVersion) {
         document
@@ -6251,13 +6280,14 @@ window.addEventListener("load", () => {
         button.focus();
       }
       const message = latestVersion
-        ? `WealthTrack has been updated to version ${latestVersion}. Reload now to start using it.`
+        ? previousVersion && latestVersion === previousVersion
+          ? `You're already using the latest version of WealthTrack (version ${latestVersion}). Reload now to continue.`
+          : `WealthTrack has been updated to version ${latestVersion}. Reload now to start using it.`
         : "WealthTrack has been updated. Reload now to use the latest version.";
       showAlert(message, () => window.location.reload());
     };
     if (!("serviceWorker" in navigator)) {
-      resetButtonState();
-      showAlert(
+      finishWithAlert(
         "Automatic updates aren't supported in this browser. Please refresh manually to get the latest version.",
       );
       return;
@@ -6362,14 +6392,15 @@ window.addEventListener("load", () => {
       });
 
     const activateWorker = async (worker) => {
+      if (updateResolved) return true;
       if (!worker) return false;
       try {
         setBusyState("Downloading update…");
         await waitForInstalled(worker);
+        if (updateResolved) return true;
       } catch (err) {
         console.error("Update install failed", err);
-        resetButtonState();
-        showAlert("We couldn't finish installing the update. Please try again later.");
+        finishWithAlert("We couldn't finish installing the update. Please try again later.");
         return true;
       }
       setBusyState("Installing update…");
@@ -6381,25 +6412,33 @@ window.addEventListener("load", () => {
       }
       try {
         await waitForActivation(worker);
+        if (updateResolved) return true;
       } catch (err) {
         console.error("Update activation failed", err);
-        resetButtonState();
-        showAlert("We couldn't activate the update. Please try again later.");
+        finishWithAlert("We couldn't activate the update. Please try again later.");
         return true;
       }
       setBusyState("Finalizing update…");
       await controllerChange;
+      if (updateResolved) return true;
       await notifyUpdateComplete();
       return true;
     };
 
     setBusyState("Checking…");
+    cancelTimeout();
+    timeoutId = setTimeout(() => {
+      console.warn("Update request timed out after 30 seconds");
+      finishWithAlert("The update failed. Please try again later.");
+    }, 30000);
 
     try {
       const registration = await waitForRegistration();
+      if (updateResolved) return;
       if (!registration) {
-        resetButtonState();
-        showAlert("We couldn't reach the update service. Please refresh manually to check for updates.");
+        finishWithAlert(
+          "We couldn't reach the update service. Please refresh manually to check for updates.",
+        );
         return;
       }
 
@@ -6419,18 +6458,18 @@ window.addEventListener("load", () => {
       } catch (err) {
         console.error("Service worker update failed", err);
       }
+      if (updateResolved) return;
       const newWorker = await newWorkerPromise;
+      if (updateResolved) return;
       if (newWorker) {
         await activateWorker(newWorker);
         return;
       }
 
-      resetButtonState();
-      showAlert("You're already using the latest version of WealthTrack.");
+      finishWithAlert("You're already using the latest version of WealthTrack.");
     } catch (error) {
       console.error("Update check failed", error);
-      resetButtonState();
-      showAlert("We couldn't complete the update check. Please try again later.");
+      finishWithAlert("We couldn't complete the update check. Please try again later.");
     }
   }
 
