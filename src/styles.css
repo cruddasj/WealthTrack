@@ -16,19 +16,27 @@
     overscroll-behavior-x: none;
     min-height: 100vh;
     min-height: 100dvh;
+    --mobile-safe-area-top: 0px;
+    --mobile-header-offset: 0px;
   }
 
   /* Ensure the main scroll area always covers the viewport
      to avoid a visible gap when sections are short/collapsed. */
   main {
     position: relative;
-    min-height: 100vh;
-    min-height: 100dvh;
+    min-height: calc(100vh - var(--mobile-header-offset));
+    min-height: calc(100dvh - var(--mobile-header-offset));
     overflow-x: hidden;
     overscroll-behavior-x: contain;
     /* Keep the scroll container aligned with the page theme so any
        overscroll bounce (vertical or horizontal) doesn't flash white. */
     background-color: inherit;
+  }
+
+  @media (max-width: 767px) {
+    body {
+      --mobile-header-offset: calc(4.5rem + var(--mobile-safe-area-top));
+    }
   }
 }
 
@@ -40,6 +48,12 @@
 
   main {
     overflow-x: clip;
+  }
+}
+
+@supports (top: env(safe-area-inset-top)) {
+  body {
+    --mobile-safe-area-top: env(safe-area-inset-top);
   }
 }
 
