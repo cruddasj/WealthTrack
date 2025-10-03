@@ -6429,7 +6429,7 @@ window.addEventListener("load", () => {
     cancelTimeout();
     timeoutId = setTimeout(() => {
       console.warn("Update request timed out after 30 seconds");
-      finishWithAlert("The update failed. Please try again later.");
+      finishWithAlert("Checking for updates failed. Please try again later.");
     }, 30000);
 
     try {
