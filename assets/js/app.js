@@ -6199,6 +6199,241 @@ window.addEventListener("load", () => {
     navigateTo("data-entry");
   }
 
+  async function handleAppUpdateRequest(button) {
+    if (!button) return;
+    const originalLabel =
+      button.getAttribute("data-default-label") || button.textContent.trim();
+    button.setAttribute("data-default-label", originalLabel);
+    const renderBusyContent = (label) =>
+      `<span class="flex items-center justify-center gap-2">
+        <span
+          class="inline-block h-4 w-4 rounded-full border-2 border-current border-t-transparent animate-spin"
+          aria-hidden="true"
+        ></span>
+        <span>${label}</span>
+      </span>`;
+    const setBusyState = (label) => {
+      button.innerHTML = renderBusyContent(label);
+      button.disabled = true;
+      button.setAttribute("aria-busy", "true");
+    };
+    const resetButtonState = () => {
+      button.textContent = originalLabel;
+      button.disabled = false;
+      button.removeAttribute("aria-busy");
+    };
+    const fetchLatestAppVersion = async () => {
+      try {
+        const response = await fetch("assets/version.json", { cache: "no-store" });
+        if (!response || !response.ok) return null;
+        const data = await response.json();
+        if (!data || typeof data.version !== "string") return null;
+        const trimmed = data.version.trim();
+        if (!trimmed) return null;
+        return trimmed.replace(/^v/i, "");
+      } catch (_) {
+        return null;
+      }
+    };
+    const notifyUpdateComplete = async () => {
+      const latestVersion = await fetchLatestAppVersion();
+      if (latestVersion) {
+        document
+          .querySelectorAll("[data-app-version]")
+          .forEach((el) => {
+            el.textContent = latestVersion;
+          });
+      }
+      resetButtonState();
+      try {
+        button.focus({ preventScroll: true });
+      } catch (_) {
+        button.focus();
+      }
+      const message = latestVersion
+        ? `WealthTrack has been updated to version ${latestVersion}. Reload now to start using it.`
+        : "WealthTrack has been updated. Reload now to use the latest version.";
+      showAlert(message, () => window.location.reload());
+    };
+    if (!("serviceWorker" in navigator)) {
+      resetButtonState();
+      showAlert(
+        "Automatic updates aren't supported in this browser. Please refresh manually to get the latest version.",
+      );
+      return;
+    }
+
+    const waitForInstalled = (worker) =>
+      new Promise((resolve, reject) => {
+        if (!worker) {
+          resolve();
+          return;
+        }
+        if (worker.state === "installed" || worker.state === "activated") {
+          resolve();
+          return;
+        }
+        if (worker.state === "redundant") {
+          reject(new Error("Service worker install failed"));
+          return;
+        }
+        const onStateChange = () => {
+          if (worker.state === "installed" || worker.state === "activated") {
+            worker.removeEventListener("statechange", onStateChange);
+            resolve();
+          } else if (worker.state === "redundant") {
+            worker.removeEventListener("statechange", onStateChange);
+            reject(new Error("Service worker install failed"));
+          }
+        };
+        worker.addEventListener("statechange", onStateChange);
+      });
+
+    const waitForActivation = (worker) =>
+      new Promise((resolve, reject) => {
+        if (!worker) {
+          resolve();
+          return;
+        }
+        if (worker.state === "activated") {
+          resolve();
+          return;
+        }
+        if (worker.state === "redundant") {
+          reject(new Error("Service worker became redundant"));
+          return;
+        }
+        const onStateChange = () => {
+          if (worker.state === "activated") {
+            worker.removeEventListener("statechange", onStateChange);
+            resolve();
+          } else if (worker.state === "redundant") {
+            worker.removeEventListener("statechange", onStateChange);
+            reject(new Error("Service worker became redundant"));
+          }
+        };
+        worker.addEventListener("statechange", onStateChange);
+      });
+
+    const waitForControllerChange = () =>
+      new Promise((resolve) => {
+        let resolved = false;
+        const finish = () => {
+          if (resolved) return;
+          resolved = true;
+          navigator.serviceWorker.removeEventListener("controllerchange", finish);
+          resolve();
+        };
+        navigator.serviceWorker.addEventListener("controllerchange", finish);
+        setTimeout(finish, 5000);
+      });
+
+    const waitForRegistration = async () => {
+      try {
+        const reg = await navigator.serviceWorker.getRegistration();
+        if (reg) return reg;
+      } catch (_) {
+        /* ignore */
+      }
+      try {
+        return await navigator.serviceWorker.ready;
+      } catch (_) {
+        return null;
+      }
+    };
+
+    const waitForNewWorker = (registration) =>
+      new Promise((resolve) => {
+        if (registration.installing) {
+          resolve(registration.installing);
+          return;
+        }
+        const handleUpdateFound = () => {
+          const worker = registration.installing || registration.waiting;
+          if (!worker) return;
+          registration.removeEventListener("updatefound", handleUpdateFound);
+          resolve(worker);
+        };
+        registration.addEventListener("updatefound", handleUpdateFound);
+        setTimeout(() => {
+          registration.removeEventListener("updatefound", handleUpdateFound);
+          resolve(registration.installing || registration.waiting || null);
+        }, 10000);
+      });
+
+    const activateWorker = async (worker) => {
+      if (!worker) return false;
+      try {
+        setBusyState("Downloading update…");
+        await waitForInstalled(worker);
+      } catch (err) {
+        console.error("Update install failed", err);
+        resetButtonState();
+        showAlert("We couldn't finish installing the update. Please try again later.");
+        return true;
+      }
+      setBusyState("Installing update…");
+      const controllerChange = waitForControllerChange();
+      try {
+        worker.postMessage({ type: "SKIP_WAITING" });
+      } catch (err) {
+        console.error("Failed to notify service worker", err);
+      }
+      try {
+        await waitForActivation(worker);
+      } catch (err) {
+        console.error("Update activation failed", err);
+        resetButtonState();
+        showAlert("We couldn't activate the update. Please try again later.");
+        return true;
+      }
+      setBusyState("Finalizing update…");
+      await controllerChange;
+      await notifyUpdateComplete();
+      return true;
+    };
+
+    setBusyState("Checking…");
+
+    try {
+      const registration = await waitForRegistration();
+      if (!registration) {
+        resetButtonState();
+        showAlert("We couldn't reach the update service. Please refresh manually to check for updates.");
+        return;
+      }
+
+      if (registration.waiting) {
+        await activateWorker(registration.waiting);
+        return;
+      }
+
+      if (registration.installing) {
+        const applied = await activateWorker(registration.installing);
+        if (applied) return;
+      }
+
+      const newWorkerPromise = waitForNewWorker(registration);
+      try {
+        await registration.update();
+      } catch (err) {
+        console.error("Service worker update failed", err);
+      }
+      const newWorker = await newWorkerPromise;
+      if (newWorker) {
+        await activateWorker(newWorker);
+        return;
+      }
+
+      resetButtonState();
+      showAlert("You're already using the latest version of WealthTrack.");
+    } catch (error) {
+      console.error("Update check failed", error);
+      resetButtonState();
+      showAlert("We couldn't complete the update check. Please try again later.");
+    }
+  }
+
   // Welcome buttons
   document.addEventListener("click", (e) => {
     const btn = e.target.closest("[data-action]");
@@ -6265,6 +6500,9 @@ window.addEventListener("load", () => {
         break;
       case "close-modal":
         closeModal();
+        break;
+      case "update-app":
+        handleAppUpdateRequest(btn);
         break;
     }
   });
