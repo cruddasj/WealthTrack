@@ -1,4 +1,4 @@
-const APP_VERSION = "1.1.2";
+const APP_VERSION = "1.1.3";
 const CACHE_VERSION = APP_VERSION && APP_VERSION.endsWith("-dev")
   ? "dev"
   : APP_VERSION;
@@ -28,8 +28,21 @@ self.addEventListener("install", (event) => {
 
 self.addEventListener("message", (event) => {
   const { data } = event || {};
-  if (data && data.type === "SKIP_WAITING") {
+  if (!data || typeof data.type !== "string") {
+    return;
+  }
+
+  if (data.type === "SKIP_WAITING") {
     self.skipWaiting();
+    return;
+  }
+
+  if (data.type === "GET_VERSION") {
+    const port = event.ports && event.ports[0] ? event.ports[0] : null;
+    const target = port || event.source;
+    if (target && typeof target.postMessage === "function") {
+      target.postMessage({ type: "VERSION", version: APP_VERSION });
+    }
   }
 });
 

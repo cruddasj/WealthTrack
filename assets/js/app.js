@@ -7019,6 +7019,69 @@ window.addEventListener("load", () => {
       if (!trimmed) return null;
       return trimmed.replace(/^v/i, "");
     };
+    const getControllerAppVersion = async () => {
+      if (!("serviceWorker" in navigator)) return null;
+      const controller = navigator.serviceWorker.controller;
+      if (!controller) return null;
+      try {
+        return await new Promise((resolve) => {
+          const channel = new MessageChannel();
+          const timeout = setTimeout(() => {
+            channel.port1.onmessage = null;
+            try {
+              channel.port1.close();
+            } catch (_) {
+              /* ignore */
+            }
+            resolve(null);
+          }, 3000);
+          channel.port1.onmessage = (event) => {
+            clearTimeout(timeout);
+            channel.port1.onmessage = null;
+            try {
+              channel.port1.close();
+            } catch (_) {
+              /* ignore */
+            }
+            const { data } = event || {};
+            if (
+              data &&
+              data.type === "VERSION" &&
+              typeof data.version === "string"
+            ) {
+              resolve(normalizeVersion(data.version));
+            } else {
+              resolve(null);
+            }
+          };
+          try {
+            if (typeof channel.port1.start === "function") {
+              channel.port1.start();
+            }
+          } catch (_) {
+            /* ignore */
+          }
+          try {
+            controller.postMessage(
+              { type: "GET_VERSION" },
+              [channel.port2],
+            );
+          } catch (_) {
+            clearTimeout(timeout);
+            channel.port1.onmessage = null;
+            try {
+              channel.port1.close();
+            } catch (_) {
+              /* ignore */
+            }
+            resolve(null);
+          }
+        });
+      } catch (_) {
+        return null;
+      }
+    };
+    const controllerVersionPromise = getControllerAppVersion();
     const fetchLatestAppVersion = async () => {
       try {
         const response = await fetch("assets/version.json", { cache: "no-store" });
@@ -7166,7 +7229,8 @@ window.addEventListener("load", () => {
       return wrapper;
     };
     const notifyUpdateComplete = async () => {
-      const previousVersion = getDisplayedAppVersion();
+      const controllerVersion = await controllerVersionPromise;
+      const previousVersion = controllerVersion || getDisplayedAppVersion();
       if (!markResolved()) return;
       const latestVersion = await fetchLatestAppVersion();
       if (latestVersion) {

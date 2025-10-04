@@ -1,5 +1,12 @@
 [ 
   {
+    "version": "1.1.2",
+    "date": "2025-10-04",
+    "changes": [
+      "Fix the update confirmation dialog so newly installed versions display their changelog entries."
+    ]
+  },
+  {
     "version": "1.1.1",
     "date": "2025-10-04",
     "changes": [
