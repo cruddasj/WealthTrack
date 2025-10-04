@@ -2116,7 +2116,20 @@ const openModalNode = (node) => {
 
 function showAlert(message, onClose = null) {
   const tpl = document.importNode($("tpl-alert").content, true);
-  tpl.querySelector("[data-text]").textContent = message;
+  const messageContainer = tpl.querySelector("[data-text]");
+  const isNode =
+    message !== null && typeof message === "object" && message.nodeType;
+  if (isNode) {
+    messageContainer.innerHTML = "";
+    messageContainer.appendChild(message);
+    messageContainer.classList.add("text-left", "space-y-4");
+  } else {
+    messageContainer.textContent =
+      typeof message === "string" || typeof message === "number"
+        ? String(message)
+        : "";
+    messageContainer.classList.remove("text-left", "space-y-4");
+  }
   tpl.querySelector("[data-ok]").onclick = () => {
     closeModal();
     if (onClose) onClose();
@@ -6985,6 +6998,136 @@ window.addEventListener("load", () => {
       if (!el || typeof el.textContent !== "string") return null;
       return normalizeVersion(el.textContent);
     };
+    const toVersionParts = (value) => {
+      if (typeof value !== "string") return [];
+      return value
+        .split(/[.-]/)
+        .filter((part) => part.length > 0)
+        .map((part) => {
+          const num = Number(part);
+          return Number.isFinite(num) ? num : part.toLowerCase();
+        });
+    };
+    const compareVersions = (a, b) => {
+      if (a === b) return 0;
+      if (!a) return b ? -1 : 0;
+      if (!b) return a ? 1 : 0;
+      const partsA = toVersionParts(a);
+      const partsB = toVersionParts(b);
+      const len = Math.max(partsA.length, partsB.length);
+      for (let i = 0; i < len; i += 1) {
+        const partA = partsA[i] ?? 0;
+        const partB = partsB[i] ?? 0;
+        if (partA === partB) continue;
+        if (typeof partA === "number" && typeof partB === "number") {
+          return partA < partB ? -1 : 1;
+        }
+        const strA = String(partA);
+        const strB = String(partB);
+        if (strA === strB) continue;
+        return strA < strB ? -1 : 1;
+      }
+      return 0;
+    };
+    const fetchChangelogEntries = async () => {
+      try {
+        const response = await fetch("assets/changelog.json", {
+          cache: "no-store",
+        });
+        if (!response || !response.ok) return [];
+        const data = await response.json();
+        if (!Array.isArray(data)) return [];
+        return data
+          .map((entry) => {
+            if (!entry || typeof entry.version !== "string") return null;
+            const version = normalizeVersion(entry.version);
+            if (!version) return null;
+            const changes = Array.isArray(entry.changes)
+              ? entry.changes
+                  .map((item) =>
+                    typeof item === "string" ? item.trim() : "",
+                  )
+                  .filter(Boolean)
+              : [];
+            if (!changes.length) return null;
+            const date =
+              typeof entry.date === "string" && entry.date.trim().length
+                ? entry.date.trim()
+                : null;
+            return { version, changes, date };
+          })
+          .filter(Boolean);
+      } catch (_) {
+        return [];
+      }
+    };
+    const filterChangelogForUpdate = (entries, previousVersion, latestVersion) => {
+      if (!Array.isArray(entries) || !latestVersion) return [];
+      return entries
+        .filter((entry) => {
+          if (!entry || !entry.version) return false;
+          if (compareVersions(entry.version, latestVersion) === 1) return false;
+          if (
+            previousVersion &&
+            compareVersions(entry.version, previousVersion) <= 0
+          )
+            return false;
+          return Array.isArray(entry.changes) && entry.changes.length > 0;
+        })
+        .sort((a, b) => compareVersions(b.version, a.version));
+    };
+    const formatChangelogDate = (value) => {
+      if (!value) return null;
+      const parsed = new Date(value);
+      if (Number.isNaN(parsed.getTime())) return value;
+      try {
+        return parsed.toLocaleDateString(undefined, {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+        });
+      } catch (_) {
+        return parsed.toLocaleDateString();
+      }
+    };
+    const buildUpdateSummaryContent = (
+      summary,
+      changesByVersion,
+    ) => {
+      const wrapper = document.createElement("div");
+      wrapper.className = "space-y-4 text-left";
+      const summaryParagraph = document.createElement("p");
+      summaryParagraph.className =
+        "text-base text-gray-700 dark:text-gray-200";
+      summaryParagraph.textContent = summary;
+      wrapper.appendChild(summaryParagraph);
+      changesByVersion.forEach((entry) => {
+        const section = document.createElement("div");
+        section.className = "space-y-2";
+        const heading = document.createElement("p");
+        heading.className = "font-semibold text-gray-900 dark:text-gray-100";
+        const formattedDate = formatChangelogDate(entry.date);
+        heading.textContent = formattedDate
+          ? `Version ${entry.version} · ${formattedDate}`
+          : `Version ${entry.version}`;
+        section.appendChild(heading);
+        const list = document.createElement("ul");
+        list.className =
+          "list-disc pl-5 space-y-1 text-sm text-gray-700 dark:text-gray-300";
+        entry.changes.forEach((change) => {
+          const item = document.createElement("li");
+          item.textContent = change;
+          list.appendChild(item);
+        });
+        section.appendChild(list);
+        wrapper.appendChild(section);
+      });
+      const reloadNote = document.createElement("p");
+      reloadNote.className = "text-xs text-gray-500 dark:text-gray-400";
+      reloadNote.textContent = "WealthTrack will reload to finish applying the update.";
+      wrapper.appendChild(reloadNote);
+      return wrapper;
+    };
     const notifyUpdateComplete = async () => {
       const previousVersion = getDisplayedAppVersion();
       if (!markResolved()) return;
@@ -7002,7 +7145,27 @@ window.addEventListener("load", () => {
       } catch (_) {
         button.focus();
       }
-      const message = latestVersion
+      const hasVersion = typeof latestVersion === "string" && latestVersion;
+      if (hasVersion && (!previousVersion || latestVersion !== previousVersion)) {
+        const changelogEntries = await fetchChangelogEntries();
+        const relevantChanges = filterChangelogForUpdate(
+          changelogEntries,
+          previousVersion,
+          latestVersion,
+        );
+        if (relevantChanges.length) {
+          const summaryMessage = previousVersion
+            ? `WealthTrack has been updated to version ${latestVersion}. Here's what's new since version ${previousVersion}.`
+            : `WealthTrack has been updated to version ${latestVersion}. Here's what's new.`;
+          const content = buildUpdateSummaryContent(
+            summaryMessage,
+            relevantChanges,
+          );
+          showAlert(content, () => window.location.reload());
+          return;
+        }
+      }
+      const message = hasVersion
         ? previousVersion && latestVersion === previousVersion
           ? `You're already using the latest version of WealthTrack (version ${latestVersion}).`
           : `WealthTrack has been updated to version ${latestVersion}.`
