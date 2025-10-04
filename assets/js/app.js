@@ -14,6 +14,11 @@ let assetForecasts = new Map();
 let liabilityForecasts = new Map();
 let lastForecastScenarios = null;
 let progressCheckSelection = null;
+let snapshotComparisonState = {
+  baseDate: null,
+  mode: "current",
+  targetDate: null,
+};
 let fireExpenses = 0;
 let fireExpensesFrequency = "annual";
 let fireWithdrawalRate = 4;
@@ -552,6 +557,18 @@ const fmtCurrency = (value) => {
     style: "currency",
     currency: GBP_CURRENCY.currency,
   });
+};
+
+const fmtPercent = (value, { digits = 2, signed = false } = {}) => {
+  const amount = Number.isFinite(value) ? value : 0;
+  const formatter = new Intl.NumberFormat("en-GB", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: digits,
+  });
+  const abs = formatter.format(Math.abs(amount));
+  if (amount === 0) return `0%`;
+  if (amount > 0) return signed ? `+${abs}%` : `${abs}%`;
+  return `-${abs}%`;
 };
 
 const updateCurrencySymbols = () => {
@@ -3624,6 +3641,7 @@ function renderAssets() {
   updateWealthChart();
   renderAssetBreakdownChart();
   updatePassiveIncome();
+  updateSnapshotComparisonCard();
 }
 
 function renderEventAssetOptions(sel = $("eventAsset")) {
@@ -3868,6 +3886,7 @@ function renderSnapshots() {
   closeSnapshotActionMenus();
   updateSnapshotChart();
   renderProgressCheck();
+  updateSnapshotComparisonCard();
 }
 
 function closeSnapshotActionMenus() {
@@ -4041,6 +4060,371 @@ function updateProgressCheckResult() {
           <p class="text-xs mt-1 ${statusClass}">${statusText}</p>
         </div>
       </div>
+    </div>
+  `;
+}
+
+function summarizeSnapshotAssets(assetList) {
+  const aggregate = new Map();
+  if (Array.isArray(assetList)) {
+    assetList.forEach((item) => {
+      const name = (item?.name || "").trim();
+      if (!name) return;
+      const rawValue = Number(item?.value);
+      const value = Number.isFinite(rawValue) ? rawValue : 0;
+      aggregate.set(name, (aggregate.get(name) || 0) + value);
+    });
+  }
+  const entries = Array.from(aggregate.entries()).map(([name, value]) => ({
+    name,
+    value,
+  }));
+  const total = entries.reduce((sum, entry) => sum + entry.value, 0);
+  return { total, entries, map: aggregate };
+}
+
+function getSnapshotsAfter(dateValue) {
+  if (!dateValue) return [];
+  const baseTime = Date.parse(dateValue);
+  if (!Number.isFinite(baseTime)) return [];
+  return snapshots
+    .filter((s) => Date.parse(s.date) > baseTime)
+    .sort((a, b) => Date.parse(a.date) - Date.parse(b.date));
+}
+
+function updateSnapshotComparisonCard() {
+  const card = $("snapshotComparisonCard");
+  if (!card) return;
+  const empty = $("snapshotComparisonEmpty");
+  const controls = $("snapshotComparisonControls");
+  const baseSelect = $("snapshotComparisonBase");
+  const targetGroup = $("snapshotComparisonTargetGroup");
+  const targetSelect = $("snapshotComparisonTarget");
+  const modeSelect = $("snapshotComparisonMode");
+
+  if (!snapshots.length) {
+    if (empty) empty.classList.remove("hidden");
+    if (controls) controls.classList.add("hidden");
+    if (targetGroup) targetGroup.classList.add("hidden");
+    snapshotComparisonState = {
+      baseDate: null,
+      mode: "current",
+      targetDate: null,
+    };
+    if (modeSelect) {
+      modeSelect.value = "current";
+      modeSelect.disabled = true;
+      const snapshotOption = modeSelect.querySelector('option[value="snapshot"]');
+      if (snapshotOption) snapshotOption.disabled = true;
+      modeSelect.onchange = null;
+    }
+    if (baseSelect) baseSelect.onchange = null;
+    if (targetSelect) targetSelect.onchange = null;
+    const result = $("snapshotComparisonResult");
+    if (result) result.innerHTML = "";
+    return;
+  }
+
+  if (empty) empty.classList.add("hidden");
+  if (controls) controls.classList.remove("hidden");
+
+  if (baseSelect) {
+    baseSelect.innerHTML = snapshots
+      .map(
+        (s) =>
+          `<option value="${s.date}">${s.name} (${fmtDate(new Date(s.date))})</option>`,
+      )
+      .join("");
+  }
+
+  if (
+    !snapshotComparisonState.baseDate ||
+    !snapshots.some((s) => s.date === snapshotComparisonState.baseDate)
+  ) {
+    snapshotComparisonState.baseDate = snapshots[snapshots.length - 1].date;
+  }
+
+  const baseSnapshot = snapshots.find(
+    (s) => s.date === snapshotComparisonState.baseDate,
+  );
+  if (baseSelect) baseSelect.value = snapshotComparisonState.baseDate;
+
+  const laterSnapshots = getSnapshotsAfter(baseSnapshot?.date);
+
+  if (snapshotComparisonState.mode === "snapshot" && !laterSnapshots.length) {
+    snapshotComparisonState.mode = "current";
+    snapshotComparisonState.targetDate = null;
+  }
+
+  if (modeSelect) {
+    modeSelect.disabled = false;
+    const snapshotOption = modeSelect.querySelector('option[value="snapshot"]');
+    if (snapshotOption) snapshotOption.disabled = !laterSnapshots.length;
+    if (
+      snapshotComparisonState.mode === "snapshot" &&
+      snapshotOption &&
+      snapshotOption.disabled
+    ) {
+      snapshotComparisonState.mode = "current";
+    }
+    modeSelect.value = snapshotComparisonState.mode;
+    modeSelect.onchange = (ev) => {
+      const nextMode = ev.target.value === "snapshot" ? "snapshot" : "current";
+      snapshotComparisonState.mode = nextMode;
+      if (nextMode === "snapshot" && !laterSnapshots.length) {
+        snapshotComparisonState.mode = "current";
+      }
+      if (snapshotComparisonState.mode !== "snapshot") {
+        snapshotComparisonState.targetDate = null;
+      }
+      updateSnapshotComparisonCard();
+      renderSnapshotComparisonResult();
+    };
+  }
+
+  if (
+    snapshotComparisonState.mode === "snapshot" &&
+    !laterSnapshots.some((s) => s.date === snapshotComparisonState.targetDate)
+  ) {
+    snapshotComparisonState.targetDate = laterSnapshots[0]?.date || null;
+  }
+
+  if (targetSelect) {
+    targetSelect.innerHTML = laterSnapshots
+      .map(
+        (s) =>
+          `<option value="${s.date}">${s.name} (${fmtDate(new Date(s.date))})</option>`,
+      )
+      .join("");
+    if (snapshotComparisonState.targetDate) {
+      targetSelect.value = snapshotComparisonState.targetDate;
+    } else if (laterSnapshots.length) {
+      targetSelect.value = laterSnapshots[0].date;
+      snapshotComparisonState.targetDate = laterSnapshots[0].date;
+    } else {
+      targetSelect.value = "";
+    }
+    targetSelect.onchange = (ev) => {
+      snapshotComparisonState.targetDate = ev.target.value || null;
+      renderSnapshotComparisonResult();
+    };
+  }
+
+  if (targetGroup) {
+    targetGroup.classList.toggle(
+      "hidden",
+      snapshotComparisonState.mode !== "snapshot" || !laterSnapshots.length,
+    );
+  }
+
+  if (baseSelect) {
+    baseSelect.onchange = (ev) => {
+      snapshotComparisonState.baseDate = ev.target.value;
+      updateSnapshotComparisonCard();
+      renderSnapshotComparisonResult();
+    };
+  }
+
+  renderSnapshotComparisonResult();
+}
+
+function renderSnapshotComparisonResult() {
+  const result = $("snapshotComparisonResult");
+  if (!result) return;
+
+  if (!snapshots.length) {
+    result.innerHTML = "";
+    return;
+  }
+
+  const baseSnapshot =
+    snapshots.find((s) => s.date === snapshotComparisonState.baseDate) ||
+    snapshots[snapshots.length - 1];
+
+  if (!baseSnapshot) {
+    result.innerHTML =
+      '<p class="text-sm text-gray-500 dark:text-gray-400">Select a snapshot to begin comparing.</p>';
+    return;
+  }
+
+  const baseSummary = summarizeSnapshotAssets(baseSnapshot.assets);
+  let comparisonSummary;
+  let comparisonLabel;
+  let comparisonDateLabel;
+  let comparisonSource = snapshotComparisonState.mode;
+
+  if (snapshotComparisonState.mode === "snapshot") {
+    const targetSnapshot = snapshots.find(
+      (s) => s.date === snapshotComparisonState.targetDate,
+    );
+    if (targetSnapshot) {
+      comparisonSummary = summarizeSnapshotAssets(targetSnapshot.assets);
+      comparisonLabel = targetSnapshot.name;
+      comparisonDateLabel = fmtDate(new Date(targetSnapshot.date));
+    } else {
+      comparisonSource = "current";
+    }
+  }
+
+  if (!comparisonSummary) {
+    comparisonSummary = summarizeSnapshotAssets(
+      assets.map((a) => ({
+        name: a.name,
+        value: calculateCurrentValue(a),
+      })),
+    );
+    comparisonLabel = "Current portfolio";
+    comparisonDateLabel = fmtDate(new Date());
+    comparisonSource = "current";
+  }
+
+  const baseDateLabel = fmtDate(new Date(baseSnapshot.date));
+  const totalChange = comparisonSummary.total - baseSummary.total;
+  const changeAbs = fmtCurrency(Math.abs(totalChange));
+  const changeClass =
+    totalChange > 1
+      ? "text-green-600 dark:text-green-400"
+      : totalChange < -1
+        ? "text-red-600 dark:text-red-400"
+        : "text-blue-600 dark:text-blue-400";
+  const changeLabel =
+    totalChange > 1
+      ? `+${changeAbs}`
+      : totalChange < -1
+        ? `-${changeAbs}`
+        : changeAbs;
+  const pctChange =
+    baseSummary.total > 0
+      ? (totalChange / baseSummary.total) * 100
+      : null;
+  const pctLabel =
+    pctChange == null ? "—" : fmtPercent(pctChange, { signed: true });
+
+  const allNames = new Set([
+    ...baseSummary.entries.map((entry) => entry.name),
+    ...comparisonSummary.entries.map((entry) => entry.name),
+  ]);
+
+  const rows = Array.from(allNames)
+    .map((name) => {
+      const baseValue = baseSummary.map.get(name) || 0;
+      const compareValue = comparisonSummary.map.get(name) || 0;
+      if (Math.abs(baseValue) < 0.01 && Math.abs(compareValue) < 0.01)
+        return null;
+      const baseShare =
+        baseSummary.total > 0 ? (baseValue / baseSummary.total) * 100 : 0;
+      const compareShare =
+        comparisonSummary.total > 0
+          ? (compareValue / comparisonSummary.total) * 100
+          : 0;
+      const shareDiff = compareShare - baseShare;
+      const shareDiffClass =
+        shareDiff > 0.1
+          ? "text-green-600 dark:text-green-400"
+          : shareDiff < -0.1
+            ? "text-red-600 dark:text-red-400"
+            : "text-gray-600 dark:text-gray-300";
+      const valueDiff = compareValue - baseValue;
+      const valueAbs = fmtCurrency(Math.abs(valueDiff));
+      const valueDiffClass =
+        valueDiff > 1
+          ? "text-green-600 dark:text-green-400"
+          : valueDiff < -1
+            ? "text-red-600 dark:text-red-400"
+            : "text-gray-600 dark:text-gray-300";
+      const shareChangeLabel =
+        Math.abs(shareDiff) < 0.01
+          ? fmtPercent(0, { signed: true })
+          : fmtPercent(shareDiff, { signed: true });
+      const valueChangeLabel =
+        Math.abs(valueDiff) < 1
+          ? fmtCurrency(0)
+          : valueDiff > 0
+            ? `+${valueAbs}`
+            : `-${valueAbs}`;
+      return {
+        name,
+        baseValue,
+        compareValue,
+        baseShare,
+        compareShare,
+        shareDiff,
+        shareDiffClass,
+        shareChangeLabel,
+        valueDiffClass,
+        valueChangeLabel,
+      };
+    })
+    .filter(Boolean)
+    .sort((a, b) => {
+      const shareDelta = Math.abs(b.shareDiff) - Math.abs(a.shareDiff);
+      if (Math.abs(shareDelta) > 0.0001) return shareDelta;
+      const valueDelta = Math.abs(b.compareValue - b.baseValue) - Math.abs(a.compareValue - a.baseValue);
+      if (Math.abs(valueDelta) > 0.0001) return valueDelta;
+      return a.name.localeCompare(b.name);
+    });
+
+  const tableSection = rows.length
+    ? `<div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-left">
+          <thead class="bg-gray-200 dark:bg-gray-700">
+            <tr>
+              <th class="table-header">Asset</th>
+              <th class="table-header">Base Share</th>
+              <th class="table-header">Compared Share</th>
+              <th class="table-header">Share Change</th>
+              <th class="table-header">Value Change</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700 text-sm text-gray-700 dark:text-gray-300">
+            ${rows
+              .map(
+                (row) => `
+              <tr>
+                <td class="px-6 py-3 whitespace-nowrap">${row.name}</td>
+                <td class="px-6 py-3 whitespace-nowrap">${fmtPercent(row.baseShare)}</td>
+                <td class="px-6 py-3 whitespace-nowrap">${fmtPercent(row.compareShare)}</td>
+                <td class="px-6 py-3 whitespace-nowrap font-semibold ${row.shareDiffClass}">${row.shareChangeLabel}</td>
+                <td class="px-6 py-3 whitespace-nowrap font-semibold ${row.valueDiffClass}">${row.valueChangeLabel}</td>
+              </tr>
+            `,
+              )
+              .join("")}
+          </tbody>
+        </table>
+      </div>`
+    : '<p class="text-sm text-gray-500 dark:text-gray-400">Asset allocation details for this comparison are not available.</p>';
+
+  const comparisonNote =
+    comparisonSource === "current"
+      ? "Comparing against your latest asset values."
+      : "Comparing two saved snapshots.";
+
+  result.innerHTML = `
+    <div class="space-y-4">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="rounded-lg bg-gray-100 p-3 dark:bg-gray-700">
+          <p class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Snapshot</p>
+          <p class="text-lg font-semibold text-gray-900 dark:text-gray-100">${fmtCurrency(
+            baseSummary.total,
+          )}</p>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">${baseSnapshot.name} · ${baseDateLabel}</p>
+        </div>
+        <div class="rounded-lg bg-gray-100 p-3 dark:bg-gray-700">
+          <p class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Compared</p>
+          <p class="text-lg font-semibold text-gray-900 dark:text-gray-100">${fmtCurrency(
+            comparisonSummary.total,
+          )}</p>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">${comparisonLabel} · ${comparisonDateLabel}</p>
+        </div>
+        <div class="rounded-lg bg-gray-100 p-3 dark:bg-gray-700">
+          <p class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Change</p>
+          <p class="text-lg font-semibold ${changeClass}">${changeLabel}</p>
+          <p class="text-xs ${changeClass} mt-1">${pctLabel} change</p>
+        </div>
+      </div>
+      ${tableSection}
+      <p class="text-xs text-gray-500 dark:text-gray-400">${comparisonNote}</p>
     </div>
   `;
 }
