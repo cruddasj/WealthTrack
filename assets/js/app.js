@@ -9,7 +9,7 @@ let stressAssetIds = new Set();
 let goalValue = 0;
 let goalTargetDate = null;
 let inflationRate = 2.5;
-let wealthChart, snapshotChart, assetBreakdownChart;
+let wealthChart, snapshotChart, assetBreakdownChart, futurePortfolioChart;
 let assetForecasts = new Map();
 let liabilityForecasts = new Map();
 let lastForecastScenarios = null;
@@ -27,6 +27,7 @@ let passiveIncomeAsOf = null;
 let passiveAssetSelection = null;
 let passiveAssetPicker = null;
 let mobileHeaderResizeObserver = null;
+let futurePortfolioSelection = null;
 
 const profilePickers = {};
 let importFileContent = null;
@@ -960,6 +961,15 @@ const fmtDate = new Intl.DateTimeFormat("en-GB", {
   month: "2-digit",
   year: "numeric",
 }).format;
+
+const formatMonthYear = (date) =>
+  date?.toLocaleString("default", { month: "short", year: "numeric" }) || "";
+
+const FUTURE_PORTFOLIO_SCENARIO_LABELS = {
+  low: "Low Growth",
+  base: "Expected Growth",
+  high: "High Growth",
+};
 
 const ensureArray = (value) => (Array.isArray(value) ? value : []);
 
@@ -2632,7 +2642,7 @@ function updateChartTheme() {
   if (typeof Chart !== "undefined") {
     Chart.defaults.color = tick;
   }
-  [wealthChart, snapshotChart, assetBreakdownChart].forEach((c) => {
+  [wealthChart, snapshotChart, assetBreakdownChart, futurePortfolioChart].forEach((c) => {
     if (!c) return;
     const { scales, plugins } = c.options;
     if (scales?.x) {
@@ -3427,6 +3437,9 @@ function updateEmptyStates() {
   if (exportCard) exportCard.hidden = isFresh;
   const futureCard = $("futureValueCard");
   if (futureCard) futureCard.hidden = !hasAssets;
+  const futurePortfolioCard = $("futurePortfolioCard");
+  if (futurePortfolioCard) futurePortfolioCard.hidden = !hasAssets;
+  if (!hasAssets) resetFuturePortfolioCard();
   const stressTestCard = $("StressTestCard");
   if (stressTestCard) stressTestCard.hidden = !canStressTest;
   if (!canStressTest) {
@@ -4006,10 +4019,14 @@ function updateWealthChart() {
     lastForecastScenarios = null;
     assetForecasts = new Map();
     liabilityForecasts = new Map();
+    resetFuturePortfolioCard();
+    const futureCard = $("futurePortfolioCard");
+    if (futureCard) futureCard.hidden = true;
     refreshFireProjection();
     return;
   }
 
+  const scenarios = buildForecastScenarios();
   const {
     labels,
     base,
@@ -4017,7 +4034,7 @@ function updateWealthChart() {
     high,
     minSeriesValue,
     currentBaseline,
-  } = buildForecastScenarios();
+  } = scenarios;
 
   const datasets = [
     {
@@ -4224,6 +4241,7 @@ function updateWealthChart() {
   adaptChartToZoom(wealthChart);
   updateChartTheme();
   attachMobileTooltipDismiss(wealthChart, $("wealthChart"));
+  updateFuturePortfolioCard(scenarios);
 
   const wrap = $("forecastGoalsDates");
   wrap.innerHTML = "";
@@ -4372,21 +4390,34 @@ function updateInflationImpactCard() {
 
 function renderAssetBreakdownChart() {
   const has = assets.length > 0;
-  $("assetBreakdownChart").hidden = !has;
-  $("noAssetMessage").hidden = has;
+  const chartEl = $("assetBreakdownChart");
+  const messageEl = $("noAssetMessage");
+  const tableWrapper = $("assetBreakdownTableWrapper");
+  const tableBody = $("assetBreakdownTableBody");
+  if (chartEl) chartEl.hidden = !has;
+  if (messageEl) messageEl.hidden = has;
+  if (tableWrapper) tableWrapper.hidden = !has;
+  if (tableBody) tableBody.innerHTML = "";
   if (!has) {
     assetBreakdownChart?.destroy();
     assetBreakdownChart = null;
     return;
   }
 
+  const entries = assets.map((asset, index) => ({
+    name: asset.name || `Asset ${index + 1}`,
+    value: Math.max(0, calculateCurrentValue(asset)),
+  }));
+  const sorted = entries.sort((a, b) => b.value - a.value);
   const colorFor = (i) => `hsl(${(i * 57) % 360},70%,60%)`;
+  const labels = sorted.map((entry) => entry.name);
+  const values = sorted.map((entry) => entry.value);
   const data = {
-    labels: assets.map((a) => a.name),
+    labels,
     datasets: [
       {
-        data: assets.map((asset) => calculateCurrentValue(asset)),
-        backgroundColor: assets.map((_, i) => colorFor(i)),
+        data: values,
+        backgroundColor: values.map((_, i) => colorFor(i)),
       },
     ],
   };
@@ -4404,10 +4435,212 @@ function renderAssetBreakdownChart() {
   };
   assetBreakdownChart = ensureChart(
     assetBreakdownChart,
-    $("assetBreakdownChart").getContext("2d"),
+    chartEl.getContext("2d"),
     cfg,
   );
+
+  const total = values.reduce((sum, val) => sum + val, 0);
+  if (tableBody) {
+    if (sorted.length === 0) {
+      tableBody.innerHTML =
+        '<tr><td colspan="3" class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">No assets available.</td></tr>';
+    } else {
+      tableBody.innerHTML = sorted
+        .map((entry) => {
+          const share = total > 0 ? ((entry.value / total) * 100).toFixed(2) : "0.00";
+          return `<tr class="text-sm text-gray-700 dark:text-gray-300">
+      <td class="px-6 py-3 whitespace-nowrap">${entry.name}</td>
+      <td class="px-6 py-3 whitespace-nowrap font-semibold">${fmtCurrency(entry.value)}</td>
+      <td class="px-6 py-3 whitespace-nowrap">${share}%</td>
+    </tr>`;
+        })
+        .join("");
+    }
+  }
   updateChartTheme();
+}
+
+function resetFuturePortfolioCard() {
+  const form = $("futurePortfolioForm");
+  if (form) form.reset();
+  futurePortfolioSelection = null;
+  futurePortfolioChart?.destroy();
+  futurePortfolioChart = null;
+  const results = $("futurePortfolioResults");
+  if (results) results.classList.add("hidden");
+  const chartMsg = $("futurePortfolioChartMessage");
+  if (chartMsg) chartMsg.classList.add("hidden");
+  const chartCanvas = $("futurePortfolioChart");
+  if (chartCanvas) chartCanvas.classList.remove("hidden");
+  const tableBody = $("futurePortfolioTableBody");
+  if (tableBody) tableBody.innerHTML = "";
+  const summary = $("futurePortfolioScenarioSummary");
+  if (summary) summary.textContent = "";
+  const totalEl = $("futurePortfolioTotal");
+  if (totalEl) totalEl.textContent = fmtCurrency(0);
+}
+
+function renderFuturePortfolioBreakdown(scenariosOverride = null) {
+  const card = $("futurePortfolioCard");
+  if (!card || card.hidden) return;
+  const results = $("futurePortfolioResults");
+  if (!results) return;
+  if (!futurePortfolioSelection) {
+    results.classList.add("hidden");
+    futurePortfolioChart?.destroy();
+    futurePortfolioChart = null;
+    return;
+  }
+
+  const scenarios =
+    scenariosOverride || lastForecastScenarios || buildForecastScenarios();
+  if (!scenarios) return;
+  const labels = ensureArray(scenarios.labels);
+  if (!labels.length) return;
+
+  const scenarioKey =
+    futurePortfolioSelection.scenario === "low"
+      ? "low"
+      : futurePortfolioSelection.scenario === "high"
+        ? "high"
+        : "base";
+  futurePortfolioSelection.scenario = scenarioKey;
+
+  const storedTime = futurePortfolioSelection.time;
+  let index = labels.findIndex((d) => d.getTime() === storedTime);
+  if (index < 0) {
+    index = labels.findIndex((d) => d.getTime() > storedTime);
+    if (index < 0) {
+      futurePortfolioSelection = null;
+      results.classList.add("hidden");
+      futurePortfolioChart?.destroy();
+      futurePortfolioChart = null;
+      return;
+    }
+  }
+  const activeDate = labels[index];
+  futurePortfolioSelection.time = activeDate.getTime();
+  const dateInput = $("futurePortfolioDate");
+  if (dateInput) dateInput.value = formatDateForInput(activeDate);
+
+  const entries = assets.map((asset, idx) => {
+    const forecast = assetForecasts.get(asset.dateAdded)?.[scenarioKey];
+    const value = Math.max(0, forecast?.[index] ?? 0);
+    return {
+      name: asset.name || `Asset ${idx + 1}`,
+      value,
+    };
+  });
+  const sorted = entries.sort((a, b) => b.value - a.value);
+  const positive = sorted.filter((entry) => entry.value > 0);
+  const total = sorted.reduce((sum, entry) => sum + entry.value, 0);
+
+  const totalEl = $("futurePortfolioTotal");
+  if (totalEl) totalEl.textContent = fmtCurrency(total);
+  const summary = $("futurePortfolioScenarioSummary");
+  if (summary) {
+    const label = FUTURE_PORTFOLIO_SCENARIO_LABELS[scenarioKey] ||
+      FUTURE_PORTFOLIO_SCENARIO_LABELS.base;
+    summary.textContent = `${label} · ${formatMonthYear(activeDate)}`;
+  }
+
+  results.classList.remove("hidden");
+
+  const chartCanvas = $("futurePortfolioChart");
+  const chartMessage = $("futurePortfolioChartMessage");
+  if (total > 0 && positive.length > 0 && chartCanvas) {
+    chartCanvas.classList.remove("hidden");
+    if (chartMessage) chartMessage.classList.add("hidden");
+    const colorFor = (i) => `hsl(${(i * 57) % 360},70%,60%)`;
+    const labels = positive.map((entry) => entry.name);
+    const values = positive.map((entry) => entry.value);
+    const cfg = {
+      type: "pie",
+      data: {
+        labels,
+        datasets: [
+          {
+            data: values,
+            backgroundColor: values.map((_, i) => colorFor(i)),
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: "top" },
+          tooltip: { callbacks: { label: pieTooltip } },
+        },
+      },
+    };
+    futurePortfolioChart = ensureChart(
+      futurePortfolioChart,
+      chartCanvas.getContext("2d"),
+      cfg,
+    );
+    updateChartTheme();
+  } else {
+    if (chartCanvas) chartCanvas.classList.add("hidden");
+    if (chartMessage) chartMessage.classList.remove("hidden");
+    futurePortfolioChart?.destroy();
+    futurePortfolioChart = null;
+  }
+
+  const tableBody = $("futurePortfolioTableBody");
+  if (tableBody) {
+    if (sorted.length === 0) {
+      tableBody.innerHTML =
+        '<tr><td colspan="3" class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">No projected asset values available.</td></tr>';
+    } else {
+      tableBody.innerHTML = sorted
+        .map((entry) => {
+          const share = total > 0 ? ((entry.value / total) * 100).toFixed(2) : "0.00";
+          return `<tr class="text-sm text-gray-700 dark:text-gray-300">
+      <td class="px-6 py-3 whitespace-nowrap">${entry.name}</td>
+      <td class="px-6 py-3 whitespace-nowrap font-semibold">${fmtCurrency(entry.value)}</td>
+      <td class="px-6 py-3 whitespace-nowrap">${share}%</td>
+    </tr>`;
+        })
+        .join("");
+    }
+  }
+}
+
+function updateFuturePortfolioCard(scenariosOverride = null) {
+  const card = $("futurePortfolioCard");
+  if (!card) return;
+  const hasAssets = assets.length > 0;
+  card.hidden = !hasAssets;
+  if (!hasAssets) {
+    resetFuturePortfolioCard();
+    return;
+  }
+
+  const dateInput = $("futurePortfolioDate");
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  if (dateInput) dateInput.min = formatDateForInput(today);
+
+  const scenarios =
+    scenariosOverride || lastForecastScenarios || buildForecastScenarios();
+  if (!scenarios) return;
+  const labels = ensureArray(scenarios.labels);
+  const lastLabel = labels[labels.length - 1];
+  if (dateInput && lastLabel) {
+    dateInput.max = formatDateForInput(lastLabel);
+    if (
+      futurePortfolioSelection?.time &&
+      futurePortfolioSelection.time > lastLabel.getTime()
+    ) {
+      futurePortfolioSelection = null;
+    }
+  }
+
+  const scenarioSelect = $("futurePortfolioScenario");
+  if (scenarioSelect && !scenarioSelect.value) scenarioSelect.value = "base";
+
+  renderFuturePortfolioBreakdown(scenarios);
 }
 
 function updateSnapshotChart() {
@@ -5210,6 +5443,58 @@ function handleFormSubmit(e) {
       $("fvHigh").textContent = fmtCurrency(high);
       const res = $("fvResult");
       if (res) res.classList.remove("hidden");
+      break;
+    }
+    case "futurePortfolioForm": {
+      if (assets.length === 0) {
+        showAlert("Add at least one asset to project your future portfolio.");
+        break;
+      }
+      const scenarioRaw = form.futurePortfolioScenario.value || "base";
+      const scenario =
+        scenarioRaw === "low"
+          ? "low"
+          : scenarioRaw === "high"
+            ? "high"
+            : "base";
+      const dateStr = form.futurePortfolioDate.value;
+      if (!dateStr) {
+        showAlert("Please choose a future date for the projection.");
+        break;
+      }
+      const target = new Date(dateStr);
+      const time = target.getTime();
+      if (!Number.isFinite(time)) {
+        showAlert("Enter a valid future date.");
+        break;
+      }
+      if (time <= startOfToday()) {
+        showAlert("Please pick a date after today.");
+        break;
+      }
+      const scenarios = lastForecastScenarios || buildForecastScenarios();
+      const labels = ensureArray(scenarios?.labels);
+      if (!labels.length) {
+        showAlert("Run a forecast first by adding assets or liabilities.");
+        break;
+      }
+      const lastLabel = labels[labels.length - 1];
+      if (lastLabel && target > lastLabel) {
+        showAlert(
+          `Please choose a date on or before ${formatMonthYear(lastLabel)}.`,
+        );
+        break;
+      }
+      let index = labels.findIndex((label) => label >= target);
+      if (index < 0) index = labels.length - 1;
+      const activeDate = labels[index];
+      futurePortfolioSelection = {
+        scenario,
+        time: activeDate.getTime(),
+      };
+      const scenarioSelect = $("futurePortfolioScenario");
+      if (scenarioSelect) scenarioSelect.value = scenario;
+      updateFuturePortfolioCard(scenarios);
       break;
     }
     case "taxImpactForm": {
