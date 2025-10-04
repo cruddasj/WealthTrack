@@ -2,6 +2,9 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
+## [1.1.16] - 2025-10-04
+- Rename the interest rate comparison fields to "Rate" and "Comparative rate" for clearer terminology.
+
 ## [1.1.15] - 2025-10-04
 - Content corrections.
 
