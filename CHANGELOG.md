@@ -2,6 +2,9 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
+## [1.1.13] - 2025-10-04
+- Keep asset tables and portfolio insights from adding scheduled deposits to the current value entered by the user.
+
 ## [1.1.12] - 2025-10-04
 - Remove the deposit day selection for assets and explain that recurring contributions are assumed to land at the end of each period.
 - Update wealth forecasts so recurring deposits are applied at the end of each period instead of being averaged across months.

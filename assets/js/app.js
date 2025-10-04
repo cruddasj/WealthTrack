@@ -1712,34 +1712,12 @@ function initProfiles() {
 }
 initProfiles();
 
-const depositsSoFar = (asset, now = Date.now()) => {
-  if (!asset) return 0;
-  const monthsPerPeriod = DEPOSIT_MONTH_STEPS[asset.frequency] || 0;
-  if (!(monthsPerPeriod > 0)) return 0;
-  const start = getStartDate(asset);
-  if (now <= start) return 0;
-  const depositDay = DEFAULT_DEPOSIT_DAY;
-  const amountRaw = Number.parseFloat(asset.originalDeposit);
-  const amount = Number.isFinite(amountRaw) ? amountRaw : 0;
-  if (amount === 0) return 0;
-  let depositDate = firstDepositOnOrAfter(start, monthsPerPeriod, depositDay);
-  if (depositDate == null) return 0;
-  let periods = 0;
-  const safetyLimit = 2000; // prevent runaway loops
-  while (depositDate <= now && periods < safetyLimit) {
-    periods += 1;
-    const next = addMonthsForDeposit(depositDate, monthsPerPeriod, depositDay);
-    if (!Number.isFinite(next) || next === depositDate) break;
-    depositDate = next;
-  }
-  return amount * periods;
-};
-
 const calculateCurrentValue = (asset, now = Date.now()) => {
   if (!asset) return 0;
   const start = getStartDate(asset);
   if (now < start) return 0;
-  return (asset.value || 0) + depositsSoFar(asset, now);
+  const value = Number.parseFloat(asset.value);
+  return Number.isFinite(value) ? value : 0;
 };
 
 const getPassiveIncomeTargetDate = () => {

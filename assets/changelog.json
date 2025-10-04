@@ -1,5 +1,12 @@
 [ 
   {
+    "version": "1.1.13",
+    "date": "2025-10-04",
+    "changes": [
+      "Keep current asset values and portfolio insights from adding recurring deposits on top of the amount you entered."
+    ]
+  },
+  {
     "version": "1.1.12",
     "date": "2025-10-04",
     "changes": [
