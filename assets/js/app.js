@@ -5863,12 +5863,17 @@ window.addEventListener("load", () => {
     sidebar.classList.toggle("-translate-x-full", hideSidebar);
     const hideOverlay = hideSidebar || window.innerWidth >= 768;
     overlay.classList.toggle("hidden", hideOverlay);
-    if (open && window.innerWidth < 768) {
-      document.body.style.overflow = "hidden";
-      document.body.style.touchAction = "none";
-    } else {
-      document.body.style.overflow = "";
-      document.body.style.touchAction = "";
+    const body = document.body;
+    const lockScroll = open && window.innerWidth < 768;
+    if (body) {
+      body.classList.toggle("mobile-nav-open", lockScroll);
+      if (lockScroll) {
+        body.style.overflow = "hidden";
+        body.style.touchAction = "none";
+      } else {
+        body.style.overflow = "";
+        body.style.touchAction = "";
+      }
     }
   };
   const toggleMenu = () => {
