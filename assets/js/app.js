@@ -9,7 +9,7 @@ let stressAssetIds = new Set();
 let goalValue = 0;
 let goalTargetDate = null;
 let inflationRate = 2.5;
-let wealthChart, snapshotChart, assetBreakdownChart;
+let wealthChart, snapshotChart, assetBreakdownChart, futurePortfolioChart;
 let assetForecasts = new Map();
 let liabilityForecasts = new Map();
 let lastForecastScenarios = null;
@@ -2632,7 +2632,7 @@ function updateChartTheme() {
   if (typeof Chart !== "undefined") {
     Chart.defaults.color = tick;
   }
-  [wealthChart, snapshotChart, assetBreakdownChart].forEach((c) => {
+  [wealthChart, snapshotChart, assetBreakdownChart, futurePortfolioChart].forEach((c) => {
     if (!c) return;
     const { scales, plugins } = c.options;
     if (scales?.x) {
@@ -3427,6 +3427,8 @@ function updateEmptyStates() {
   if (exportCard) exportCard.hidden = isFresh;
   const futureCard = $("futureValueCard");
   if (futureCard) futureCard.hidden = !hasAssets;
+  const futurePortfolioCard = $("futurePortfolioCard");
+  if (futurePortfolioCard) futurePortfolioCard.hidden = !hasAssets;
   const stressTestCard = $("StressTestCard");
   if (stressTestCard) stressTestCard.hidden = !canStressTest;
   if (!canStressTest) {
@@ -4007,6 +4009,7 @@ function updateWealthChart() {
     assetForecasts = new Map();
     liabilityForecasts = new Map();
     refreshFireProjection();
+    updateFuturePortfolioCard();
     return;
   }
 
@@ -4223,6 +4226,7 @@ function updateWealthChart() {
   );
   adaptChartToZoom(wealthChart);
   updateChartTheme();
+  updateFuturePortfolioCard();
   attachMobileTooltipDismiss(wealthChart, $("wealthChart"));
 
   const wrap = $("forecastGoalsDates");
@@ -4372,20 +4376,25 @@ function updateInflationImpactCard() {
 
 function renderAssetBreakdownChart() {
   const has = assets.length > 0;
+  const tableWrapper = $("assetBreakdownTableWrapper");
+  const tableBody = $("assetBreakdownTableBody");
   $("assetBreakdownChart").hidden = !has;
   $("noAssetMessage").hidden = has;
   if (!has) {
     assetBreakdownChart?.destroy();
     assetBreakdownChart = null;
+    if (tableWrapper) tableWrapper.classList.add("hidden");
+    if (tableBody) tableBody.innerHTML = "";
     return;
   }
 
   const colorFor = (i) => `hsl(${(i * 57) % 360},70%,60%)`;
+  const assetValues = assets.map((asset) => calculateCurrentValue(asset));
   const data = {
     labels: assets.map((a) => a.name),
     datasets: [
       {
-        data: assets.map((asset) => calculateCurrentValue(asset)),
+        data: assetValues,
         backgroundColor: assets.map((_, i) => colorFor(i)),
       },
     ],
@@ -4407,7 +4416,194 @@ function renderAssetBreakdownChart() {
     $("assetBreakdownChart").getContext("2d"),
     cfg,
   );
+  if (tableWrapper) tableWrapper.classList.remove("hidden");
+  if (tableBody) {
+    const total = assetValues.reduce((sum, value) => sum + value, 0);
+    const rows = assets
+      .map((asset, index) => ({
+        name: asset?.name || "Unnamed asset",
+        value: assetValues[index] || 0,
+      }))
+      .sort((a, b) => b.value - a.value);
+    tableBody.innerHTML = rows
+      .map(({ name, value }) => {
+        const pct = total > 0 ? ((value / total) * 100).toFixed(2) : "0.00";
+        return `<tr class="text-sm text-gray-700 dark:text-gray-300">
+  <td class="px-4 py-2 whitespace-nowrap">${name}</td>
+  <td class="px-4 py-2 text-right font-semibold">${fmtCurrency(value)}</td>
+  <td class="px-4 py-2 text-right">${pct}%</td>
+</tr>`;
+      })
+      .join("") ||
+      '<tr class="text-sm text-gray-700 dark:text-gray-300"><td class="px-4 py-3" colspan="3">No asset values available.</td></tr>';
+  }
   updateChartTheme();
+}
+
+function getScenarioDisplayName(key) {
+  switch (key) {
+    case "low":
+      return "Low Growth";
+    case "high":
+      return "High Growth";
+    case "base":
+    default:
+      return "Expected Growth";
+  }
+}
+
+function updateFuturePortfolioCard() {
+  const card = $("futurePortfolioCard");
+  if (!card) return;
+
+  const scenarioSelect = $("futurePortfolioScenario");
+  const dateInput = $("futurePortfolioDate");
+  const emptyEl = $("futurePortfolioEmpty");
+  const resultEl = $("futurePortfolioResult");
+  const totalEl = $("futurePortfolioTotal");
+  const dateLabel = $("futurePortfolioDateLabel");
+  const chartMessage = $("futurePortfolioChartMessage");
+  const tableBody = $("futurePortfolioTableBody");
+  const scenarioNote = $("futurePortfolioScenarioNote");
+
+  const scenarioKey = scenarioSelect?.value || "base";
+  if (scenarioSelect && !scenarioSelect.value) scenarioSelect.value = scenarioKey;
+  if (scenarioNote)
+    scenarioNote.textContent = `Values are based on the ${getScenarioDisplayName(
+      scenarioKey,
+    )} scenario.`;
+
+  const hideResult = (message) => {
+    if (emptyEl) {
+      emptyEl.textContent = message || "";
+      emptyEl.classList.toggle("hidden", !message);
+    }
+    if (resultEl) resultEl.classList.add("hidden");
+    if (tableBody) tableBody.innerHTML = "";
+    if (chartMessage) chartMessage.textContent = "";
+    futurePortfolioChart?.destroy();
+    futurePortfolioChart = null;
+  };
+
+  const showResult = () => {
+    if (emptyEl) {
+      emptyEl.textContent = "";
+      emptyEl.classList.add("hidden");
+    }
+    if (resultEl) resultEl.classList.remove("hidden");
+  };
+
+  if (assets.length === 0) {
+    hideResult("Add at least one asset to explore future portfolio projections.");
+    if (dateInput) dateInput.max = "";
+    return;
+  }
+
+  const scenarios = lastForecastScenarios || buildForecastScenarios();
+  if (!scenarios?.labels?.length) {
+    hideResult(
+      "Forecast data is unavailable. Update your inputs to generate projections.",
+    );
+    return;
+  }
+
+  const todayValue = toDateInputValue(startOfToday());
+  if (dateInput) {
+    if (todayValue) dateInput.min = todayValue;
+    const lastLabel = scenarios.labels[scenarios.labels.length - 1];
+    dateInput.max = lastLabel ? toDateInputValue(lastLabel.getTime()) : "";
+  }
+
+  const dateStr = dateInput?.value;
+  if (!dateStr) {
+    hideResult("Choose a future date to see the projected totals and breakdown.");
+    return;
+  }
+
+  const selectedTs = parseDateInput(dateStr, startOfToday());
+  const todayTs = startOfToday();
+  if (!(selectedTs > todayTs)) {
+    hideResult("Pick a date after today to view projected values.");
+    return;
+  }
+
+  const labels = scenarios.labels;
+  const index = labels.findIndex((label) => label.getTime() >= selectedTs);
+  if (index < 0) {
+    const lastLabel = labels[labels.length - 1];
+    const horizon = lastLabel ? fmtDate(lastLabel) : "the forecast horizon";
+    hideResult(`Select a date on or before ${horizon} to view projections.`);
+    return;
+  }
+
+  const assetRows = assets.map((asset) => {
+    const series = assetForecasts.get(asset.dateAdded)?.[scenarioKey] || [];
+    const value = Number(series[index]) || 0;
+    return { name: asset?.name || "Unnamed asset", value };
+  });
+  const total = assetRows.reduce((sum, row) => sum + row.value, 0);
+  const sortedRows = assetRows.sort((a, b) => b.value - a.value);
+
+  if (tableBody) {
+    tableBody.innerHTML = sortedRows
+      .map(({ name, value }) => {
+        const pct = total > 0 ? ((value / total) * 100).toFixed(2) : "0.00";
+        return `<tr class="text-sm text-gray-700 dark:text-gray-300">
+  <td class="px-4 py-2 whitespace-nowrap">${name}</td>
+  <td class="px-4 py-2 text-right font-semibold">${fmtCurrency(value)}</td>
+  <td class="px-4 py-2 text-right">${pct}%</td>
+</tr>`;
+      })
+      .join("") ||
+      '<tr class="text-sm text-gray-700 dark:text-gray-300"><td class="px-4 py-3" colspan="3">No projected asset values for this selection.</td></tr>';
+  }
+
+  if (totalEl) totalEl.textContent = fmtCurrency(total);
+  if (dateLabel) dateLabel.textContent = `As at ${fmtDate(new Date(selectedTs))}`;
+
+  if (chartMessage) chartMessage.textContent = "";
+  const chartData = sortedRows.filter((row) => row.value > 0);
+  if (!chartData.length) {
+    futurePortfolioChart?.destroy();
+    futurePortfolioChart = null;
+    if (chartMessage)
+      chartMessage.textContent =
+        "All assets project to £0 by this date for the selected scenario.";
+    showResult();
+    return;
+  }
+
+  const colorFor = (i) => `hsl(${(i * 57) % 360},70%,60%)`;
+  const ctx = $("futurePortfolioChart")?.getContext("2d");
+  if (!ctx) {
+    hideResult("Chart unavailable in this view.");
+    return;
+  }
+
+  const data = {
+    labels: chartData.map((row) => row.name),
+    datasets: [
+      {
+        data: chartData.map((row) => row.value),
+        backgroundColor: chartData.map((_, i) => colorFor(i)),
+      },
+    ],
+  };
+  const cfg = {
+    type: "pie",
+    data,
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: "top" },
+        tooltip: { callbacks: { label: pieTooltip } },
+      },
+    },
+  };
+  futurePortfolioChart = ensureChart(futurePortfolioChart, ctx, cfg);
+  updateChartTheme();
+  showResult();
 }
 
 function updateSnapshotChart() {
@@ -5210,6 +5406,10 @@ function handleFormSubmit(e) {
       $("fvHigh").textContent = fmtCurrency(high);
       const res = $("fvResult");
       if (res) res.classList.remove("hidden");
+      break;
+    }
+    case "futurePortfolioForm": {
+      updateFuturePortfolioCard();
       break;
     }
     case "taxImpactForm": {
@@ -6281,8 +6481,17 @@ window.addEventListener("load", () => {
       }
     });
   }
+  const todayInputMin = toDateInputValue(startOfToday());
   const fvDate = $("fvDate");
-  if (fvDate) fvDate.min = new Date().toISOString().split("T")[0];
+  if (fvDate && todayInputMin) fvDate.min = todayInputMin;
+  const futurePortfolioDate = $("futurePortfolioDate");
+  if (futurePortfolioDate && todayInputMin) futurePortfolioDate.min = todayInputMin;
+  if (futurePortfolioDate)
+    on(futurePortfolioDate, "change", () => updateFuturePortfolioCard());
+  const futurePortfolioScenario = $("futurePortfolioScenario");
+  if (futurePortfolioScenario)
+    on(futurePortfolioScenario, "change", () => updateFuturePortfolioCard());
+  updateFuturePortfolioCard();
   // First-run welcome routing
   const seen = localStorage.getItem(LS.welcome) === "1";
   const storedViewId = (() => {
