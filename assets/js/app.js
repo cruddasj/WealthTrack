@@ -4475,6 +4475,8 @@ function renderSnapshotComparisonResult() {
         name,
         baseValue,
         compareValue,
+        baseValueLabel: fmtCurrency(baseValue),
+        compareValueLabel: fmtCurrency(compareValue),
         baseShare,
         compareShare,
         shareDiff,
@@ -4501,6 +4503,8 @@ function renderSnapshotComparisonResult() {
               <th class="table-header">Asset</th>
               <th class="table-header">Base Portfolio %</th>
               <th class="table-header">Compared Portfolio %</th>
+              <th class="table-header">Base Value</th>
+              <th class="table-header">Compared Value</th>
               <th class="table-header">Portfolio % Change</th>
               <th class="table-header">Value Change</th>
             </tr>
@@ -4513,6 +4517,8 @@ function renderSnapshotComparisonResult() {
                 <td class="px-6 py-3 whitespace-nowrap">${row.name}</td>
                 <td class="px-6 py-3 whitespace-nowrap">${fmtPercent(row.baseShare)}</td>
                 <td class="px-6 py-3 whitespace-nowrap">${fmtPercent(row.compareShare)}</td>
+                <td class="px-6 py-3 whitespace-nowrap">${row.baseValueLabel}</td>
+                <td class="px-6 py-3 whitespace-nowrap">${row.compareValueLabel}</td>
                 <td class="px-6 py-3 whitespace-nowrap font-semibold ${row.shareDiffClass}">${row.shareChangeLabel}</td>
                 <td class="px-6 py-3 whitespace-nowrap font-semibold ${row.valueDiffClass}">${row.valueChangeLabel}</td>
               </tr>
