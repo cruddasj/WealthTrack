@@ -3702,10 +3702,10 @@ function renderAssets() {
         asset.originalDeposit > 0 && asset.frequency !== "none";
       const depositText = (() => {
         if (!hasDeposit) return "-";
-        const schedule = [];
-        if (asset.frequency) schedule.push(asset.frequency);
-        schedule.push("end of each period");
-        return `${fmtCurrency(asset.originalDeposit)} (${schedule.join(" - ")})`;
+        if (asset.frequency) {
+          return `${fmtCurrency(asset.originalDeposit)} (${asset.frequency})`;
+        }
+        return fmtCurrency(asset.originalDeposit);
       })();
       const explicitStart = toTimestamp(asset.explicitStartDate);
       let startCell = "-";
