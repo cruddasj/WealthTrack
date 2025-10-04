@@ -938,7 +938,7 @@ function updateTaxSettingsUI() {
   if (allowanceSummary)
     allowanceSummary.textContent = `Savings: ${fmtCurrency(
       taxSettings.incomeAllowance,
-    )} · Dividends: ${fmtCurrency(taxSettings.dividendAllowance)} · Capital gains: ${fmtCurrency(
+    )}, Dividends: ${fmtCurrency(taxSettings.dividendAllowance)}, Capital gains: ${fmtCurrency(
       taxSettings.capitalAllowance,
     )}`;
   updateTaxCalculatorInputs();
@@ -3692,7 +3692,7 @@ function renderAssets() {
         const schedule = [];
         if (asset.frequency) schedule.push(asset.frequency);
         schedule.push(`day ${clampDepositDay(asset.depositDay)}`);
-        return `${fmtCurrency(asset.originalDeposit)} (${schedule.join(" · ")})`;
+        return `${fmtCurrency(asset.originalDeposit)} (${schedule.join(" - ")})`;
       })();
       const explicitStart = toTimestamp(asset.explicitStartDate);
       let startCell = "-";
@@ -4516,14 +4516,14 @@ function renderSnapshotComparisonResult() {
           <p class="text-lg font-semibold text-gray-900 dark:text-gray-100">${fmtCurrency(
             baseSummary.total,
           )}</p>
-          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">${baseSnapshot.name} · ${baseDateLabel}</p>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">${baseSnapshot.name} - ${baseDateLabel}</p>
         </div>
         <div class="rounded-lg bg-gray-100 p-3 dark:bg-gray-700">
           <p class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Compared</p>
           <p class="text-lg font-semibold text-gray-900 dark:text-gray-100">${fmtCurrency(
             comparisonSummary.total,
           )}</p>
-          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">${comparisonLabel} · ${comparisonDateLabel}</p>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">${comparisonLabel} - ${comparisonDateLabel}</p>
         </div>
         <div class="rounded-lg bg-gray-100 p-3 dark:bg-gray-700">
           <p class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Change</p>
@@ -7388,7 +7388,7 @@ window.addEventListener("load", () => {
         heading.className = "font-semibold text-gray-900 dark:text-gray-100";
         const formattedDate = formatChangelogDate(entry.date);
         heading.textContent = formattedDate
-          ? `Version ${entry.version} · ${formattedDate}`
+          ? `Version ${entry.version}: ${formattedDate}`
           : `Version ${entry.version}`;
         section.appendChild(heading);
         const listEl = document.createElement("ul");
@@ -7486,7 +7486,7 @@ window.addEventListener("load", () => {
         heading.className = "font-semibold text-gray-900 dark:text-gray-100";
         const formattedDate = formatChangelogDate(entry.date);
         heading.textContent = formattedDate
-          ? `Version ${entry.version} · ${formattedDate}`
+          ? `Version ${entry.version}: ${formattedDate}`
           : `Version ${entry.version}`;
         section.appendChild(heading);
         const list = document.createElement("ul");

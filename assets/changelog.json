@@ -1,4 +1,12 @@
-[{
+[
+  {
+    "version": "1.1.0",
+    "date": "2025-10-04",
+    "changes": [
+      "Content updates for changelog card in settings page"
+    ]
+  },
+  {
     "version": "1.1.8",
     "date": "2025-10-04",
     "changes": [
@@ -8,7 +16,7 @@
   },
   {
     "version": "1.1.6",
-    "date": "2025-10-08",
+    "date": "2025-10-04",
     "changes": [
       "Restore exported tax settings and the sticky navigation preference when importing profile backups.",
       "Keep asset values at the amount entered by defaulting recurring deposits to month-end, allowing a custom deposit day, and updating the form labels."
@@ -16,14 +24,14 @@
   },
   {
     "version": "1.1.5",
-    "date": "2025-10-07",
+    "date": "2025-10-04",
     "changes": [
       "Improve the in-app changelog loader so the Settings card flags when release notes fail to load."
     ]
   },
   {
     "version": "1.1.4",
-    "date": "2025-10-06",
+    "date": "2025-10-04",
     "changes": [
       "Ensure the in-app update confirmation keeps showing release notes even when the prior version is difficult to detect.",
       "Add a changelog card to the Settings page that lists the five most recent updates as a fallback."
@@ -31,7 +39,7 @@
   },
   {
     "version": "1.1.3",
-    "date": "2025-10-05",
+    "date": "2025-10-04",
     "changes": [
       "Rename portfolio allocation labels from \"Share\" to \"Portfolio %\" for clarity."
     ]
@@ -48,21 +56,6 @@
     "date": "2025-10-04",
     "changes": [
       "Add an interest rate difference calculator to compare yearly earnings between two banks."
-    ]
-  },
-  {
-    "version": "1.1.0",
-    "date": "2024-05-31",
-    "changes": [
-      "Show a summary of new features and fixes after the app updates.",
-      "Add a structured changelog that keeps the in-app update feed in sync with repository notes."
-    ]
-  },
-  {
-    "version": "1.0.25",
-    "date": "2024-05-15",
-    "changes": [
-      "Baseline WealthTrack release."
     ]
   }
 ]
