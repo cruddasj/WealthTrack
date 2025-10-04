@@ -1867,16 +1867,16 @@
 
         <div class="card">
           <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100">
-            Navigation
+            Navigation menu
           </h3>
           <div class="card-body">
             <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
-              Decide whether the navigation stays fixed at the top while
+              Decide whether the navigation menu stays fixed at the top while
               scrolling on mobile devices.
             </p>
             <label class="dark-mode-toggle">
               <span class="mr-3 font-semibold text-gray-500 dark:text-gray-400"
-                >Keep navigation fixed on mobile</span
+                >Keep navigation menu fixed on mobile</span
               >
               <input
                 type="checkbox"
@@ -1886,6 +1886,42 @@
               />
               <span class="toggle-track"><span class="toggle-thumb"></span></span>
             </label>
+          </div>
+        </div>
+
+        <div id="welcomeCard" class="card">
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
+            First-Time Use Content
+          </h3>
+          <div class="card-body">
+          <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
+            Show or hide the welcome page and other guidance cards once you're familiar with the app.
+          </p>
+          <label class="dark-mode-toggle">
+            <span class="mr-3 font-semibold text-gray-500 dark:text-gray-400"
+              >Show first-time use guidance</span
+            >
+            <input type="checkbox" id="welcomeToggle" class="peer" />
+            <span class="toggle-track"><span class="toggle-thumb"></span></span>
+          </label>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Currency</h3>
+          <div class="card-body">
+            <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
+              Choose the currency used throughout the app. Labels and values
+              will update immediately.
+            </p>
+            <div class="max-w-xs">
+              <label for="currencySelect" class="form-label">Currency</label>
+              <select id="currencySelect" class="input-field">
+                <option value="GBP">Pounds (£)</option>
+                <option value="USD">Dollars ($)</option>
+                <option value="EUR">Euros (€)</option>
+              </select>
+            </div>
           </div>
         </div>
 
@@ -1946,42 +1982,6 @@
             <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
               Allowances apply per tax year across all assets marked as taxable. Changes update forecasts automatically.
             </p>
-          </div>
-        </div>
-
-        <div class="card">
-          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Currency</h3>
-          <div class="card-body">
-            <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
-              Choose the currency used throughout the app. Labels and values
-              will update immediately.
-            </p>
-            <div class="max-w-xs">
-              <label for="currencySelect" class="form-label">Currency</label>
-              <select id="currencySelect" class="input-field">
-                <option value="GBP">Pounds (£)</option>
-                <option value="USD">Dollars ($)</option>
-                <option value="EUR">Euros (€)</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <div id="welcomeCard" class="card">
-          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
-            First-Time Use Content
-          </h3>
-          <div class="card-body">
-          <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
-            Show or hide the welcome page and other guidance cards once you're familiar with the app.
-          </p>
-          <label class="dark-mode-toggle">
-            <span class="mr-3 font-semibold text-gray-500 dark:text-gray-400"
-              >Show first-time use guidance</span
-            >
-            <input type="checkbox" id="welcomeToggle" class="peer" />
-            <span class="toggle-track"><span class="toggle-thumb"></span></span>
-          </label>
           </div>
         </div>
 
