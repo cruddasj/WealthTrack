@@ -249,7 +249,7 @@
               <ul class="list-disc pl-5 text-gray-700 dark:text-gray-300">
                 <li><b>Profiles</b>: manage and switch profiles from the <b>Settings & Data</b> page.</li>
                 <li><b>Financial Inputs</b>: capture assets, liabilities, and goals.</li>
-                <li><b>Forecasts</b>: run projections, simulate one-off events, and use the Progress Check card to compare against snapshots.</li>
+                <li><b>Forecasts</b>: run projections, simulate one-off events, and use the Forecast Progress Check card to compare against snapshots.</li>
                 <li><b>Portfolio Insights</b>: see allocation, passive income, stress testing, and inflation impact.</li>
                 <li><b>Snapshots</b>: save your totals and review how your wealth has changed over time.</li>
                 <li><b>Calculators</b>: run one-off financial calculations.</li>
@@ -1216,49 +1216,6 @@
             using your selected date when provided.
           </p>
         </div>
-        <div id="snapshotComparisonCard" class="card">
-          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
-            Snapshot Comparison
-          </h3>
-          <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
-            Review how your portfolio has changed since a saved snapshot. Compare against
-            your current assets or a snapshot captured after the one selected.
-          </p>
-          <div
-            id="snapshotComparisonEmpty"
-            class="mt-2 text-sm text-gray-500 dark:text-gray-400"
-          >
-            Take or import snapshots to unlock comparisons.
-          </div>
-          <div id="snapshotComparisonControls" class="mt-4 space-y-4 hidden">
-            <div>
-              <label for="snapshotComparisonBase" class="form-label">Base snapshot</label>
-              <select id="snapshotComparisonBase" class="input-field"></select>
-            </div>
-            <div>
-              <label for="snapshotComparisonMode" class="form-label"
-                >Compare against</label
-              >
-              <select id="snapshotComparisonMode" class="input-field">
-                <option value="current">Current portfolio</option>
-                <option value="snapshot">Another snapshot</option>
-              </select>
-            </div>
-            <div id="snapshotComparisonTargetGroup" class="hidden">
-              <label for="snapshotComparisonTarget" class="form-label"
-                >Snapshot to compare</label
-              >
-              <select id="snapshotComparisonTarget" class="input-field"></select>
-              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                Only snapshots taken after the base selection are available.
-              </p>
-            </div>
-          </div>
-          <div
-            id="snapshotComparisonResult"
-            class="mt-4 text-sm text-gray-700 dark:text-gray-300"
-          ></div>
-        </div>
       </div>
       <div id="snapshots" class="content-section">
         <h2 class="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-6">
@@ -1322,17 +1279,60 @@
             </div>
           </div>
         </div>
+        <div id="snapshotComparisonCard" class="card">
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
+            Snapshot Comparison
+          </h3>
+          <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
+            Review how your portfolio has changed since a saved snapshot. Compare against
+            your current assets or a snapshot captured after the one selected.
+          </p>
+          <div
+            id="snapshotComparisonEmpty"
+            class="mt-2 text-sm text-gray-500 dark:text-gray-400"
+          >
+            Take or import snapshots to unlock comparisons.
+          </div>
+          <div id="snapshotComparisonControls" class="mt-4 space-y-4 hidden">
+            <div>
+              <label for="snapshotComparisonBase" class="form-label">Base snapshot</label>
+              <select id="snapshotComparisonBase" class="input-field"></select>
+            </div>
+            <div>
+              <label for="snapshotComparisonMode" class="form-label"
+                >Compare against</label
+              >
+              <select id="snapshotComparisonMode" class="input-field">
+                <option value="current">Current portfolio</option>
+                <option value="snapshot">Another snapshot</option>
+              </select>
+            </div>
+            <div id="snapshotComparisonTargetGroup" class="hidden">
+              <label for="snapshotComparisonTarget" class="form-label"
+                >Snapshot to compare</label
+              >
+              <select id="snapshotComparisonTarget" class="input-field"></select>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                Only snapshots taken after the base selection are available.
+              </p>
+            </div>
+          </div>
+          <div
+            id="snapshotComparisonResult"
+            class="mt-4 text-sm text-gray-700 dark:text-gray-300"
+          ></div>
+        </div>
         <div id="progressCheckCard" class="card">
-          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Progress Check</h3>
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Forecast Progress Check</h3>
           <p class="text-sm text-gray-600 dark:text-gray-300">
-            Compare your current position with the forecast that was saved when
-            you took a snapshot.
+            See how you're tracking against the expected forecast projection
+            that was saved with a snapshot.
           </p>
           <div
             id="progressCheckEmpty"
             class="mt-4 text-sm text-gray-500 dark:text-gray-400"
           >
-            Take a snapshot to unlock progress comparisons.
+            Take a snapshot to unlock forecast progress comparisons.
           </div>
           <div
             id="progressCheckControls"
@@ -1352,7 +1352,7 @@
               class="rounded-xl border border-gray-200 bg-gray-50 p-4 text-sm text-gray-700 dark:border-gray-700 dark:bg-gray-700/50 dark:text-gray-200"
             >
               Select a snapshot to see how you're tracking against its saved
-              forecast.
+              expected projection.
             </div>
           </div>
         </div>
@@ -2656,7 +2656,7 @@
         <ul class="list-disc pl-5 space-y-2 text-gray-700 dark:text-gray-300 mb-4">
           <li>Use the chart to see low, expected, and high scenarios.</li>
           <li>Add one-off events to model future gains or expenses.</li>
-          <li>Check saved snapshots against today's forecast with Progress Check.</li>
+          <li>Check saved snapshots against today's forecast with the Forecast Progress Check.</li>
         </ul>
         <div class="mt-4 flex justify-end">
           <button class="btn btn-green" data-action="close-modal">Got it</button>

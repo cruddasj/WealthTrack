@@ -4033,7 +4033,7 @@ function renderProgressCheck() {
     select.innerHTML = "";
     progressCheckSelection = null;
     result.innerHTML =
-      '<p class="text-sm text-gray-500 dark:text-gray-400">Take a snapshot to unlock progress comparisons.</p>';
+      '<p class="text-sm text-gray-500 dark:text-gray-400">Take a snapshot to unlock forecast progress comparisons.</p>';
     return;
   }
 
@@ -4073,7 +4073,7 @@ function updateProgressCheckResult() {
 
   if (snapshots.length === 0) {
     result.innerHTML =
-      '<p class="text-sm text-gray-500 dark:text-gray-400">Take a snapshot to unlock progress comparisons.</p>';
+      '<p class="text-sm text-gray-500 dark:text-gray-400">Take a snapshot to unlock forecast progress comparisons.</p>';
     return;
   }
 
@@ -4081,14 +4081,14 @@ function updateProgressCheckResult() {
   const snapshot = snapshots.find((s) => s.date === selectedDate);
   if (!snapshot) {
     result.innerHTML =
-      '<p class="text-sm text-gray-500 dark:text-gray-400">Select a snapshot to see its saved forecast comparison.</p>';
+      '<p class="text-sm text-gray-500 dark:text-gray-400">Select a snapshot to see how you compare with its saved expected projection.</p>';
     return;
   }
 
   const forecastSeries = snapshot.forecast || snapshot.expectedForecast;
   if (!Array.isArray(forecastSeries) || forecastSeries.length === 0) {
     result.innerHTML =
-      '<p class="text-sm text-gray-500 dark:text-gray-400">This snapshot does not include saved forecast data. Capture a new snapshot to compare forecasts.</p>';
+      '<p class="text-sm text-gray-500 dark:text-gray-400">This snapshot does not include saved projection data. Capture a new snapshot to compare expected progress.</p>';
     return;
   }
 
@@ -4102,7 +4102,7 @@ function updateProgressCheckResult() {
 
   if (series.length === 0) {
     result.innerHTML =
-      '<p class="text-sm text-gray-500 dark:text-gray-400">Saved forecast data for this snapshot could not be read.</p>';
+      '<p class="text-sm text-gray-500 dark:text-gray-400">Saved projection data for this snapshot could not be read.</p>';
     return;
   }
 
@@ -4132,7 +4132,7 @@ function updateProgressCheckResult() {
     forecastValue = next.value;
   } else {
     result.innerHTML =
-      '<p class="text-sm text-gray-500 dark:text-gray-400">Saved forecast data for this snapshot could not be read.</p>';
+      '<p class="text-sm text-gray-500 dark:text-gray-400">Saved projection data for this snapshot could not be read.</p>';
     return;
   }
 
@@ -4150,15 +4150,15 @@ function updateProgressCheckResult() {
         : "text-blue-600 dark:text-blue-400";
   const statusText =
     diff > tolerance
-      ? `You're ahead of this saved forecast by ${diffAbs}.`
+      ? `You're ahead of this expected projection by ${diffAbs}.`
       : diff < -tolerance
-        ? `You're behind this saved forecast by ${diffAbs}.`
-        : `You're tracking this saved forecast closely (within ${diffAbs}).`;
+        ? `You're behind this expected projection by ${diffAbs}.`
+        : `You're tracking this expected projection closely (within ${diffAbs}).`;
 
   result.innerHTML = `
     <div class="space-y-3">
       <p class="text-sm text-gray-600 dark:text-gray-300">
-        Saved forecast from <strong>${snapshot.name}</strong> expected <span class="whitespace-nowrap">${fmtCurrency(
+        Saved projection from <strong>${snapshot.name}</strong> expected <span class="whitespace-nowrap">${fmtCurrency(
           forecastValue,
         )}</span> by ${fmtDate(comparisonDate)}.
       </p>
