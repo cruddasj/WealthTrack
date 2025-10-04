@@ -1,4 +1,12 @@
-[
+[ 
+  {
+    "version": "1.1.17",
+    "date": "2025-10-04",
+    "changes": [
+      "Move the Snapshot Comparison card into the Snapshots page with the other snapshot tools.",
+      "Rename Progress Check to Forecast Progress Check and clarify that it compares against saved expected projections."
+    ]
+  },
   {
     "version": "1.1.16",
     "date": "2025-10-04",
