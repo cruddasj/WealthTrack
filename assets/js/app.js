@@ -57,6 +57,7 @@ const LS = {
   onboardSeen: "onboardDataSeen",
   theme: "themeDark",
   themeChoice: "themeChoice",
+  mobileNavSticky: "mobileNavSticky",
   profiles: "profiles",
   activeProfile: "activeProfile",
   forecastTip: "forecastTipSeen",
@@ -539,11 +540,18 @@ const sanitizeCurrencyCode = (code) =>
 const sanitizeThemeChoice = (val) =>
   val === "inverted" || val === "glass" ? val : "default";
 
+const sanitizeMobileNavSticky = (value, fallback = true) =>
+  value == null ? fallback : !!value;
+
+const readStoredMobileNavSticky = () =>
+  getLocalStorageItem(LS.mobileNavSticky) !== "0";
+
 let currencyCode = sanitizeCurrencyCode(load(LS.currency, "GBP"));
 let currentThemeChoice = sanitizeThemeChoice(
   getLocalStorageItem(LS.themeChoice) || "default",
 );
 let isDarkMode = getLocalStorageItem(LS.theme) === "1";
+let isMobileNavSticky = sanitizeMobileNavSticky(readStoredMobileNavSticky(), true);
 
 const getCurrencyConfig = () =>
   currencyOptions[currencyCode] || currencyOptions.GBP;
@@ -580,6 +588,24 @@ const updateCurrencySymbols = () => {
 };
 
 const currencyTick = (v) => fmtCurrency(v);
+
+function applyMobileNavSticky(enabled, { persistChoice = true } = {}) {
+  const normalized = !!enabled;
+  isMobileNavSticky = normalized;
+  const body = document.body;
+  if (body) body.classList.toggle("mobile-header-static", !normalized);
+  const toggle = document.getElementById("mobileNavStickyToggle");
+  if (toggle && toggle.checked !== normalized) toggle.checked = normalized;
+  if (activeProfile) activeProfile.mobileNavSticky = normalized;
+  if (persistChoice) {
+    try {
+      localStorage.setItem(LS.mobileNavSticky, normalized ? "1" : "0");
+    } catch (_) {}
+    if (activeProfile) persist();
+  }
+  updateMobileHeaderOffset();
+  return normalized;
+}
 
 function applyCurrencyChoice(
   code,
@@ -1052,6 +1078,10 @@ function normalizeImportedProfile(profile, index = 0) {
     passiveIncomeAssetSelection: sanitizePassiveSelection(
       profile?.passiveIncomeAssetSelection ?? profile?.passiveIncomeSelection,
     ),
+    mobileNavSticky: sanitizeMobileNavSticky(
+      profile?.mobileNavSticky,
+      readStoredMobileNavSticky(),
+    ),
   };
 }
 
@@ -1158,6 +1188,7 @@ function saveCurrentProfile() {
   activeProfile.currencyCode = currencyCode;
   activeProfile.themeChoice = currentThemeChoice;
   activeProfile.darkMode = isDarkMode;
+  activeProfile.mobileNavSticky = isMobileNavSticky;
   if (passiveAssetSelection === null) {
     activeProfile.passiveIncomeAssetSelection = null;
   } else {
@@ -1427,6 +1458,7 @@ function normalizeData() {
 function initProfiles() {
   profiles = load(LS.profiles, null);
   let id = localStorage.getItem(LS.activeProfile);
+  const storedNavSticky = readStoredMobileNavSticky();
   if (!profiles) {
     const def = {
       id: Date.now(),
@@ -1453,6 +1485,7 @@ function initProfiles() {
       darkMode: localStorage.getItem(LS.theme) === "1",
       passiveIncomeAssetSelection: null,
       firstTimeContentHidden: getStoredFirstTimeHidden(),
+      mobileNavSticky: storedNavSticky,
     };
     profiles = [def];
     id = def.id;
@@ -1526,6 +1559,19 @@ function initProfiles() {
         }
       } else {
         p.firstTimeContentHidden = getStoredFirstTimeHidden();
+        profilesUpdated = true;
+      }
+      if (Object.prototype.hasOwnProperty.call(p, "mobileNavSticky")) {
+        const normalizedSticky = sanitizeMobileNavSticky(
+          p.mobileNavSticky,
+          storedNavSticky,
+        );
+        if (normalizedSticky !== p.mobileNavSticky) {
+          p.mobileNavSticky = normalizedSticky;
+          profilesUpdated = true;
+        }
+      } else {
+        p.mobileNavSticky = storedNavSticky;
         profilesUpdated = true;
       }
       const normalizedSelection = sanitizePassiveSelection(
@@ -2823,6 +2869,13 @@ function applyProfilePreferences(profile) {
       : !!profile.darkMode;
   applyDarkMode(darkPref, { persistChoice: false, withTransition: false });
   if (profile) profile.darkMode = isDarkMode;
+
+  const storedNavPref = readStoredMobileNavSticky();
+  const navPref = profile
+    ? sanitizeMobileNavSticky(profile.mobileNavSticky, storedNavPref)
+    : storedNavPref;
+  applyMobileNavSticky(navPref, { persistChoice: false });
+  if (profile) profile.mobileNavSticky = isMobileNavSticky;
 }
 
 // Passive income summary (based on expected returns)
@@ -3375,6 +3428,7 @@ function addProfile(name) {
     darkMode: isDarkMode,
     passiveIncomeAssetSelection: null,
     firstTimeContentHidden: isFirstTimeContentHidden(),
+    mobileNavSticky: isMobileNavSticky,
   });
   if (
     profiles.length === 2 &&
@@ -5182,10 +5236,8 @@ function updateMobileHeaderOffset() {
   const height = Math.max(0, rect?.height || header?.offsetHeight || 0);
   const safeAreaTop = readSafeAreaTop();
   body.style.setProperty("--mobile-header-height", `${height}px`);
-  body.style.setProperty(
-    "--mobile-header-offset",
-    `${Math.max(0, height + safeAreaTop)}px`,
-  );
+  const offset = isMobileNavSticky ? Math.max(0, height + safeAreaTop) : 0;
+  body.style.setProperty("--mobile-header-offset", `${offset}px`);
 }
 
 function setupMobileHeaderOffsetWatcher() {
@@ -6237,6 +6289,19 @@ window.addEventListener("load", () => {
                   } else {
                     profile.firstTimeContentHidden = getStoredFirstTimeHidden();
                   }
+                  if (
+                    Object.prototype.hasOwnProperty.call(
+                      profile,
+                      "mobileNavSticky",
+                    )
+                  ) {
+                    profile.mobileNavSticky = sanitizeMobileNavSticky(
+                      profile.mobileNavSticky,
+                      readStoredMobileNavSticky(),
+                    );
+                  } else {
+                    profile.mobileNavSticky = readStoredMobileNavSticky();
+                  }
                 });
                 activeProfile =
                   profiles.find((p) => p.id == nextActiveId) || profiles[0];
@@ -6449,6 +6514,14 @@ window.addEventListener("load", () => {
   const themeSel = document.getElementById("themeSelect");
   if (themeSel)
     on(themeSel, "change", (e) => applyThemeChoice(e.target.value));
+
+  const navStickyToggle = document.getElementById("mobileNavStickyToggle");
+  if (navStickyToggle) {
+    navStickyToggle.checked = isMobileNavSticky;
+    on(navStickyToggle, "change", (e) =>
+      applyMobileNavSticky(e.target.checked),
+    );
+  }
 
   // First-time content toggle
   const welcomeToggle = $("welcomeToggle");

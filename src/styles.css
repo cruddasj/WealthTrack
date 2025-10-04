@@ -23,6 +23,23 @@
     --mobile-header-offset: 0px;
   }
 
+  #mobileHeader {
+    position: sticky;
+    top: var(--mobile-safe-area-top);
+    z-index: 50;
+    padding-top: calc(1rem + var(--mobile-safe-area-top));
+  }
+
+  body.mobile-header-static {
+    --mobile-header-offset: 0px;
+  }
+
+  body.mobile-header-static #mobileHeader {
+    position: static;
+    top: auto;
+    z-index: auto;
+  }
+
   /* Ensure the main scroll area always covers the viewport
      to avoid a visible gap when sections are short/collapsed. */
   main {
@@ -44,6 +61,15 @@
       --mobile-header-offset: calc(
         var(--mobile-header-height) + var(--mobile-safe-area-top)
       );
+    }
+  }
+
+  @media (min-width: 768px) {
+    #mobileHeader {
+      position: static;
+      top: auto;
+      z-index: auto;
+      padding-top: 1rem;
     }
   }
 }
