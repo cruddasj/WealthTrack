@@ -1,4 +1,11 @@
-[ 
+[{
+    "version": "1.1.8",
+    "date": "2025-10-04",
+    "changes": [
+      "Fix update confirmations so newly installed versions surface the right changelog entries by tracking the service worker's version.",
+      "Keep the Settings version display aligned with the installed release instead of the latest download to avoid mismatched notes."
+    ]
+  },
   {
     "version": "1.1.6",
     "date": "2025-10-08",
