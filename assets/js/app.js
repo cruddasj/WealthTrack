@@ -9,7 +9,7 @@ let stressAssetIds = new Set();
 let goalValue = 0;
 let goalTargetDate = null;
 let inflationRate = 2.5;
-let wealthChart, snapshotChart, assetBreakdownChart;
+let wealthChart, snapshotChart, assetBreakdownChart, futurePortfolioChart;
 let assetForecasts = new Map();
 let liabilityForecasts = new Map();
 let lastForecastScenarios = null;
@@ -609,6 +609,7 @@ function refreshCurrencyDisplays() {
   renderLiabilities();
   renderEvents();
   renderSnapshots();
+  updateFuturePortfolioCard();
   updateInflationImpactCard();
   refreshFireProjection();
 }
@@ -684,6 +685,11 @@ const TAX_TREATMENTS = {
 };
 
 const SCENARIO_KEYS = ["low", "base", "high"];
+const SCENARIO_LABELS = {
+  low: "Low Growth",
+  base: "Expected Growth",
+  high: "High Growth",
+};
 
 function getTaxBandConfig(band) {
   return TAX_BANDS[band] || TAX_BANDS.basic;
@@ -1805,6 +1811,24 @@ function buildForecastScenarios(yearsOverride = null, opts = {}) {
   const base = Array(labels.length).fill(0);
   const low = Array(labels.length).fill(0);
   const high = Array(labels.length).fill(0);
+  const assetTotalsBase = includeBreakdown
+    ? Array(labels.length).fill(0)
+    : null;
+  const assetTotalsLow = includeBreakdown
+    ? Array(labels.length).fill(0)
+    : null;
+  const assetTotalsHigh = includeBreakdown
+    ? Array(labels.length).fill(0)
+    : null;
+  const liabilityTotalsBase = includeBreakdown
+    ? Array(labels.length).fill(0)
+    : null;
+  const liabilityTotalsLow = includeBreakdown
+    ? Array(labels.length).fill(0)
+    : null;
+  const liabilityTotalsHigh = includeBreakdown
+    ? Array(labels.length).fill(0)
+    : null;
 
   const nextAssetForecasts = new Map();
   const assetDetails = includeBreakdown ? [] : null;
@@ -1901,6 +1925,11 @@ function buildForecastScenarios(yearsOverride = null, opts = {}) {
       base[i] += baseVal;
       low[i] += lowVal;
       high[i] += highVal;
+      if (includeBreakdown) {
+        assetTotalsBase[i] += baseVal;
+        assetTotalsLow[i] += lowVal;
+        assetTotalsHigh[i] += highVal;
+      }
       if (active) {
         valueBase = valueBase * (1 + rateBase) + monthlyContribution;
         valueLow = valueLow * (1 + rateLow) + monthlyContribution;
@@ -1977,6 +2006,11 @@ function buildForecastScenarios(yearsOverride = null, opts = {}) {
         base[i] += arr[i];
         low[i] += arr[i];
         high[i] += arr[i];
+        if (includeBreakdown) {
+          liabilityTotalsBase[i] += arr[i];
+          liabilityTotalsLow[i] += arr[i];
+          liabilityTotalsHigh[i] += arr[i];
+        }
         if (active && outstanding > 0) {
           outstanding = outstanding * (1 + rate);
           outstanding = Math.max(
@@ -1987,6 +2021,45 @@ function buildForecastScenarios(yearsOverride = null, opts = {}) {
       }
       nextLiabilityForecasts.set(liability.dateAdded, arr);
     });
+  }
+
+  if (includeBreakdown) {
+    const diffTolerance = 0.005;
+    const diffBase = Array(labels.length).fill(0);
+    const diffLow = Array(labels.length).fill(0);
+    const diffHigh = Array(labels.length).fill(0);
+    let hasDiff = false;
+    for (let i = 0; i < labels.length; i++) {
+      const baseAssets = assetTotalsBase ? assetTotalsBase[i] || 0 : 0;
+      const lowAssets = assetTotalsLow ? assetTotalsLow[i] || 0 : 0;
+      const highAssets = assetTotalsHigh ? assetTotalsHigh[i] || 0 : 0;
+      const baseLiabs = liabilityTotalsBase ? liabilityTotalsBase[i] || 0 : 0;
+      const lowLiabs = liabilityTotalsLow ? liabilityTotalsLow[i] || 0 : 0;
+      const highLiabs = liabilityTotalsHigh ? liabilityTotalsHigh[i] || 0 : 0;
+      const baseDiff = (base[i] || 0) - baseAssets - baseLiabs;
+      const lowDiff = (low[i] || 0) - lowAssets - lowLiabs;
+      const highDiff = (high[i] || 0) - highAssets - highLiabs;
+      diffBase[i] = baseDiff;
+      diffLow[i] = lowDiff;
+      diffHigh[i] = highDiff;
+      if (
+        Math.abs(baseDiff) > diffTolerance ||
+        Math.abs(lowDiff) > diffTolerance ||
+        Math.abs(highDiff) > diffTolerance
+      ) {
+        hasDiff = true;
+      }
+    }
+    if (hasDiff) {
+      assetDetails.push({
+        id: "__global_events__",
+        name: "One-off events (net)",
+        base: diffBase,
+        low: diffLow,
+        high: diffHigh,
+        isGlobalEvent: true,
+      });
+    }
   }
 
   if (!passiveOnly) {
@@ -2632,7 +2705,7 @@ function updateChartTheme() {
   if (typeof Chart !== "undefined") {
     Chart.defaults.color = tick;
   }
-  [wealthChart, snapshotChart, assetBreakdownChart].forEach((c) => {
+  [wealthChart, snapshotChart, assetBreakdownChart, futurePortfolioChart].forEach((c) => {
     if (!c) return;
     const { scales, plugins } = c.options;
     if (scales?.x) {
@@ -3427,6 +3500,8 @@ function updateEmptyStates() {
   if (exportCard) exportCard.hidden = isFresh;
   const futureCard = $("futureValueCard");
   if (futureCard) futureCard.hidden = !hasAssets;
+  const futurePortfolioCard = $("futurePortfolioCard");
+  if (futurePortfolioCard) futurePortfolioCard.hidden = !hasAssets;
   const stressTestCard = $("StressTestCard");
   if (stressTestCard) stressTestCard.hidden = !canStressTest;
   if (!canStressTest) {
@@ -4279,6 +4354,7 @@ function updateWealthChart() {
     </div>`;
   }
 
+  updateFuturePortfolioCard();
   updateInflationImpactCard();
   updateProgressCheckResult();
   refreshFireProjection();
@@ -4374,19 +4450,29 @@ function renderAssetBreakdownChart() {
   const has = assets.length > 0;
   $("assetBreakdownChart").hidden = !has;
   $("noAssetMessage").hidden = has;
+  const tableContainer = $("assetBreakdownTableContainer");
+  const tableBody = $("assetBreakdownTableBody");
   if (!has) {
     assetBreakdownChart?.destroy();
     assetBreakdownChart = null;
+    if (tableContainer) tableContainer.classList.add("hidden");
+    if (tableBody) tableBody.innerHTML = "";
     return;
   }
 
   const colorFor = (i) => `hsl(${(i * 57) % 360},70%,60%)`;
+  const rows = assets
+    .map((asset) => ({
+      name: asset.name,
+      value: calculateCurrentValue(asset),
+    }))
+    .sort((a, b) => b.value - a.value);
   const data = {
-    labels: assets.map((a) => a.name),
+    labels: rows.map((r) => r.name),
     datasets: [
       {
-        data: assets.map((asset) => calculateCurrentValue(asset)),
-        backgroundColor: assets.map((_, i) => colorFor(i)),
+        data: rows.map((r) => r.value),
+        backgroundColor: rows.map((_, i) => colorFor(i)),
       },
     ],
   };
@@ -4407,7 +4493,194 @@ function renderAssetBreakdownChart() {
     $("assetBreakdownChart").getContext("2d"),
     cfg,
   );
+  if (tableContainer && tableBody) {
+    const total = rows.reduce((sum, row) => sum + row.value, 0);
+    tableBody.innerHTML = rows
+      .map((row) => {
+        const share = total > 0 ? ((row.value / total) * 100).toFixed(2) : "0.00";
+        return `<tr class="text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
+      <td class="px-6 py-3 whitespace-nowrap">${row.name}</td>
+      <td class="px-6 py-3 whitespace-nowrap font-semibold">${fmtCurrency(row.value)}</td>
+      <td class="px-6 py-3 whitespace-nowrap">${share}%</td>
+    </tr>`;
+      })
+      .join("");
+    tableContainer.classList.toggle("hidden", rows.length === 0);
+  }
   updateChartTheme();
+}
+
+function updateFuturePortfolioCard({ triggeredBySubmit = false } = {}) {
+  const card = $("futurePortfolioCard");
+  if (!card) return;
+  const messageEl = $("futurePortfolioMessage");
+  const resultEl = $("futurePortfolioResult");
+  const totalEl = $("futurePortfolioTotal");
+  const noteEl = $("futurePortfolioScenarioNote");
+  const tableBody = $("futurePortfolioTableBody");
+  const tableContainer = $("futurePortfolioTableContainer");
+  const scenarioSelect = $("futurePortfolioScenario");
+  const dateInput = $("futurePortfolioDate");
+
+  const resetOutputs = (message) => {
+    if (futurePortfolioChart) {
+      futurePortfolioChart.destroy();
+      futurePortfolioChart = null;
+    }
+    if (tableBody) tableBody.innerHTML = "";
+    if (tableContainer) tableContainer.classList.add("hidden");
+    if (resultEl) resultEl.classList.add("hidden");
+    if (messageEl) {
+      if (message) messageEl.textContent = message;
+      messageEl.classList.remove("hidden");
+    }
+  };
+
+  if (!assets.length) {
+    resetOutputs(
+      "Add an asset to unlock future portfolio projections using your growth scenarios.",
+    );
+    return;
+  }
+
+  const scenarioKey = scenarioSelect?.value || "";
+  const dateStr = dateInput?.value;
+  if (!scenarioKey || !dateStr) {
+    resetOutputs(
+      "Select a growth scenario and future date to see the projected breakdown.",
+    );
+    if (triggeredBySubmit) {
+      if (!scenarioKey && scenarioSelect) scenarioSelect.focus();
+      else if (dateInput) dateInput.focus();
+    }
+    return;
+  }
+
+  const targetDate = new Date(dateStr);
+  if (Number.isNaN(targetDate.getTime())) {
+    resetOutputs("Enter a valid future date to view projected values.");
+    return;
+  }
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  targetDate.setHours(0, 0, 0, 0);
+  if (targetDate <= today) {
+    resetOutputs("Choose a future date to view projected values.");
+    if (triggeredBySubmit) {
+      dateInput.focus();
+    }
+    return;
+  }
+
+  let scenarios = lastForecastScenarios;
+  if (!scenarios || !Array.isArray(scenarios.labels)) {
+    scenarios = buildForecastScenarios(null, { includeBreakdown: true });
+  } else if (!scenarios.assetDetails) {
+    scenarios = buildForecastScenarios(null, { includeBreakdown: true });
+  }
+
+  const labels = scenarios?.labels || [];
+  const assetDetails = scenarios?.assetDetails || [];
+  if (!labels.length || !assetDetails.length) {
+    resetOutputs(
+      "Add growth assumptions to your assets to unlock projected values.",
+    );
+    return;
+  }
+
+  const index = labels.findIndex((date) => date >= targetDate);
+  if (index < 0) {
+    resetOutputs(
+      "Extend your forecast horizon (for example by updating your goal target year) to cover this date.",
+    );
+    return;
+  }
+
+  const rawRows = assetDetails.map((detail) => {
+    const values = detail[scenarioKey] || detail.base || [];
+    return {
+      name: detail.name || "Asset",
+      value: values[index] ?? 0,
+    };
+  });
+
+  const valueThreshold = 0.005;
+  const rows = rawRows.filter((row) => Math.abs(row.value) > valueThreshold);
+  const sortedRows = rows.sort((a, b) => b.value - a.value);
+  if (!sortedRows.length) {
+    resetOutputs("No projected asset data is available for this date.");
+    return;
+  }
+  const total = sortedRows.reduce((sum, row) => sum + row.value, 0);
+  const chartRows = sortedRows.filter((row) => row.value > 0);
+  const palette = (i) => `hsl(${(i * 57) % 360},70%,60%)`;
+
+  if (tableBody) {
+    tableBody.innerHTML = sortedRows
+      .map((row) => {
+        const share =
+          total > 0 && row.value >= 0
+            ? ((row.value / total) * 100).toFixed(2)
+            : "—";
+        return `<tr class="text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
+      <td class="px-6 py-3 whitespace-nowrap">${row.name}</td>
+      <td class="px-6 py-3 whitespace-nowrap font-semibold">${fmtCurrency(row.value)}</td>
+      <td class="px-6 py-3 whitespace-nowrap">${share}${share === "—" ? "" : "%"}</td>
+    </tr>`;
+      })
+      .join("");
+  }
+
+  if (tableContainer) tableContainer.classList.toggle("hidden", !sortedRows.length);
+
+  if (chartRows.length === 0 && sortedRows.length) {
+    const firstPositive = sortedRows.find((row) => row.value > 0);
+    if (firstPositive) chartRows.push(firstPositive);
+  }
+  if (chartRows.length) {
+    const data = {
+      labels: chartRows.map((row) => row.name),
+      datasets: [
+        {
+          data: chartRows.map((row) => row.value),
+          backgroundColor: chartRows.map((_, i) => palette(i)),
+        },
+      ],
+    };
+    const cfg = {
+      type: "pie",
+      data,
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: "top" },
+          tooltip: { callbacks: { label: pieTooltip } },
+        },
+      },
+    };
+    const canvas = $("futurePortfolioChart");
+    if (canvas) {
+      futurePortfolioChart = ensureChart(
+        futurePortfolioChart,
+        canvas.getContext("2d"),
+        cfg,
+      );
+      updateChartTheme();
+    }
+  }
+
+  const formattedDate = targetDate.toLocaleDateString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+  const scenarioLabel = SCENARIO_LABELS[scenarioKey] || SCENARIO_LABELS.base;
+  if (messageEl) messageEl.classList.add("hidden");
+  if (resultEl) resultEl.classList.remove("hidden");
+  if (totalEl) totalEl.textContent = fmtCurrency(total);
+  if (noteEl)
+    noteEl.textContent = `All values are projected for ${formattedDate} using your ${scenarioLabel} growth scenario.`;
 }
 
 function updateSnapshotChart() {
@@ -5179,6 +5452,10 @@ function handleFormSubmit(e) {
       buildStressHeader();
       renderStressEvents();
       setupCardCollapsing();
+      break;
+    }
+    case "futurePortfolioForm": {
+      updateFuturePortfolioCard({ triggeredBySubmit: true });
       break;
     }
     case "futureValueForm": {
@@ -6283,6 +6560,13 @@ window.addEventListener("load", () => {
   }
   const fvDate = $("fvDate");
   if (fvDate) fvDate.min = new Date().toISOString().split("T")[0];
+  const fpDate = $("futurePortfolioDate");
+  if (fpDate) {
+    fpDate.min = new Date().toISOString().split("T")[0];
+    on(fpDate, "change", () => updateFuturePortfolioCard());
+  }
+  const fpScenario = $("futurePortfolioScenario");
+  if (fpScenario) on(fpScenario, "change", () => updateFuturePortfolioCard());
   // First-run welcome routing
   const seen = localStorage.getItem(LS.welcome) === "1";
   const storedViewId = (() => {
@@ -6303,6 +6587,8 @@ window.addEventListener("load", () => {
   } else {
     navigateTo("data-entry");
   }
+
+  updateFuturePortfolioCard();
 
   async function handleAppUpdateRequest(button) {
     if (!button) return;
