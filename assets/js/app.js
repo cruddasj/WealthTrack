@@ -5550,6 +5550,110 @@ function parseCssNumber(value, fallback = 0) {
   return Number.isFinite(parsed) ? parsed : fallback;
 }
 
+function normalizeAppVersion(value) {
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  return trimmed.replace(/^v/i, "");
+}
+
+function toAppVersionParts(value) {
+  if (typeof value !== "string") return [];
+  return value
+    .split(/[.-]/)
+    .filter((part) => part.length > 0)
+    .map((part) => {
+      const num = Number(part);
+      return Number.isFinite(num) ? num : part.toLowerCase();
+    });
+}
+
+function compareAppVersions(a, b) {
+  if (a === b) return 0;
+  if (!a) return b ? -1 : 0;
+  if (!b) return a ? 1 : 0;
+  const partsA = toAppVersionParts(a);
+  const partsB = toAppVersionParts(b);
+  const len = Math.max(partsA.length, partsB.length);
+  for (let i = 0; i < len; i += 1) {
+    const partA = partsA[i] ?? 0;
+    const partB = partsB[i] ?? 0;
+    if (partA === partB) continue;
+    if (typeof partA === "number" && typeof partB === "number") {
+      return partA < partB ? -1 : 1;
+    }
+    const strA = String(partA);
+    const strB = String(partB);
+    if (strA === strB) continue;
+    return strA < strB ? -1 : 1;
+  }
+  return 0;
+}
+
+async function fetchChangelogEntries() {
+  try {
+    const response = await fetch("assets/changelog.json", {
+      cache: "no-store",
+    });
+    if (!response || !response.ok) return [];
+    const data = await response.json();
+    if (!Array.isArray(data)) return [];
+    return data
+      .map((entry) => {
+        if (!entry || typeof entry.version !== "string") return null;
+        const version = normalizeAppVersion(entry.version);
+        if (!version) return null;
+        const changes = Array.isArray(entry.changes)
+          ? entry.changes
+              .map((item) =>
+                typeof item === "string" ? item.trim() : "",
+              )
+              .filter(Boolean)
+          : [];
+        if (!changes.length) return null;
+        const date =
+          typeof entry.date === "string" && entry.date.trim().length
+            ? entry.date.trim()
+            : null;
+        return { version, changes, date };
+      })
+      .filter(Boolean);
+  } catch (_) {
+    return [];
+  }
+}
+
+function filterChangelogForUpdate(entries, previousVersion, latestVersion) {
+  if (!Array.isArray(entries) || !latestVersion) return [];
+  return entries
+    .filter((entry) => {
+      if (!entry || !entry.version) return false;
+      if (compareAppVersions(entry.version, latestVersion) === 1) return false;
+      if (
+        previousVersion &&
+        compareAppVersions(entry.version, previousVersion) <= 0
+      )
+        return false;
+      return Array.isArray(entry.changes) && entry.changes.length > 0;
+    })
+    .sort((a, b) => compareAppVersions(b.version, a.version));
+}
+
+function formatChangelogDate(value) {
+  if (!value) return null;
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return value;
+  try {
+    return parsed.toLocaleDateString(undefined, {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  } catch (_) {
+    return parsed.toLocaleDateString();
+  }
+}
+
 function readSafeAreaTop() {
   if (!document?.body) return 0;
   try {
@@ -6911,6 +7015,8 @@ window.addEventListener("load", () => {
   // Remove stray leading whitespace from card headings for consistent layout
   normalizeCardHeadings();
 
+  renderChangelogCard();
+
   // Brand logo sizing
   sizeBrandLogo();
   on(window, "resize", sizeBrandLogo);
@@ -6971,6 +7077,52 @@ window.addEventListener("load", () => {
   }
 
   updateFuturePortfolioCard();
+
+  async function renderChangelogCard() {
+    const card = document.getElementById("changelogCard");
+    if (!card) return;
+    const list = card.querySelector("[data-changelog-list]");
+    if (!list) return;
+    const emptyState = card.querySelector("[data-changelog-empty]");
+    const errorState = card.querySelector("[data-changelog-error]");
+    list.innerHTML = "";
+    if (emptyState) emptyState.classList.add("hidden");
+    if (errorState) errorState.classList.add("hidden");
+    try {
+      const entries = await fetchChangelogEntries();
+      if (!entries.length) {
+        if (emptyState) emptyState.classList.remove("hidden");
+        return;
+      }
+      const recentEntries = entries
+        .slice()
+        .sort((a, b) => compareAppVersions(b.version, a.version))
+        .slice(0, 5);
+      recentEntries.forEach((entry) => {
+        const section = document.createElement("div");
+        section.className = "space-y-2";
+        const heading = document.createElement("p");
+        heading.className = "font-semibold text-gray-900 dark:text-gray-100";
+        const formattedDate = formatChangelogDate(entry.date);
+        heading.textContent = formattedDate
+          ? `Version ${entry.version} · ${formattedDate}`
+          : `Version ${entry.version}`;
+        section.appendChild(heading);
+        const listEl = document.createElement("ul");
+        listEl.className =
+          "list-disc pl-5 space-y-1 text-sm text-gray-700 dark:text-gray-300";
+        entry.changes.forEach((change) => {
+          const item = document.createElement("li");
+          item.textContent = change;
+          listEl.appendChild(item);
+        });
+        section.appendChild(listEl);
+        list.appendChild(section);
+      });
+    } catch (_) {
+      if (errorState) errorState.classList.remove("hidden");
+    }
+  }
 
   async function handleAppUpdateRequest(button) {
     if (!button) return;
@@ -7049,7 +7201,7 @@ window.addEventListener("load", () => {
               data.type === "VERSION" &&
               typeof data.version === "string"
             ) {
-              resolve(normalizeVersion(data.version));
+              resolve(normalizeAppVersion(data.version));
             } else {
               resolve(null);
             }
@@ -7088,7 +7240,7 @@ window.addEventListener("load", () => {
         if (!response || !response.ok) return null;
         const data = await response.json();
         if (!data || typeof data.version !== "string") return null;
-        return normalizeVersion(data.version);
+        return normalizeAppVersion(data.version);
       } catch (_) {
         return null;
       }
@@ -7096,100 +7248,9 @@ window.addEventListener("load", () => {
     const getDisplayedAppVersion = () => {
       const el = document.querySelector("[data-app-version]");
       if (!el || typeof el.textContent !== "string") return null;
-      return normalizeVersion(el.textContent);
+      return normalizeAppVersion(el.textContent);
     };
-    const toVersionParts = (value) => {
-      if (typeof value !== "string") return [];
-      return value
-        .split(/[.-]/)
-        .filter((part) => part.length > 0)
-        .map((part) => {
-          const num = Number(part);
-          return Number.isFinite(num) ? num : part.toLowerCase();
-        });
-    };
-    const compareVersions = (a, b) => {
-      if (a === b) return 0;
-      if (!a) return b ? -1 : 0;
-      if (!b) return a ? 1 : 0;
-      const partsA = toVersionParts(a);
-      const partsB = toVersionParts(b);
-      const len = Math.max(partsA.length, partsB.length);
-      for (let i = 0; i < len; i += 1) {
-        const partA = partsA[i] ?? 0;
-        const partB = partsB[i] ?? 0;
-        if (partA === partB) continue;
-        if (typeof partA === "number" && typeof partB === "number") {
-          return partA < partB ? -1 : 1;
-        }
-        const strA = String(partA);
-        const strB = String(partB);
-        if (strA === strB) continue;
-        return strA < strB ? -1 : 1;
-      }
-      return 0;
-    };
-    const fetchChangelogEntries = async () => {
-      try {
-        const response = await fetch("assets/changelog.json", {
-          cache: "no-store",
-        });
-        if (!response || !response.ok) return [];
-        const data = await response.json();
-        if (!Array.isArray(data)) return [];
-        return data
-          .map((entry) => {
-            if (!entry || typeof entry.version !== "string") return null;
-            const version = normalizeVersion(entry.version);
-            if (!version) return null;
-            const changes = Array.isArray(entry.changes)
-              ? entry.changes
-                  .map((item) =>
-                    typeof item === "string" ? item.trim() : "",
-                  )
-                  .filter(Boolean)
-              : [];
-            if (!changes.length) return null;
-            const date =
-              typeof entry.date === "string" && entry.date.trim().length
-                ? entry.date.trim()
-                : null;
-            return { version, changes, date };
-          })
-          .filter(Boolean);
-      } catch (_) {
-        return [];
-      }
-    };
-    const filterChangelogForUpdate = (entries, previousVersion, latestVersion) => {
-      if (!Array.isArray(entries) || !latestVersion) return [];
-      return entries
-        .filter((entry) => {
-          if (!entry || !entry.version) return false;
-          if (compareVersions(entry.version, latestVersion) === 1) return false;
-          if (
-            previousVersion &&
-            compareVersions(entry.version, previousVersion) <= 0
-          )
-            return false;
-          return Array.isArray(entry.changes) && entry.changes.length > 0;
-        })
-        .sort((a, b) => compareVersions(b.version, a.version));
-    };
-    const formatChangelogDate = (value) => {
-      if (!value) return null;
-      const parsed = new Date(value);
-      if (Number.isNaN(parsed.getTime())) return value;
-      try {
-        return parsed.toLocaleDateString(undefined, {
-          year: "numeric",
-          month: "short",
-          day: "numeric",
-        });
-      } catch (_) {
-        return parsed.toLocaleDateString();
-      }
-    };
+    const initialDisplayedVersion = getDisplayedAppVersion();
     const buildUpdateSummaryContent = (
       summary,
       changesByVersion,
@@ -7230,9 +7291,19 @@ window.addEventListener("load", () => {
     };
     const notifyUpdateComplete = async () => {
       const controllerVersion = await controllerVersionPromise;
-      const previousVersion = controllerVersion || getDisplayedAppVersion();
       if (!markResolved()) return;
       const latestVersion = await fetchLatestAppVersion();
+      let previousVersion =
+        controllerVersion || initialDisplayedVersion || getDisplayedAppVersion();
+      if (
+        latestVersion &&
+        previousVersion &&
+        compareAppVersions(previousVersion, latestVersion) >= 0 &&
+        initialDisplayedVersion &&
+        compareAppVersions(initialDisplayedVersion, latestVersion) === -1
+      ) {
+        previousVersion = initialDisplayedVersion;
+      }
       if (latestVersion) {
         document
           .querySelectorAll("[data-app-version]")
@@ -7247,7 +7318,11 @@ window.addEventListener("load", () => {
         button.focus();
       }
       const hasVersion = typeof latestVersion === "string" && latestVersion;
-      if (hasVersion && (!previousVersion || latestVersion !== previousVersion)) {
+      const versionAdvanced =
+        hasVersion &&
+        (!previousVersion ||
+          compareAppVersions(previousVersion, latestVersion) === -1);
+      if (versionAdvanced) {
         const changelogEntries = await fetchChangelogEntries();
         const relevantChanges = filterChangelogForUpdate(
           changelogEntries,
@@ -7267,7 +7342,7 @@ window.addEventListener("load", () => {
         }
       }
       const message = hasVersion
-        ? previousVersion && latestVersion === previousVersion
+        ? previousVersion && hasVersion && compareAppVersions(previousVersion, latestVersion) === 0
           ? `You're already using the latest version of WealthTrack (version ${latestVersion}).`
           : `WealthTrack has been updated to version ${latestVersion}.`
         : "WealthTrack has been updated to the latest version.";
