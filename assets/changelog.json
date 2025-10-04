@@ -1,5 +1,13 @@
 [ 
   {
+    "version": "1.1.6",
+    "date": "2025-10-08",
+    "changes": [
+      "Restore exported tax settings and the sticky navigation preference when importing profile backups.",
+      "Keep asset values at the amount entered by defaulting recurring deposits to month-end, allowing a custom deposit day, and updating the form labels."
+    ]
+  },
+  {
     "version": "1.1.5",
     "date": "2025-10-07",
     "changes": [

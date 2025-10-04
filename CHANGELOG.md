@@ -2,6 +2,10 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
+## [1.1.6] - 2025-10-08
+- Restore exported tax settings and the sticky navigation preference when importing profile backups.
+- Keep asset values at the amount entered by defaulting recurring deposits to month-end, allowing a custom deposit day, and updating the form labels.
+
 ## [1.1.5] - 2025-10-07
 - Harden the in-app changelog loader so the Settings card reliably reports when release notes fail to load.
 
