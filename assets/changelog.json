@@ -1,4 +1,12 @@
-[ 
+[
+  {
+    "version": "1.1.4",
+    "date": "2025-10-06",
+    "changes": [
+      "Ensure the in-app update confirmation keeps showing release notes even when the prior version is difficult to detect.",
+      "Add a changelog card to the Settings page that lists the five most recent updates as a fallback."
+    ]
+  },
   {
     "version": "1.1.3",
     "date": "2025-10-05",

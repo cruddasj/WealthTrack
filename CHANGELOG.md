@@ -2,6 +2,10 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
+## [1.1.4] - 2025-10-06
+- Ensure in-app update confirmations consistently include release notes by preserving the prior version and skipping race conditions.
+- Add a changelog card to the Settings page with the five most recent updates as a fallback for missed popups.
+
 ## [1.1.3] - 2025-10-05
 - Rename portfolio allocation labels from "Share" to "Portfolio %" for clearer terminology.
 

@@ -2253,6 +2253,28 @@
             </button>
           </div>
         </div>
+
+        <div id="changelogCard" class="card">
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100">Changelog</h3>
+          <div class="card-body space-y-4">
+            <p class="text-sm text-gray-700 dark:text-gray-300">
+              Review the five most recent WealthTrack updates. Use this list if the update popup misses the latest notes.
+            </p>
+            <div data-changelog-list class="space-y-4"></div>
+            <p
+              data-changelog-empty
+              class="text-sm text-gray-500 dark:text-gray-400 hidden"
+            >
+              Recent release notes will appear here after the next update.
+            </p>
+            <p
+              data-changelog-error
+              class="text-sm text-red-600 dark:text-red-400 hidden"
+            >
+              We couldn't load the changelog. Please check your connection and try again.
+            </p>
+          </div>
+        </div>
       </div>
     </main>
 
