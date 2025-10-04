@@ -13,6 +13,7 @@ Do
 - Ensure `tailwind.config.js` `content` globs cover any new HTML/JS files that use Tailwind classes (currently scans `index.html` and `assets/js/**/*.js`).
 - Serve locally over HTTP for testing (service worker does not work with `file://`). Example: `python -m http.server 8080`.
 - Preserve the project structure and naming; keep changes minimal and targeted.
+- Maintain the changelog: add a concise summary of user-facing changes to both `CHANGELOG.md` and `assets/changelog.json` whenever you modify behavior that should surface in the in-app update notes.
 
 Don't
 - Don't reintroduce Tailwind via the CDN in `index.html`. The app now relies on the compiled stylesheet `assets/styles.css`.
