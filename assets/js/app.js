@@ -4383,9 +4383,9 @@ function renderSnapshotComparisonResult() {
           <thead class="bg-gray-200 dark:bg-gray-700">
             <tr>
               <th class="table-header">Asset</th>
-              <th class="table-header">Base Share</th>
-              <th class="table-header">Compared Share</th>
-              <th class="table-header">Share Change</th>
+              <th class="table-header">Base Portfolio %</th>
+              <th class="table-header">Compared Portfolio %</th>
+              <th class="table-header">Portfolio % Change</th>
               <th class="table-header">Value Change</th>
             </tr>
           </thead>
