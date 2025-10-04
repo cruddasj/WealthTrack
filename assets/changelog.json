@@ -1,5 +1,12 @@
 [ 
   {
+    "version": "1.1.19",
+    "date": "2025-10-04",
+    "changes": [
+      "Clarify that Future Portfolio forecasts include one-off Scenario Modelling events."
+    ]
+  },
+  {
     "version": "1.1.18",
     "date": "2025-10-04",
     "changes": [
