@@ -2,6 +2,8 @@
 
 WealthTrack is a personal wealth projection and planning tool built as a single-page application. It helps you capture assets and goals, run forecasts, explore portfolio insights, and maintain historical snapshots.
 
+> **Note:** WealthTrack is a vibe coding project only.
+
 ## Features
 
 - **Financial Inputs** – Track assets, liabilities, and savings targets.

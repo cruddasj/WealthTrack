@@ -1,5 +1,12 @@
 [ 
   {
+    "version": "1.1.20",
+    "date": "2025-10-04",
+    "changes": [
+      "Collapse cards by default for first-time visitors and keep welcome page shortcuts opening their target sections without overriding saved preferences."
+    ]
+  },
+  {
     "version": "1.1.19",
     "date": "2025-10-04",
     "changes": [
