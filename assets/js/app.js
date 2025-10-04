@@ -1014,11 +1014,7 @@ function normalizeImportedProfile(profile, index = 0) {
       if (!asset || typeof asset !== "object") return asset;
       return {
         ...asset,
-        depositDay: clampDepositDay(
-          Object.prototype.hasOwnProperty.call(asset, "depositDay")
-            ? asset.depositDay
-            : DEFAULT_DEPOSIT_DAY,
-        ),
+        depositDay: DEFAULT_DEPOSIT_DAY,
       };
     }),
     liabilities: ensureArray(profile?.liabilities),
@@ -1237,6 +1233,48 @@ const firstDepositOnOrAfter = (startTs, monthsPerPeriod, depositDay) => {
 };
 const DEPOSIT_MONTH_STEPS = { monthly: 1, quarterly: 3, yearly: 12 };
 
+const createDepositIterator = (asset, referenceTime = Date.now()) => {
+  if (!asset) return null;
+  const monthsPerPeriod = DEPOSIT_MONTH_STEPS[asset.frequency] || 0;
+  if (!(monthsPerPeriod > 0)) return null;
+  const amountRaw = Number.parseFloat(asset.originalDeposit);
+  if (!(amountRaw > 0)) return null;
+  const depositDay = DEFAULT_DEPOSIT_DAY;
+  const start = getStartDate(asset);
+  const scheduleStart = Math.max(referenceTime, start);
+  let nextDeposit = firstDepositOnOrAfter(
+    scheduleStart,
+    monthsPerPeriod,
+    depositDay,
+  );
+  if (!Number.isFinite(nextDeposit)) return null;
+  const consumeBefore = (limit) => {
+    if (!Number.isFinite(limit) || nextDeposit == null) return 0;
+    let total = 0;
+    let iterations = 0;
+    const safetyLimit = 1000;
+    while (nextDeposit != null && nextDeposit < limit && iterations < safetyLimit) {
+      total += amountRaw;
+      const candidate = addMonthsForDeposit(
+        nextDeposit,
+        monthsPerPeriod,
+        depositDay,
+      );
+      if (!Number.isFinite(candidate) || candidate <= nextDeposit) {
+        nextDeposit = null;
+        break;
+      }
+      nextDeposit = candidate;
+      iterations += 1;
+    }
+    return total;
+  };
+  return {
+    consumeBefore,
+    peekNext: () => nextDeposit,
+  };
+};
+
 const startOfToday = () => {
   const d = new Date();
   d.setHours(0, 0, 0, 0);
@@ -1441,11 +1479,7 @@ function normalizeData() {
     if (!a.frequency) a.frequency = "none";
     if (a.monthlyDeposit == null)
       a.monthlyDeposit = monthlyFrom(a.frequency, a.originalDeposit);
-    a.depositDay = clampDepositDay(
-      Object.prototype.hasOwnProperty.call(a, "depositDay")
-        ? a.depositDay
-        : DEFAULT_DEPOSIT_DAY,
-    );
+    a.depositDay = DEFAULT_DEPOSIT_DAY;
     const ret = parseFloat(a.return) || 0;
     if (a.lowGrowth == null) a.lowGrowth = ret;
     if (a.highGrowth == null) a.highGrowth = ret;
@@ -1684,11 +1718,7 @@ const depositsSoFar = (asset, now = Date.now()) => {
   if (!(monthsPerPeriod > 0)) return 0;
   const start = getStartDate(asset);
   if (now <= start) return 0;
-  const depositDay = clampDepositDay(
-    Object.prototype.hasOwnProperty.call(asset, "depositDay")
-      ? asset.depositDay
-      : DEFAULT_DEPOSIT_DAY,
-  );
+  const depositDay = DEFAULT_DEPOSIT_DAY;
   const amountRaw = Number.parseFloat(asset.originalDeposit);
   const amount = Number.isFinite(amountRaw) ? amountRaw : 0;
   if (amount === 0) return 0;
@@ -1889,6 +1919,7 @@ function buildForecastScenarios(yearsOverride = null, opts = {}) {
   const years = yearsOverride && yearsOverride > 0 ? yearsOverride : getGoalHorizonYears();
   const labels = getForecastLabels(years);
   const totalMonths = years * 12;
+  const nowTs = Date.now();
 
   const base = Array(labels.length).fill(0);
   const low = Array(labels.length).fill(0);
@@ -1939,7 +1970,7 @@ function buildForecastScenarios(yearsOverride = null, opts = {}) {
     const nowTs = Date.now();
     const initialValue = asset.value || 0;
     const principal = calculateCurrentValue(asset);
-    const monthlyContribution = asset.monthlyDeposit || 0;
+    const depositIterator = createDepositIterator(asset, nowTs);
     const assetEvents = (eventsByAsset.get(asset.dateAdded) || []).sort(
       (a, b) => a.date - b.date,
     );
@@ -1971,6 +2002,14 @@ function buildForecastScenarios(yearsOverride = null, opts = {}) {
         valueBase = initialValue;
         valueLow = initialValue;
         valueHigh = initialValue;
+      }
+      if (active && depositIterator) {
+        const catchUp = depositIterator.consumeBefore(currentDate.getTime());
+        if (catchUp) {
+          valueBase += catchUp;
+          valueLow += catchUp;
+          valueHigh += catchUp;
+        }
       }
       while (eventIndex < assetEvents.length) {
         const evt = assetEvents[eventIndex];
@@ -2012,10 +2051,19 @@ function buildForecastScenarios(yearsOverride = null, opts = {}) {
         assetTotalsLow[i] += lowVal;
         assetTotalsHigh[i] += highVal;
       }
-      if (active) {
-        valueBase = valueBase * (1 + rateBase) + monthlyContribution;
-        valueLow = valueLow * (1 + rateLow) + monthlyContribution;
-        valueHigh = valueHigh * (1 + rateHigh) + monthlyContribution;
+      if (active && i < labels.length - 1) {
+        valueBase *= 1 + rateBase;
+        valueLow *= 1 + rateLow;
+        valueHigh *= 1 + rateHigh;
+        if (depositIterator) {
+          const monthEnd = labels[i + 1].getTime();
+          const addition = depositIterator.consumeBefore(monthEnd);
+          if (addition) {
+            valueBase += addition;
+            valueLow += addition;
+            valueHigh += addition;
+          }
+        }
       }
     }
     nextAssetForecasts.set(asset.dateAdded, {
@@ -2276,16 +2324,7 @@ function showEditAsset(index) {
   tpl.querySelector("#editAssetValue").value = asset.value;
   tpl.querySelector("#editDepositAmount").value = asset.originalDeposit;
   tpl.querySelector("#editDepositFrequency").value = asset.frequency;
-  const editDepositDay = tpl.querySelector("#editDepositDay");
-  if (editDepositDay) editDepositDay.value = clampDepositDay(asset.depositDay);
   const editDepositFrequency = tpl.querySelector("#editDepositFrequency");
-  if (editDepositDay && editDepositFrequency) {
-    const toggleDepositDay = () => {
-      editDepositDay.disabled = editDepositFrequency.value === "none";
-    };
-    toggleDepositDay();
-    editDepositFrequency.addEventListener("change", toggleDepositDay);
-  }
   const editAssetStart = tpl.querySelector("#editAssetStartDate");
   if (editAssetStart)
     editAssetStart.value = toDateInputValue(asset.explicitStartDate);
@@ -2311,10 +2350,6 @@ function showEditAsset(index) {
     a.originalDeposit =
       parseFloat(f.querySelector("#editDepositAmount").value) || 0;
     a.frequency = f.querySelector("#editDepositFrequency").value;
-    const depositDayInput = f.querySelector("#editDepositDay");
-    a.depositDay = clampDepositDay(
-      depositDayInput ? depositDayInput.value : a.depositDay,
-    );
     const explicitInput = f.querySelector("#editAssetStartDate")?.value;
     a.explicitStartDate = toTimestamp(explicitInput);
     a.startDate = a.explicitStartDate ?? getStartDate(a);
@@ -3691,7 +3726,7 @@ function renderAssets() {
         if (!hasDeposit) return "-";
         const schedule = [];
         if (asset.frequency) schedule.push(asset.frequency);
-        schedule.push(`day ${clampDepositDay(asset.depositDay)}`);
+        schedule.push("end of each period");
         return `${fmtCurrency(asset.originalDeposit)} (${schedule.join(" - ")})`;
       })();
       const explicitStart = toTimestamp(asset.explicitStartDate);
@@ -5272,6 +5307,7 @@ function forecastGoalDate(
     );
     let evIdx = 0;
     let v = principal;
+    const depositIterator = createDepositIterator(a, nowTs);
     const taxDetail = taxDetailMap.get(a.dateAdded);
     const netRate =
       scenario === "low"
@@ -5282,6 +5318,10 @@ function forecastGoalDate(
     const r = (netRate || 0) / 100 / 12;
     for (let i = 0; i <= totalMonths; i++) {
       const currentDate = labels[i];
+      if (depositIterator) {
+        const catchUp = depositIterator.consumeBefore(currentDate.getTime());
+        if (catchUp) v += catchUp;
+      }
       while (
         evIdx < assetEvents.length &&
         currentDate >= new Date(assetEvents[evIdx].date)
@@ -5291,7 +5331,14 @@ function forecastGoalDate(
         evIdx++;
       }
       base[i] += v;
-      v = v * (1 + r) + a.monthlyDeposit;
+      if (i < labels.length - 1) {
+        v *= 1 + r;
+        if (depositIterator) {
+          const monthEnd = labels[i + 1].getTime();
+          const addition = depositIterator.consumeBefore(monthEnd);
+          if (addition) v += addition;
+        }
+      }
     }
   });
 
@@ -5916,9 +5963,7 @@ function handleFormSubmit(e) {
         frequency: form.depositFrequency.value,
         dateAdded: Date.now(),
       };
-      newAsset.depositDay = clampDepositDay(
-        form.depositDay ? form.depositDay.value : DEFAULT_DEPOSIT_DAY,
-      );
+      newAsset.depositDay = DEFAULT_DEPOSIT_DAY;
       const ret = parseFloat(form.assetReturn.value) || 0;
       newAsset.return = ret;
       newAsset.lowGrowth = parseFloat(form.lowGrowth.value) || ret;
@@ -6529,24 +6574,6 @@ window.addEventListener("load", () => {
   setupProfilePickers();
   setupPassiveIncomeAssetPicker();
 
-  const assetForm = $("assetForm");
-  const depositDayInput = $("depositDay");
-  const depositFrequencySelect = $("depositFrequency");
-  if (depositDayInput && depositFrequencySelect) {
-    const updateDepositDayState = () => {
-      depositDayInput.disabled = depositFrequencySelect.value === "none";
-    };
-    updateDepositDayState();
-    on(depositFrequencySelect, "change", updateDepositDayState);
-    if (assetForm)
-      on(assetForm, "reset", () => {
-        setTimeout(() => {
-          updateDepositDayState();
-          depositDayInput.value = String(DEFAULT_DEPOSIT_DAY);
-        });
-      });
-  }
-
   const bandSelect = $("taxBandSelect");
   if (bandSelect)
     on(bandSelect, "change", (e) => {
@@ -6954,11 +6981,7 @@ window.addEventListener("load", () => {
                 if (!asset || typeof asset !== "object") return asset;
                 return {
                   ...asset,
-                  depositDay: clampDepositDay(
-                    Object.prototype.hasOwnProperty.call(asset, "depositDay")
-                      ? asset.depositDay
-                      : DEFAULT_DEPOSIT_DAY,
-                  ),
+                  depositDay: DEFAULT_DEPOSIT_DAY,
                 };
               }),
             }));
