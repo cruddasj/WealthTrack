@@ -5591,36 +5591,52 @@ function compareAppVersions(a, b) {
 }
 
 async function fetchChangelogEntries() {
+  let response;
   try {
-    const response = await fetch("assets/changelog.json", {
+    response = await fetch("assets/changelog.json", {
       cache: "no-store",
     });
-    if (!response || !response.ok) return [];
-    const data = await response.json();
-    if (!Array.isArray(data)) return [];
-    return data
-      .map((entry) => {
-        if (!entry || typeof entry.version !== "string") return null;
-        const version = normalizeAppVersion(entry.version);
-        if (!version) return null;
-        const changes = Array.isArray(entry.changes)
-          ? entry.changes
-              .map((item) =>
-                typeof item === "string" ? item.trim() : "",
-              )
-              .filter(Boolean)
-          : [];
-        if (!changes.length) return null;
-        const date =
-          typeof entry.date === "string" && entry.date.trim().length
-            ? entry.date.trim()
-            : null;
-        return { version, changes, date };
-      })
-      .filter(Boolean);
-  } catch (_) {
-    return [];
+  } catch (error) {
+    console.error("Failed to request changelog entries", error);
+    throw error;
   }
+  if (!response || !response.ok) {
+    throw new Error(
+      `Unexpected changelog response status: ${response ? response.status : "no-response"}`,
+    );
+  }
+  const contentType = (response.headers?.get("content-type") || "").toLowerCase();
+  if (!contentType.includes("json")) {
+    throw new Error(
+      `Changelog response was not JSON (content-type: ${contentType || "unknown"})`,
+    );
+  }
+  let data;
+  try {
+    data = await response.json();
+  } catch (error) {
+    console.error("Failed to parse changelog entries", error);
+    throw error;
+  }
+  if (!Array.isArray(data)) return [];
+  return data
+    .map((entry) => {
+      if (!entry || typeof entry.version !== "string") return null;
+      const version = normalizeAppVersion(entry.version);
+      if (!version) return null;
+      const changes = Array.isArray(entry.changes)
+        ? entry.changes
+            .map((item) => (typeof item === "string" ? item.trim() : ""))
+            .filter(Boolean)
+        : [];
+      if (!changes.length) return null;
+      const date =
+        typeof entry.date === "string" && entry.date.trim().length
+          ? entry.date.trim()
+          : null;
+      return { version, changes, date };
+    })
+    .filter(Boolean);
 }
 
 function filterChangelogForUpdate(entries, previousVersion, latestVersion) {
