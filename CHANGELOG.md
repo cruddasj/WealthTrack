@@ -2,6 +2,9 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
+## [1.1.18] - 2025-10-04
+- Move the import data card ahead of the export data card so restoring data is the first action shown in Settings.
+
 ## [1.1.17] - 2025-10-04
 - Move the Snapshot Comparison card into the Snapshots page alongside other snapshot tools.
 - Rename Progress Check to Forecast Progress Check and clarify that progress uses the saved expected projections.
