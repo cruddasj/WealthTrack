@@ -658,7 +658,7 @@ const TAX_TREATMENTS = {
     allowanceLabel: "savings allowance",
     rateKey: "incomeRate",
     totalsKey: "income",
-    info: "Use for interest, rental profit, bond bonds, and other income taxed at your marginal rate.",
+    info: "Use for interest, rental profit, bond coupons, and other income taxed at your marginal rate.",
   },
   dividend: {
     label: "Dividend tax",
