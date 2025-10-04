@@ -2,6 +2,9 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
+## [1.1.5] - 2025-10-07
+- Harden the in-app changelog loader so the Settings card reliably reports when release notes fail to load.
+
 ## [1.1.4] - 2025-10-06
 - Ensure in-app update confirmations consistently include release notes by preserving the prior version and skipping race conditions.
 - Add a changelog card to the Settings page with the five most recent updates as a fallback for missed popups.
