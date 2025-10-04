@@ -785,6 +785,85 @@
 
         </div>
 
+        <div id="futurePortfolioCard" class="card">
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Future Portfolio</h3>
+          <p class="text-gray-700 dark:text-gray-300 text-sm">
+            Select a growth scenario and future date to see the projected value of your assets.
+          </p>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">
+            The projections below use the growth scenario you choose, including scheduled one-off events.
+          </p>
+          <form
+            id="futurePortfolioForm"
+            class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end"
+          >
+            <div>
+              <label for="futurePortfolioScenario" class="form-label required-label"
+                >Growth Scenario</label
+              >
+              <select id="futurePortfolioScenario" class="input-field" required>
+                <option value="low">Low Growth</option>
+                <option value="base" selected>Expected Growth</option>
+                <option value="high">High Growth</option>
+              </select>
+            </div>
+            <div>
+              <label for="futurePortfolioDate" class="form-label required-label"
+                >Future Date</label
+              >
+              <input type="date" id="futurePortfolioDate" class="input-field" required />
+            </div>
+            <div class="flex md:col-span-full">
+              <button type="submit" class="btn btn-block btn-green md:mb-1">
+                Show Projection
+              </button>
+            </div>
+          </form>
+          <p
+            id="futurePortfolioMessage"
+            class="text-sm text-gray-600 dark:text-gray-300 mt-2"
+          ></p>
+          <div
+            class="flex flex-col items-center justify-center gap-1 p-4 mt-4 mb-6 rounded-lg bg-gray-100 dark:bg-gray-700 text-center text-gray-900 dark:text-gray-100 stat-box w-full"
+          >
+            <h4 class="text-md font-medium text-gray-700 dark:text-gray-300">
+              Projected Value
+            </h4>
+            <span id="futurePortfolioTotal" class="text-3xl font-bold">£0</span>
+          </div>
+          <div class="chart-container">
+            <canvas id="futurePortfolioChart"></canvas>
+            <div
+              id="futurePortfolioEmpty"
+              class="text-center text-gray-500 hidden"
+            >
+              <p>
+                Choose a different date or scenario to see a projected breakdown.
+              </p>
+            </div>
+          </div>
+          <div
+            id="futurePortfolioTableWrap"
+            class="mt-6 overflow-x-auto hidden"
+          >
+            <table
+              class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-left"
+            >
+              <thead class="bg-gray-200 dark:bg-gray-700">
+                <tr>
+                  <th class="table-header">Asset</th>
+                  <th class="table-header">Value</th>
+                  <th class="table-header">Share</th>
+                </tr>
+              </thead>
+              <tbody
+                id="futurePortfolioTableBody"
+                class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700"
+              ></tbody>
+            </table>
+          </div>
+        </div>
+
         <div id="futureValueCard" class="card">
           <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Future Asset Value</h3>
           <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
@@ -1072,6 +1151,26 @@
                 your breakdown.
               </p>
             </div>
+          </div>
+          <div
+            id="assetBreakdownTableWrap"
+            class="mt-6 overflow-x-auto hidden"
+          >
+            <table
+              class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-left"
+            >
+              <thead class="bg-gray-200 dark:bg-gray-700">
+                <tr>
+                  <th class="table-header">Asset</th>
+                  <th class="table-header">Value</th>
+                  <th class="table-header">Share</th>
+                </tr>
+              </thead>
+              <tbody
+                id="assetBreakdownTableBody"
+                class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700"
+              ></tbody>
+            </table>
           </div>
         </div>
 
