@@ -1,5 +1,12 @@
 [ 
   {
+    "version": "1.1.21",
+    "date": "2025-10-04",
+    "changes": [
+      "Show exact asset values for the base and comparison portfolios in the Snapshot Comparison breakdown."
+    ]
+  },
+  {
     "version": "1.1.20",
     "date": "2025-10-04",
     "changes": [

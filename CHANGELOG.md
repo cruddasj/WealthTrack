@@ -2,6 +2,9 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
+## [1.1.21] - 2025-10-04
+- Show exact asset values for both the base and compared portfolios in the Snapshot Comparison breakdown.
+
 ## [1.1.20] - 2025-10-04
 - Collapse cards by default for first-time visitors and let welcome shortcuts open their target sections immediately without overriding saved preferences.
 
