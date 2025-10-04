@@ -1,5 +1,12 @@
 [
   {
+    "version": "1.1.16",
+    "date": "2025-10-04",
+    "changes": [
+      "Rename the interest rate comparison fields to \"Rate\" and \"Comparative rate\" for clearer terminology."
+    ]
+  },
+  {
     "version": "1.1.15",
     "date": "2025-10-04",
     "changes": [
