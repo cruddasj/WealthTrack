@@ -3498,8 +3498,6 @@ function updateEmptyStates() {
     progressCard.hidden = snapshots.length === 0 || !canForecast;
   const exportCard = $("exportCard");
   if (exportCard) exportCard.hidden = isFresh;
-  const futureCard = $("futureValueCard");
-  if (futureCard) futureCard.hidden = !hasAssets;
   const futurePortfolioCard = $("futurePortfolioCard");
   if (futurePortfolioCard) futurePortfolioCard.hidden = !hasAssets;
   const stressTestCard = $("StressTestCard");
@@ -3629,7 +3627,6 @@ function renderAssets() {
 
   updateTotals();
   renderEventAssetOptions();
-  renderFutureValueAssetOptions();
   renderTaxCalculatorOptions();
   renderStressAssetOptions();
   renderPassiveAssetPickerOptions();
@@ -3653,19 +3650,6 @@ function renderEventAssetOptions(sel = $("eventAsset")) {
       .map((a) => `<option value="${a.dateAdded}">${a.name}</option>`)
       .join("");
   if (current) sel.value = current;
-}
-
-function renderFutureValueAssetOptions() {
-  const sel = $("fvAsset");
-  if (!sel) return;
-  const opts = [...assets].sort((a, b) =>
-    (a.name || "").localeCompare(b.name || "", undefined, {
-      sensitivity: "base",
-    }),
-  );
-  sel.innerHTML = opts
-    .map((a) => `<option value="${a.dateAdded}">${a.name}</option>`)
-    .join("");
 }
 
 function renderTaxCalculatorOptions() {
@@ -5458,37 +5442,6 @@ function handleFormSubmit(e) {
       updateFuturePortfolioCard({ triggeredBySubmit: true });
       break;
     }
-    case "futureValueForm": {
-      const assetId = form.fvAsset.value;
-      const dateStr = form.fvDate.value;
-      const asset = assets.find((a) => a.dateAdded == assetId);
-      if (!asset || !dateStr) {
-        showAlert("Please select an asset and future date.");
-        break;
-      }
-      const target = new Date(dateStr);
-      const now = new Date();
-      if (target <= now) {
-        showAlert("Please pick a future date.");
-        break;
-      }
-      const years = (target - now) / (1000 * 60 * 60 * 24 * 365.25);
-      const principal = calculateCurrentValue(asset);
-      const monthly = asset.monthlyDeposit || 0;
-      const taxDetail = computeAssetTaxDetails().detailMap.get(asset.dateAdded);
-      const lowRate = taxDetail?.low?.netRate ?? getGrossRate(asset, "low");
-      const baseRate = taxDetail?.base?.netRate ?? getGrossRate(asset, "base");
-      const highRate = taxDetail?.high?.netRate ?? getGrossRate(asset, "high");
-      const low = calculateFutureValue(principal, monthly, lowRate || 0, years);
-      const exp = calculateFutureValue(principal, monthly, baseRate || 0, years);
-      const high = calculateFutureValue(principal, monthly, highRate || 0, years);
-      $("fvLow").textContent = fmtCurrency(low);
-      $("fvExpected").textContent = fmtCurrency(exp);
-      $("fvHigh").textContent = fmtCurrency(high);
-      const res = $("fvResult");
-      if (res) res.classList.remove("hidden");
-      break;
-    }
     case "taxImpactForm": {
       const resultEl = $("taxCalculatorResult");
       if (!resultEl) break;
@@ -6558,8 +6511,6 @@ window.addEventListener("load", () => {
       }
     });
   }
-  const fvDate = $("fvDate");
-  if (fvDate) fvDate.min = new Date().toISOString().split("T")[0];
   const fpDate = $("futurePortfolioDate");
   if (fpDate) {
     fpDate.min = new Date().toISOString().split("T")[0];
