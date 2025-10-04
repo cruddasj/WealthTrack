@@ -61,7 +61,6 @@ const LS = {
   profiles: "profiles",
   activeProfile: "activeProfile",
   forecastTip: "forecastTipSeen",
-  currency: "currency",
   view: "activeView",
 };
 const save = (k, v) => localStorage.setItem(k, JSON.stringify(v));
@@ -528,15 +527,6 @@ function setupProfilePickers() {
   resetProfilePicker("import");
 }
 
-const currencyOptions = {
-  GBP: { label: "Pounds (£)", locale: "en-GB", currency: "GBP", symbol: "£" },
-  USD: { label: "Dollars ($)", locale: "en-US", currency: "USD", symbol: "$" },
-  EUR: { label: "Euros (€)", locale: "en-IE", currency: "EUR", symbol: "€" },
-};
-
-const sanitizeCurrencyCode = (code) =>
-  currencyOptions[code] ? code : "GBP";
-
 const sanitizeThemeChoice = (val) =>
   val === "inverted" || val === "glass" ? val : "default";
 
@@ -546,33 +536,29 @@ const sanitizeMobileNavSticky = (value, fallback = true) =>
 const readStoredMobileNavSticky = () =>
   getLocalStorageItem(LS.mobileNavSticky) !== "0";
 
-let currencyCode = sanitizeCurrencyCode(load(LS.currency, "GBP"));
+const GBP_CURRENCY = { locale: "en-GB", currency: "GBP", symbol: "£" };
+
 let currentThemeChoice = sanitizeThemeChoice(
   getLocalStorageItem(LS.themeChoice) || "default",
 );
 let isDarkMode = getLocalStorageItem(LS.theme) === "1";
 let isMobileNavSticky = sanitizeMobileNavSticky(readStoredMobileNavSticky(), true);
 
-const getCurrencyConfig = () =>
-  currencyOptions[currencyCode] || currencyOptions.GBP;
-
 const fmtCurrency = (value) => {
-  const cfg = getCurrencyConfig();
   const amount =
     typeof value === "number" ? value : Number.parseFloat(value ?? 0);
   const safeAmount = Number.isFinite(amount) ? amount : 0;
-  return safeAmount.toLocaleString(cfg.locale, {
+  return safeAmount.toLocaleString(GBP_CURRENCY.locale, {
     style: "currency",
-    currency: cfg.currency,
+    currency: GBP_CURRENCY.currency,
   });
 };
 
 const updateCurrencySymbols = () => {
-  const cfg = getCurrencyConfig();
   document
     .querySelectorAll("[data-currency-symbol]")
     .forEach((el) => {
-      el.textContent = cfg.symbol;
+      el.textContent = GBP_CURRENCY.symbol;
     });
   document
     .querySelectorAll("template")
@@ -582,7 +568,7 @@ const updateCurrencySymbols = () => {
       fragment
         .querySelectorAll("[data-currency-symbol]")
         .forEach((el) => {
-          el.textContent = cfg.symbol;
+          el.textContent = GBP_CURRENCY.symbol;
         });
     });
 };
@@ -605,39 +591,6 @@ function applyMobileNavSticky(enabled, { persistChoice = true } = {}) {
   }
   updateMobileHeaderOffset();
   return normalized;
-}
-
-function applyCurrencyChoice(
-  code,
-  { persistChoice = true, refresh = true } = {},
-) {
-  const normalized = sanitizeCurrencyCode(code);
-  currencyCode = normalized;
-  if (activeProfile) activeProfile.currencyCode = currencyCode;
-  if (persistChoice) {
-    save(LS.currency, currencyCode);
-    if (activeProfile) persist();
-  }
-  if (refresh) {
-    refreshCurrencyDisplays();
-  } else {
-    updateCurrencySymbols();
-    const select = document.getElementById("currencySelect");
-    if (select && select.value !== currencyCode) select.value = currencyCode;
-  }
-}
-
-function refreshCurrencyDisplays() {
-  updateCurrencySymbols();
-  const select = document.getElementById("currencySelect");
-  if (select && select.value !== currencyCode) select.value = currencyCode;
-  renderAssets();
-  renderLiabilities();
-  renderEvents();
-  renderSnapshots();
-  updateFuturePortfolioCard();
-  updateInflationImpactCard();
-  refreshFireProjection();
 }
 
 const TAX_BANDS = {
@@ -1070,9 +1023,6 @@ function normalizeImportedProfile(profile, index = 0) {
         ? profile.fireForecastRetireDate
         : null,
     taxSettings: normalizeTaxSettings(profile?.taxSettings),
-    currencyCode: sanitizeCurrencyCode(
-      profile?.currencyCode || profile?.currency || currencyCode,
-    ),
     themeChoice: sanitizeThemeChoice(profile?.themeChoice),
     darkMode: !!profile?.darkMode,
     passiveIncomeAssetSelection: sanitizePassiveSelection(
@@ -1185,7 +1135,6 @@ function saveCurrentProfile() {
   activeProfile.fireForecastInflation = fireForecastInflation;
   activeProfile.fireForecastRetireDate = fireForecastRetireDate;
   activeProfile.taxSettings = normalizeTaxSettings(taxSettings);
-  activeProfile.currencyCode = currencyCode;
   activeProfile.themeChoice = currentThemeChoice;
   activeProfile.darkMode = isDarkMode;
   activeProfile.mobileNavSticky = isMobileNavSticky;
@@ -1459,6 +1408,9 @@ function initProfiles() {
   profiles = load(LS.profiles, null);
   let id = localStorage.getItem(LS.activeProfile);
   const storedNavSticky = readStoredMobileNavSticky();
+  try {
+    localStorage.removeItem("currency");
+  } catch (_) {}
   if (!profiles) {
     const def = {
       id: Date.now(),
@@ -1478,7 +1430,6 @@ function initProfiles() {
       fireForecastInflation: 2.5,
       fireForecastRetireDate: null,
       taxSettings: normalizeTaxSettings(),
-      currencyCode: sanitizeCurrencyCode(load(LS.currency, "GBP")),
       themeChoice: sanitizeThemeChoice(
         localStorage.getItem(LS.themeChoice) || "default",
       ),
@@ -1492,7 +1443,6 @@ function initProfiles() {
     save(LS.profiles, profiles);
   }
   if (profiles) {
-    const fallbackCurrency = currencyCode;
     const fallbackThemeChoice = currentThemeChoice;
     const fallbackDarkMode = isDarkMode;
     let profilesUpdated = false;
@@ -1512,20 +1462,12 @@ function initProfiles() {
         !isFinite(p.fireForecastRetireDate)
       )
         p.fireForecastRetireDate = null;
-      if (p.currencyCode != null) {
-        const sanitizedCurrency = sanitizeCurrencyCode(p.currencyCode);
-        if (sanitizedCurrency !== p.currencyCode) {
-          p.currencyCode = sanitizedCurrency;
-          profilesUpdated = true;
-        }
-      } else if (p.currency != null) {
-        const sanitizedCurrency = sanitizeCurrencyCode(p.currency);
-        if (p.currencyCode !== sanitizedCurrency) {
-          p.currencyCode = sanitizedCurrency;
-          profilesUpdated = true;
-        }
-      } else if (fallbackCurrency && p.currencyCode !== fallbackCurrency) {
-        p.currencyCode = fallbackCurrency;
+      if (Object.prototype.hasOwnProperty.call(p, "currencyCode")) {
+        delete p.currencyCode;
+        profilesUpdated = true;
+      }
+      if (Object.prototype.hasOwnProperty.call(p, "currency")) {
+        delete p.currency;
         profilesUpdated = true;
       }
       if (p.themeChoice != null && p.themeChoice !== "") {
@@ -2847,12 +2789,7 @@ function applyDarkMode(
 }
 
 function applyProfilePreferences(profile) {
-  const storedCurrency = load(LS.currency, "GBP");
-  const currencyPref = sanitizeCurrencyCode(
-    profile?.currencyCode || profile?.currency || storedCurrency,
-  );
-  applyCurrencyChoice(currencyPref, { persistChoice: false, refresh: false });
-  if (profile) profile.currencyCode = currencyCode;
+  updateCurrencySymbols();
 
   const storedThemeChoice = localStorage.getItem(LS.themeChoice) || "default";
   const themePref =
@@ -3423,7 +3360,6 @@ function addProfile(name) {
     fireForecastInflation: 2.5,
     fireForecastRetireDate: null,
     taxSettings: normalizeTaxSettings(),
-    currencyCode,
     themeChoice: currentThemeChoice,
     darkMode: isDarkMode,
     passiveIncomeAssetSelection: null,
@@ -5813,12 +5749,6 @@ window.addEventListener("load", () => {
 
   setupProfilePickers();
   setupPassiveIncomeAssetPicker();
-
-  const currencySelect = document.getElementById("currencySelect");
-  if (currencySelect) {
-    currencySelect.value = currencyCode;
-    on(currencySelect, "change", (e) => applyCurrencyChoice(e.target.value));
-  }
 
   const bandSelect = $("taxBandSelect");
   if (bandSelect)
