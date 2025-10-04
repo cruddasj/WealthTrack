@@ -652,13 +652,13 @@ const TAX_TREATMENTS = {
     info: "No UK tax is applied to growth or income while the asset stays in the wrapper.",
   },
   income: {
-    label: "Income tax (interest, rent, coupons)",
+    label: "Income tax (interest, rent, bonds)",
     allowanceKey: "income",
     allowanceSetting: "incomeAllowance",
     allowanceLabel: "savings allowance",
     rateKey: "incomeRate",
     totalsKey: "income",
-    info: "Use for interest, rental profit, bond coupons, and other income taxed at your marginal rate.",
+    info: "Use for interest, rental profit, bond bonds, and other income taxed at your marginal rate.",
   },
   dividend: {
     label: "Dividend tax",
