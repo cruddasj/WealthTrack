@@ -78,6 +78,14 @@ const getLocalStorageItem = (key) => {
   }
 };
 
+const COLLAPSE_CARDS_BY_DEFAULT = (() => {
+  try {
+    return localStorage.getItem(LS.welcome) !== "1";
+  } catch (_) {
+    return true;
+  }
+})();
+
 const getStoredFirstTimeHidden = () => {
   try {
     return localStorage.getItem(LS.welcomeDisabled) === "1";
@@ -5367,7 +5375,8 @@ function runStressTest(iterations, scenario, assetIds) {
   };
 }
 
-function navigateTo(viewId) {
+function navigateTo(viewId, options = {}) {
+  const { expandCards = false } = options;
   if (viewId === "forecasts" && assets.length === 0 && liabilities.length === 0) {
     showAlert(
       "Add at least one asset or liability to unlock Forecasts. Set a wealth goal to enable goal-specific insights."
@@ -5401,6 +5410,9 @@ function navigateTo(viewId) {
   try {
     localStorage.setItem(LS.view, viewId);
   } catch (_) {}
+  if (expandCards) {
+    expandSectionCards(section);
+  }
   if (viewId === "portfolio-analysis") {
     renderAssetBreakdownChart();
   }
@@ -5536,7 +5548,14 @@ function setupCardCollapsing() {
       header.setAttribute("tabindex", "0");
 
       const setInitialState = () => {
-        const collapsed = localStorage.getItem(key) === "1";
+        let storedState = null;
+        try {
+          storedState = localStorage.getItem(key);
+        } catch (_) {}
+        const hasStoredPreference = storedState === "0" || storedState === "1";
+        const collapsed = hasStoredPreference
+          ? storedState === "1"
+          : COLLAPSE_CARDS_BY_DEFAULT;
         header.setAttribute("aria-expanded", collapsed ? "false" : "true");
         body.setAttribute("aria-hidden", collapsed ? "true" : "false");
         if (collapsed) {
@@ -5639,6 +5658,12 @@ function setupCardCollapsing() {
         }
       };
 
+      card._wtExpandWithoutPersist = () => {
+        if (!card.classList.contains("collapsed")) return;
+        expand();
+        header.setAttribute("aria-expanded", "true");
+      };
+
       header.addEventListener("click", toggle);
       header.addEventListener("keydown", (e) => {
         if (e.key === "Enter" || e.key === " ") {
@@ -5646,6 +5671,32 @@ function setupCardCollapsing() {
           toggle();
         }
       });
+    });
+}
+
+function expandSectionCards(section) {
+  if (!section) return;
+  section
+    .querySelectorAll(".card.is-collapsible")
+    .forEach((card) => {
+      if (!card.classList.contains("collapsed")) return;
+      const key = card.dataset.collapseKey;
+      let hasStoredPreference = false;
+      if (key) {
+        try {
+          const stored = localStorage.getItem(key);
+          hasStoredPreference = stored === "0" || stored === "1";
+        } catch (_) {}
+      }
+      if (hasStoredPreference) return;
+      if (typeof card._wtExpandWithoutPersist === "function") {
+        card._wtExpandWithoutPersist();
+        return;
+      }
+      const header = card.querySelector("h3, h4");
+      if (header) {
+        header.dispatchEvent(new Event("click", { bubbles: true }));
+      }
     });
 }
 
@@ -7760,12 +7811,12 @@ window.addEventListener("load", () => {
     switch (btn.dataset.action) {
       case "start-now":
         localStorage.setItem(LS.onboardPending, "1");
-        navigateTo("data-entry");
+        navigateTo("data-entry", { expandCards: true });
         break;
       case "focus-asset-form":
         {
           closeModal();
-          navigateTo("data-entry");
+          navigateTo("data-entry", { expandCards: true });
           const el = $("assetName");
           if (el) {
             try {
@@ -7780,7 +7831,7 @@ window.addEventListener("load", () => {
       case "focus-goal":
         {
           closeModal();
-          navigateTo("data-entry");
+          navigateTo("data-entry", { expandCards: true });
           const el = $("goalValue");
           if (el) {
             try {
@@ -7794,19 +7845,19 @@ window.addEventListener("load", () => {
         break;
       case "go-assets":
         closeModal();
-        navigateTo("data-entry");
+        navigateTo("data-entry", { expandCards: true });
         break;
       case "go-forecasts":
         closeModal();
-        navigateTo("forecasts");
+        navigateTo("forecasts", { expandCards: true });
         break;
       case "go-insights":
         closeModal();
-        navigateTo("portfolio-analysis");
+        navigateTo("portfolio-analysis", { expandCards: true });
         break;
       case "go-settings":
         closeModal();
-        navigateTo("settings");
+        navigateTo("settings", { expandCards: true });
         break;
       case "open-tour":
         {
