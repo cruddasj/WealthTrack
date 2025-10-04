@@ -4780,16 +4780,16 @@ function setupCardCollapsing() {
 
       const setInitialState = () => {
         const collapsed = localStorage.getItem(key) === "1";
-        header.setAttribute(
-          "aria-expanded",
-          collapsed ? "false" : "true",
-        );
+        header.setAttribute("aria-expanded", collapsed ? "false" : "true");
+        body.setAttribute("aria-hidden", collapsed ? "true" : "false");
         if (collapsed) {
           card.classList.add("collapsed");
           body.style.height = "0px";
           body.style.opacity = "0";
+          body.style.display = "none";
         } else {
           card.classList.remove("collapsed");
+          body.style.display = "block";
           body.style.height = "auto";
           body.style.opacity = "1";
         }
@@ -4797,7 +4797,17 @@ function setupCardCollapsing() {
       setInitialState();
 
       const expand = () => {
+        if (body._wtCollapseListener) {
+          body.removeEventListener("transitionend", body._wtCollapseListener);
+          body._wtCollapseListener = null;
+        }
+        if (body._wtCollapseTimer) {
+          clearTimeout(body._wtCollapseTimer);
+          body._wtCollapseTimer = null;
+        }
         card.classList.remove("collapsed");
+        body.style.display = "block";
+        body.setAttribute("aria-hidden", "false");
         // measure target height
         body.style.height = "auto";
         const target = body.scrollHeight;
@@ -4815,9 +4825,16 @@ function setupCardCollapsing() {
         };
         body.addEventListener("transitionend", onEnd);
       };
-
       const collapse = () => {
-        // from current natural height to 0
+        if (body._wtCollapseListener) {
+          body.removeEventListener("transitionend", body._wtCollapseListener);
+          body._wtCollapseListener = null;
+        }
+        if (body._wtCollapseTimer) {
+          clearTimeout(body._wtCollapseTimer);
+          body._wtCollapseTimer = null;
+        }
+        body.style.display = "block";
         if (
           getComputedStyle(body).height === "auto" ||
           body.style.height === "" ||
@@ -4828,9 +4845,30 @@ function setupCardCollapsing() {
         }
         body.style.height = "0px";
         body.style.opacity = "0";
+        body.setAttribute("aria-hidden", "true");
+        const finish = (e) => {
+          if (e.propertyName === "height") {
+            body.style.display = "none";
+            body.removeEventListener("transitionend", finish);
+            body._wtCollapseListener = null;
+            if (body._wtCollapseTimer) {
+              clearTimeout(body._wtCollapseTimer);
+              body._wtCollapseTimer = null;
+            }
+          }
+        };
+        body._wtCollapseListener = finish;
+        body.addEventListener("transitionend", finish);
+        body._wtCollapseTimer = setTimeout(() => {
+          body.style.display = "none";
+          if (body._wtCollapseListener) {
+            body.removeEventListener("transitionend", body._wtCollapseListener);
+            body._wtCollapseListener = null;
+          }
+          body._wtCollapseTimer = null;
+        }, 350);
         card.classList.add("collapsed");
       };
-
       const toggle = () => {
         const nowCollapsed = !card.classList.contains("collapsed");
         if (nowCollapsed) {
