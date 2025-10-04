@@ -5983,6 +5983,43 @@ function handleFormSubmit(e) {
       break;
     }
 
+    case "interestRateDifferenceForm": {
+      const amount = +$("interest-difference-amount").value;
+      const rateA = +$("interest-rate-a").value;
+      const rateB = +$("interest-rate-b").value;
+      const interestA = amount * (rateA / 100);
+      const interestB = amount * (rateB / 100);
+      const difference = interestB - interestA;
+      const diffAbs = Math.abs(difference);
+      const summary = (() => {
+        if (!Number.isFinite(interestA) || !Number.isFinite(interestB)) {
+          return "Enter valid numbers to compare the two rates.";
+        }
+        if (difference > 0) {
+          return `Bank B pays ${fmtCurrency(diffAbs)} more interest each year than Bank A.`;
+        }
+        if (difference < 0) {
+          return `Bank A pays ${fmtCurrency(diffAbs)} more interest each year than Bank B.`;
+        }
+        return "Both banks pay the same yearly interest.";
+      })();
+      $("interestDifferenceResult").innerHTML = `
+      <div class="rounded-lg bg-gray-100 dark:bg-gray-700 p-4 text-gray-700 dark:text-gray-200">
+        <h4 class="text-lg font-semibold mb-2">Yearly interest comparison</h4>
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-left">
+            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700 text-sm">
+              <tr><th class="px-4 py-2 font-medium">Bank A interest</th><td class="px-4 py-2">${fmtCurrency(interestA)}</td></tr>
+              <tr><th class="px-4 py-2 font-medium">Bank B interest</th><td class="px-4 py-2">${fmtCurrency(interestB)}</td></tr>
+              <tr><th class="px-4 py-2 font-medium">Difference</th><td class="px-4 py-2 font-semibold">${fmtCurrency(diffAbs)}</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="text-sm mt-3">${summary}</p>
+      </div>`;
+      break;
+    }
+
     case "stockProfitForm": {
       const price = +$("stock-price").value,
         tax = +$("sdrt-tax").value,

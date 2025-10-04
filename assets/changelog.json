@@ -1,4 +1,11 @@
-[
+[ 
+  {
+    "version": "1.1.1",
+    "date": "2025-10-04",
+    "changes": [
+      "Add an interest rate difference calculator to compare yearly earnings between two banks."
+    ]
+  },
   {
     "version": "1.1.0",
     "date": "2024-05-31",
