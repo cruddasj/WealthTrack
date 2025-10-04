@@ -5685,6 +5685,108 @@ function compareAppVersions(a, b) {
   return 0;
 }
 
+let controllerAppVersionCache = null;
+let controllerAppVersionRequest = null;
+
+function updateControllerAppVersionCache(value) {
+  const normalized = normalizeAppVersion(value);
+  if (!normalized) return null;
+  controllerAppVersionCache = normalized;
+  return controllerAppVersionCache;
+}
+
+async function requestControllerAppVersion(timeoutMs = 3000) {
+  if (!("serviceWorker" in navigator)) return null;
+  const controller = navigator.serviceWorker.controller;
+  if (!controller) return null;
+  try {
+    return await new Promise((resolve) => {
+      const channel = new MessageChannel();
+      let settled = false;
+      const finalize = (value) => {
+        if (settled) return;
+        settled = true;
+        try {
+          channel.port1.onmessage = null;
+        } catch (_) {
+          /* ignore */
+        }
+        try {
+          channel.port1.close();
+        } catch (_) {
+          /* ignore */
+        }
+        try {
+          channel.port2.close();
+        } catch (_) {
+          /* ignore */
+        }
+        const cached = updateControllerAppVersionCache(value);
+        resolve(cached || null);
+      };
+      const timeoutId = setTimeout(() => finalize(null), Math.max(0, timeoutMs || 0));
+      channel.port1.onmessage = (event) => {
+        clearTimeout(timeoutId);
+        const { data } = event || {};
+        if (
+          data &&
+          data.type === "VERSION" &&
+          typeof data.version === "string"
+        ) {
+          finalize(data.version);
+        } else {
+          finalize(null);
+        }
+      };
+      try {
+        if (typeof channel.port1.start === "function") {
+          channel.port1.start();
+        }
+      } catch (_) {
+        /* ignore */
+      }
+      try {
+        controller.postMessage({ type: "GET_VERSION" }, [channel.port2]);
+      } catch (_) {
+        clearTimeout(timeoutId);
+        finalize(null);
+      }
+    });
+  } catch (_) {
+    return null;
+  }
+}
+
+function getControllerVersionFromServiceWorker({ refresh = false } = {}) {
+  if (!("serviceWorker" in navigator)) return Promise.resolve(null);
+  if (!refresh) {
+    if (controllerAppVersionCache) return Promise.resolve(controllerAppVersionCache);
+    if (controllerAppVersionRequest) return controllerAppVersionRequest;
+  }
+  controllerAppVersionRequest = requestControllerAppVersion().then((version) => {
+    controllerAppVersionRequest = null;
+    return version ?? controllerAppVersionCache;
+  });
+  return controllerAppVersionRequest;
+}
+
+if (typeof navigator !== "undefined" && "serviceWorker" in navigator) {
+  try {
+    navigator.serviceWorker.addEventListener("message", (event) => {
+      const { data } = event || {};
+      if (
+        data &&
+        data.type === "VERSION" &&
+        typeof data.version === "string"
+      ) {
+        updateControllerAppVersionCache(data.version);
+      }
+    });
+  } catch (_) {
+    /* ignore */
+  }
+}
+
 async function fetchChangelogEntries() {
   let response;
   try {
@@ -6314,27 +6416,52 @@ window.addEventListener("load", () => {
   const versionTargets = document.querySelectorAll("[data-app-version]");
   if (versionTargets.length) {
     const fallbackVersion = "0.0.0-dev";
-    const normalizeVersion = (value) => {
-      if (typeof value !== "string") return fallbackVersion;
-      const trimmed = value.trim();
-      if (!trimmed) return fallbackVersion;
-      return trimmed.replace(/^v/i, "");
-    };
-    const applyVersion = (value) =>
+    const applyVersion = (value) => {
+      const normalized = normalizeAppVersion(value) || fallbackVersion;
       versionTargets.forEach((el) => {
-        el.textContent = value;
+        el.textContent = normalized;
       });
-    fetch("assets/version.json", { cache: "no-store" })
-      .then((response) => (response.ok ? response.json() : null))
-      .then((data) => {
-        if (data && data.version) {
-          applyVersion(normalizeVersion(data.version));
-        } else {
-          applyVersion(fallbackVersion);
+      return normalized;
+    };
+    const getDisplayedVersion = () => {
+      const first = versionTargets[0];
+      if (!first || typeof first.textContent !== "string") return null;
+      return normalizeAppVersion(first.textContent);
+    };
+
+    applyVersion(fallbackVersion);
+    let appliedControllerVersion = false;
+
+    getControllerVersionFromServiceWorker()
+      .then((version) => {
+        if (version) {
+          applyVersion(version);
+          appliedControllerVersion = true;
         }
       })
       .catch(() => {
-        applyVersion(fallbackVersion);
+        /* ignore */
+      });
+
+    fetch("assets/version.json", { cache: "no-store" })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((data) => {
+        if (!data || typeof data.version !== "string") return;
+        const normalized = normalizeAppVersion(data.version);
+        if (!normalized) return;
+        if (!appliedControllerVersion) {
+          applyVersion(normalized);
+          return;
+        }
+        const current = getDisplayedVersion();
+        if (!current || compareAppVersions(normalized, current) === 1) {
+          versionTargets.forEach((el) => {
+            el.setAttribute("data-latest-version", normalized);
+          });
+        }
+      })
+      .catch(() => {
+        /* ignore */
       });
   }
 
@@ -7321,75 +7448,9 @@ window.addEventListener("load", () => {
       resetButtonState();
       showAlert(message);
     };
-    const normalizeVersion = (value) => {
-      if (typeof value !== "string") return null;
-      const trimmed = value.trim();
-      if (!trimmed) return null;
-      return trimmed.replace(/^v/i, "");
-    };
-    const getControllerAppVersion = async () => {
-      if (!("serviceWorker" in navigator)) return null;
-      const controller = navigator.serviceWorker.controller;
-      if (!controller) return null;
-      try {
-        return await new Promise((resolve) => {
-          const channel = new MessageChannel();
-          const timeout = setTimeout(() => {
-            channel.port1.onmessage = null;
-            try {
-              channel.port1.close();
-            } catch (_) {
-              /* ignore */
-            }
-            resolve(null);
-          }, 3000);
-          channel.port1.onmessage = (event) => {
-            clearTimeout(timeout);
-            channel.port1.onmessage = null;
-            try {
-              channel.port1.close();
-            } catch (_) {
-              /* ignore */
-            }
-            const { data } = event || {};
-            if (
-              data &&
-              data.type === "VERSION" &&
-              typeof data.version === "string"
-            ) {
-              resolve(normalizeAppVersion(data.version));
-            } else {
-              resolve(null);
-            }
-          };
-          try {
-            if (typeof channel.port1.start === "function") {
-              channel.port1.start();
-            }
-          } catch (_) {
-            /* ignore */
-          }
-          try {
-            controller.postMessage(
-              { type: "GET_VERSION" },
-              [channel.port2],
-            );
-          } catch (_) {
-            clearTimeout(timeout);
-            channel.port1.onmessage = null;
-            try {
-              channel.port1.close();
-            } catch (_) {
-              /* ignore */
-            }
-            resolve(null);
-          }
-        });
-      } catch (_) {
-        return null;
-      }
-    };
-    const controllerVersionPromise = getControllerAppVersion();
+    const controllerVersionPromise = getControllerVersionFromServiceWorker({
+      refresh: true,
+    });
     const fetchLatestAppVersion = async () => {
       try {
         const response = await fetch("assets/version.json", { cache: "no-store" });
