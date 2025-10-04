@@ -40,6 +40,11 @@
     z-index: auto;
   }
 
+  body.mobile-nav-open #mobileHeader {
+    opacity: 0;
+    pointer-events: none;
+  }
+
   /* Ensure the main scroll area always covers the viewport
      to avoid a visible gap when sections are short/collapsed. */
   main {
