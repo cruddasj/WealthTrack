@@ -3378,6 +3378,51 @@ function canRunStressTest() {
   return goalValue > 0 && goalTargetDate != null && assets.length > 0;
 }
 
+function isCardVisible(card) {
+  if (!card) return false;
+  if (card.hidden) return false;
+  const inlineDisplay =
+    card.style && typeof card.style.display === "string"
+      ? card.style.display.trim().toLowerCase()
+      : "";
+  if (inlineDisplay === "none") return false;
+  let computedDisplay = "";
+  let computedVisibility = "";
+  try {
+    const computed = window.getComputedStyle(card);
+    computedDisplay = computed?.display || "";
+    computedVisibility = computed?.visibility || "";
+  } catch (_) {
+    computedDisplay = "";
+    computedVisibility = "";
+  }
+  if (computedDisplay === "none" || computedVisibility === "hidden") {
+    return false;
+  }
+  return (
+    card.offsetWidth > 0 ||
+    card.offsetHeight > 0 ||
+    card.getClientRects().length > 0
+  );
+}
+
+function updateLastVisibleCardSpacing(root = document) {
+  if (!root || typeof root.querySelectorAll !== "function") return;
+  const sections = root.querySelectorAll(".content-section");
+  sections.forEach((section) => {
+    const cards = Array.from(section.querySelectorAll(":scope > .card"));
+    if (!cards.length) return;
+    cards.forEach((card) => card.classList.remove("card-last-visible"));
+    for (let i = cards.length - 1; i >= 0; i -= 1) {
+      const card = cards[i];
+      if (isCardVisible(card)) {
+        card.classList.add("card-last-visible");
+        break;
+      }
+    }
+  });
+}
+
 function updateEmptyStates() {
   const hasAssets = assets.length > 0;
   const hasLiabs = liabilities.length > 0;
@@ -3481,6 +3526,8 @@ function updateEmptyStates() {
   if (!hasSnapshotAccess && $("snapshots").classList.contains("active")) {
     navigateTo("data-entry");
   }
+
+  updateLastVisibleCardSpacing();
 }
 
 // Rendering
@@ -4706,6 +4753,8 @@ function navigateTo(viewId) {
   const inflCard = $("inflationImpactCard");
   if (inflCard)
     inflCard.style.display = viewId === "portfolio-analysis" ? "" : "none";
+
+  updateLastVisibleCardSpacing();
 }
 
 // Collapse/expand cards by clicking their headers
@@ -6208,6 +6257,7 @@ window.addEventListener("load", () => {
 
   // Enable collapsible cards
   setupCardCollapsing();
+  updateLastVisibleCardSpacing();
 
   // Remove stray leading whitespace from card headings for consistent layout
   normalizeCardHeadings();

@@ -294,349 +294,355 @@
           </p>
         </div>
 
-        <div class="card transition">
+        <div class="card">
           <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Assets & Contributions</h3>
-          <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
-            Add assets and recurring deposits, then set growth assumptions to
-            project your future wealth.
-          </p>
+          <div class="card-body space-y-6">
+            <p class="text-gray-700 dark:text-gray-300 text-sm">
+              Add assets and recurring deposits, then set growth assumptions to
+              project your future wealth.
+            </p>
 
-          <form id="assetForm" class="grid grid-cols-1 md:gap-4 gap-2">
-            <div class="md:col-span-full">
-              <label for="assetName" class="form-label required-label"
-                >Asset Name</label
-              >
-              <input
-                type="text"
-                id="assetName"
-                placeholder="e.g. Stocks"
-                class="input-field"
-                required
-              />
-            </div>
-            <div class="md:col-span-full">
-              <label for="assetValue" class="form-label required-label"
-                >Value (<span data-currency-symbol>£</span>)</label
-              >
-              <input
-                type="number"
-                step="any"
-                id="assetValue"
-                placeholder="e.g. 50000"
-                class="input-field"
-                required
-              />
-            </div>
-            <div class="md:col-span-full">
-              <label for="depositAmount" class="form-label"
-                >Deposit Amount (<span data-currency-symbol>£</span>)</label
-              >
-              <input
-                type="number"
-                step="any"
-                id="depositAmount"
-                value="0"
-                class="input-field"
-              />
-            </div>
-            <div class="md:col-span-full">
-              <label for="depositFrequency" class="form-label"
-                >Deposit Frequency</label
-              >
-              <select id="depositFrequency" class="input-field">
-                <option value="none">None</option>
-                <option value="monthly">Monthly</option>
-                <option value="quarterly">Quarterly</option>
-                <option value="yearly">Yearly</option>
-              </select>
-            </div>
-
-            <div class="md:col-span-full">
-              <label for="assetStartDate" class="form-label"
-                >Start Date</label
-              >
-              <input type="date" id="assetStartDate" class="input-field" />
-              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                Leave blank to start immediately. Forecasts and contributions
-                begin on the selected date.
-              </p>
-            </div>
-
-            <!-- Include in Passive Income toggle (moved below deposit frequency) -->
-            <div class="md:col-span-full">
-              <label class="form-label"
-                >Include in Passive Income estimates</label
-              >
-              <label class="dark-mode-toggle">
-                <input type="checkbox" id="includePassive" checked />
-                <span class="toggle-track"
-                  ><span class="toggle-thumb"></span
-                ></span>
-              </label>
-              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                If off, this asset will be excluded from Estimated Passive
-                Income on the Portfolio Insights page.
-              </p>
-            </div>
-
-            <div class="md:col-span-full">
-              <label for="assetTaxTreatment" class="form-label">
-                Tax treatment for UK forecasts
-              </label>
-              <select id="assetTaxTreatment" class="input-field">
-                <option value="tax-free">Tax-free or sheltered (ISA, pension)</option>
-                <option value="income">Taxed as income (interest, rent, bond coupons)</option>
-                <option value="dividend">Taxed as dividends</option>
-                <option value="capital-gains">Capital gains tax on sale</option>
-              </select>
-              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                Determines how this asset uses your UK allowances and tax band in
-                projections. Adjust the defaults from the Settings page.
-              </p>
-            </div>
-
-            <div
-              class="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-4 md:col-span-full"
-            >
-              <div>
-                <label for="lowGrowth" class="form-label">
-                  Low Growth Annual Return (%)
-                  <span
-                    class="relative group inline-block align-middle ml-1 cursor-help"
-                  >
-                    <span class="text-gray-400">?</span>
-                    <span
-                      class="hidden group-hover:block absolute z-50 mt-2 w-64 p-3 rounded-lg shadow bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 text-sm"
-                    >
-                      Optional. Used for conservative future forecasts (lower
-                      expected returns).
-                    </span>
-                  </span>
-                </label>
+            <form id="assetForm" class="grid grid-cols-1 md:gap-4 gap-2">
+              <div class="md:col-span-full">
+                <label for="assetName" class="form-label required-label"
+                  >Asset Name</label
+                >
+                <input
+                  type="text"
+                  id="assetName"
+                  placeholder="e.g. Stocks"
+                  class="input-field"
+                  required
+                />
+              </div>
+              <div class="md:col-span-full">
+                <label for="assetValue" class="form-label required-label"
+                  >Value (<span data-currency-symbol>£</span>)</label
+                >
                 <input
                   type="number"
                   step="any"
-                  id="lowGrowth"
-                  placeholder="e.g. 1"
+                  id="assetValue"
+                  placeholder="e.g. 50000"
                   class="input-field"
+                  required
                 />
               </div>
-
-              <div>
-                <label for="assetReturn" class="form-label">
-                  Expected Annual Return (%)
-                  <span
-                    class="relative group inline-block align-middle ml-1 cursor-help"
-                  >
-                    <span class="text-gray-400">?</span>
-                    <span
-                      class="hidden group-hover:block absolute z-50 mt-2 w-64 p-3 rounded-lg shadow bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 text-sm"
-                    >
-                      Optional. Used for future forecasts and estimated passive
-                      income. Leave blank for no growth.
-                    </span>
-                  </span>
-                </label>
+              <div class="md:col-span-full">
+                <label for="depositAmount" class="form-label"
+                  >Deposit Amount (<span data-currency-symbol>£</span>)</label
+                >
                 <input
                   type="number"
                   step="any"
-                  id="assetReturn"
-                  placeholder="e.g. 4"
+                  id="depositAmount"
+                  value="0"
                   class="input-field"
                 />
               </div>
+              <div class="md:col-span-full">
+                <label for="depositFrequency" class="form-label"
+                  >Deposit Frequency</label
+                >
+                <select id="depositFrequency" class="input-field">
+                  <option value="none">None</option>
+                  <option value="monthly">Monthly</option>
+                  <option value="quarterly">Quarterly</option>
+                  <option value="yearly">Yearly</option>
+                </select>
+              </div>
 
-              <div>
-                <label for="highGrowth" class="form-label">
-                  High Growth Annual Return (%)
-                  <span
-                    class="relative group inline-block align-middle ml-1 cursor-help"
-                  >
-                    <span class="text-gray-400">?</span>
-                    <span
-                      class="hidden group-hover:block absolute z-50 mt-2 w-64 p-3 rounded-lg shadow bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 text-sm"
-                    >
-                      Optional. Used for optimistic future forecasts (higher
-                      expected returns).
-                    </span>
-                  </span>
+              <div class="md:col-span-full">
+                <label for="assetStartDate" class="form-label"
+                  >Start Date</label
+                >
+                <input type="date" id="assetStartDate" class="input-field" />
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Leave blank to start immediately. Forecasts and contributions
+                  begin on the selected date.
+                </p>
+              </div>
+
+              <!-- Include in Passive Income toggle (moved below deposit frequency) -->
+              <div class="md:col-span-full">
+                <label class="form-label"
+                  >Include in Passive Income estimates</label
+                >
+                <label class="dark-mode-toggle">
+                  <input type="checkbox" id="includePassive" checked />
+                  <span class="toggle-track"
+                    ><span class="toggle-thumb"></span
+                  ></span>
                 </label>
-                <input
-                  type="number"
-                  step="any"
-                  id="highGrowth"
-                  placeholder="e.g. 10"
-                  class="input-field"
-                />
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  If off, this asset will be excluded from Estimated Passive
+                  Income on the Portfolio Insights page.
+                </p>
               </div>
-            </div>
 
-            <div class="flex items-end md:col-span-full">
-              <button type="submit" class="btn btn-block btn-green">
-                Add Asset
-              </button>
-            </div>
-          </form>
+              <div class="md:col-span-full">
+                <label for="assetTaxTreatment" class="form-label">
+                  Tax treatment for UK forecasts
+                </label>
+                <select id="assetTaxTreatment" class="input-field">
+                  <option value="tax-free">Tax-free or sheltered (ISA, pension)</option>
+                  <option value="income">Taxed as income (interest, rent, bond coupons)</option>
+                  <option value="dividend">Taxed as dividends</option>
+                  <option value="capital-gains">Capital gains tax on sale</option>
+                </select>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Determines how this asset uses your UK allowances and tax band in
+                  projections. Adjust the defaults from the Settings page.
+                </p>
+              </div>
 
-          <div class="mt-4 w-full overflow-x-auto">
-            <table
-              class="min-w-full divide-y divide-gray-200 dark:divide-gray-700"
-            >
-              <thead
-                id="assetTableHeader"
-                class="bg-gray-200 dark:bg-gray-700"
-              ></thead>
-              <tbody
-                id="assetTableBody"
-                class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700"
-              ></tbody>
-            </table>
-          </div>
-        </div>
+              <div
+                class="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-4 md:col-span-full"
+              >
+                <div>
+                  <label for="lowGrowth" class="form-label">
+                    Low Growth Annual Return (%)
+                    <span
+                      class="relative group inline-block align-middle ml-1 cursor-help"
+                    >
+                      <span class="text-gray-400">?</span>
+                      <span
+                        class="hidden group-hover:block absolute z-50 mt-2 w-64 p-3 rounded-lg shadow bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 text-sm"
+                      >
+                        Optional. Used for conservative future forecasts (lower
+                        expected returns).
+                      </span>
+                    </span>
+                  </label>
+                  <input
+                    type="number"
+                    step="any"
+                    id="lowGrowth"
+                    placeholder="e.g. 1"
+                    class="input-field"
+                  />
+                </div>
 
-        <div class="card transition">
-          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Liabilities & Payments</h3>
-          <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
-            Track debts or recurring expenses that reduce your wealth.
-          </p>
-          <form id="liabilityForm" class="grid grid-cols-1 md:gap-4 gap-2">
-            <div class="md:col-span-full">
-              <label for="liabilityName" class="form-label required-label"
-                >Liability Name</label
+                <div>
+                  <label for="assetReturn" class="form-label">
+                    Expected Annual Return (%)
+                    <span
+                      class="relative group inline-block align-middle ml-1 cursor-help"
+                    >
+                      <span class="text-gray-400">?</span>
+                      <span
+                        class="hidden group-hover:block absolute z-50 mt-2 w-64 p-3 rounded-lg shadow bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 text-sm"
+                      >
+                        Optional. Used for future forecasts and estimated passive
+                        income. Leave blank for no growth.
+                      </span>
+                    </span>
+                  </label>
+                  <input
+                    type="number"
+                    step="any"
+                    id="assetReturn"
+                    placeholder="e.g. 4"
+                    class="input-field"
+                  />
+                </div>
+
+                <div>
+                  <label for="highGrowth" class="form-label">
+                    High Growth Annual Return (%)
+                    <span
+                      class="relative group inline-block align-middle ml-1 cursor-help"
+                    >
+                      <span class="text-gray-400">?</span>
+                      <span
+                        class="hidden group-hover:block absolute z-50 mt-2 w-64 p-3 rounded-lg shadow bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 text-sm"
+                      >
+                        Optional. Used for optimistic future forecasts (higher
+                        expected returns).
+                      </span>
+                    </span>
+                  </label>
+                  <input
+                    type="number"
+                    step="any"
+                    id="highGrowth"
+                    placeholder="e.g. 10"
+                    class="input-field"
+                  />
+                </div>
+              </div>
+
+              <div class="flex items-end md:col-span-full">
+                <button type="submit" class="btn btn-block btn-green">
+                  Add Asset
+                </button>
+              </div>
+            </form>
+
+            <div class="w-full overflow-x-auto" hidden>
+              <table
+                class="min-w-full divide-y divide-gray-200 dark:divide-gray-700"
               >
-              <input
-                type="text"
-                id="liabilityName"
-                class="input-field"
-                required
-              />
+                <thead
+                  id="assetTableHeader"
+                  class="bg-gray-200 dark:bg-gray-700"
+                ></thead>
+                <tbody
+                  id="assetTableBody"
+                  class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700"
+                ></tbody>
+              </table>
             </div>
-            <div class="md:col-span-full">
-              <label for="liabilityValue" class="form-label required-label"
-                >Amount Owed (<span data-currency-symbol>£</span>)</label
-              >
-              <input
-                type="number"
-                step="any"
-                id="liabilityValue"
-                value="0"
-                class="input-field"
-                required
-              />
-            </div>
-            <div class="md:col-span-full">
-              <label for="liabilityInterest" class="form-label"
-                >Annual Interest Rate (%)</label
-              >
-              <input
-                type="number"
-                step="any"
-                id="liabilityInterest"
-                value="0"
-                class="input-field"
-              />
-            </div>
-            <div class="md:col-span-full">
-              <label for="liabilityPaymentAmount" class="form-label"
-                >Recurring Payment (<span data-currency-symbol>£</span>)</label
-              >
-              <input
-                type="number"
-                step="any"
-                id="liabilityPaymentAmount"
-                value="0"
-                class="input-field"
-              />
-            </div>
-            <div class="md:col-span-full">
-              <label for="liabilityPaymentFrequency" class="form-label"
-                >Payment Frequency</label
-              >
-              <select id="liabilityPaymentFrequency" class="input-field">
-                <option value="none">None</option>
-                <option value="monthly">Monthly</option>
-                <option value="quarterly">Quarterly</option>
-                <option value="yearly">Yearly</option>
-              </select>
-            </div>
-            <div class="md:col-span-full">
-              <label for="liabilityStartDate" class="form-label"
-                >Start Date</label
-              >
-              <input type="date" id="liabilityStartDate" class="input-field" />
-              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                Leave blank to treat this liability as active immediately.
-                Balances and payments begin on the selected date.
-              </p>
-            </div>
-            <div class="flex items-end md:col-span-full">
-              <button type="submit" class="btn btn-block btn-red">
-                Add Liability
-              </button>
-            </div>
-          </form>
-        <div class="mt-4 w-full overflow-x-auto">
-          <table
-            class="min-w-full divide-y divide-gray-200 dark:divide-gray-700"
-          >
-            <thead class="bg-gray-200 dark:bg-gray-700">
-                <tr>
-                  <th class="table-header">Name</th>
-                  <th class="table-header">Start Date</th>
-                  <th class="table-header">Current (<span data-currency-symbol>£</span>)</th>
-                  <th class="table-header">Payment</th>
-                  <th class="table-header">
-                    <span class="sr-only">Actions</span>
-                  </th>
-                </tr>
-              </thead>
-              <tbody
-                id="liabilityTableBody"
-                class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700"
-              ></tbody>
-            </table>
           </div>
         </div>
 
         <div class="card">
-          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Goals</h3>
-          <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
-            Set a wealth goal and target year to guide your forecasting and progress tracking.
-          </p>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div
-              class="flex flex-col items-center justify-center p-4 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 stat-box"
-            >
-              <label
-                for="goalValue"
-                class="text-md font-medium text-gray-700 dark:text-gray-300"
-                >Wealth Goal (<span data-currency-symbol>£</span>)</label
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Liabilities & Payments</h3>
+          <div class="card-body space-y-6">
+            <p class="text-gray-700 dark:text-gray-300 text-sm">
+              Track debts or recurring expenses that reduce your wealth.
+            </p>
+            <form id="liabilityForm" class="grid grid-cols-1 md:gap-4 gap-2">
+              <div class="md:col-span-full">
+                <label for="liabilityName" class="form-label required-label"
+                  >Liability Name</label
+                >
+                <input
+                  type="text"
+                  id="liabilityName"
+                  class="input-field"
+                  required
+                />
+              </div>
+              <div class="md:col-span-full">
+                <label for="liabilityValue" class="form-label required-label"
+                  >Amount Owed (<span data-currency-symbol>£</span>)</label
+                >
+                <input
+                  type="number"
+                  step="any"
+                  id="liabilityValue"
+                  value="0"
+                  class="input-field"
+                  required
+                />
+              </div>
+              <div class="md:col-span-full">
+                <label for="liabilityInterest" class="form-label"
+                  >Annual Interest Rate (%)</label
+                >
+                <input
+                  type="number"
+                  step="any"
+                  id="liabilityInterest"
+                  value="0"
+                  class="input-field"
+                />
+              </div>
+              <div class="md:col-span-full">
+                <label for="liabilityPaymentAmount" class="form-label"
+                  >Recurring Payment (<span data-currency-symbol>£</span>)</label
+                >
+                <input
+                  type="number"
+                  step="any"
+                  id="liabilityPaymentAmount"
+                  value="0"
+                  class="input-field"
+                />
+              </div>
+              <div class="md:col-span-full">
+                <label for="liabilityPaymentFrequency" class="form-label"
+                  >Payment Frequency</label
+                >
+                <select id="liabilityPaymentFrequency" class="input-field">
+                  <option value="none">None</option>
+                  <option value="monthly">Monthly</option>
+                  <option value="quarterly">Quarterly</option>
+                  <option value="yearly">Yearly</option>
+                </select>
+              </div>
+              <div class="md:col-span-full">
+                <label for="liabilityStartDate" class="form-label"
+                  >Start Date</label
+                >
+                <input type="date" id="liabilityStartDate" class="input-field" />
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Leave blank to treat this liability as active immediately.
+                  Balances and payments begin on the selected date.
+                </p>
+              </div>
+              <div class="flex items-end md:col-span-full">
+                <button type="submit" class="btn btn-block btn-red">
+                  Add Liability
+                </button>
+              </div>
+            </form>
+            <div class="w-full overflow-x-auto" hidden>
+              <table
+                class="min-w-full divide-y divide-gray-200 dark:divide-gray-700"
               >
-              <input
-                type="number"
-                step="any"
-                id="goalValue"
-                placeholder="e.g. 1000000"
-                class="text-center text-3xl font-bold mt-2 bg-transparent border-b-2 border-gray-400 dark:border-gray-500 focus:outline-none focus:border-blue-500 w-full"
-              />
+                <thead class="bg-gray-200 dark:bg-gray-700">
+                  <tr>
+                    <th class="table-header">Name</th>
+                    <th class="table-header">Start Date</th>
+                    <th class="table-header">Current (<span data-currency-symbol>£</span>)</th>
+                    <th class="table-header">Payment</th>
+                    <th class="table-header">
+                      <span class="sr-only">Actions</span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody
+                  id="liabilityTableBody"
+                  class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700"
+                ></tbody>
+              </table>
             </div>
-            <div
-              class="flex flex-col items-center justify-center p-4 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 stat-box"
-            >
-              <label
-                for="goalYear"
-                class="text-md font-medium text-gray-700 dark:text-gray-300"
-                >Target Year</label
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Goals</h3>
+          <div class="card-body space-y-6">
+            <p class="text-gray-700 dark:text-gray-300 text-sm">
+              Set a wealth goal and target year to guide your forecasting and progress tracking.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div
+                class="flex flex-col items-center justify-center p-4 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 stat-box"
               >
-              <input
-                type="number"
-                id="goalYear"
-                placeholder="e.g. 2050"
-                class="text-center text-3xl font-bold mt-2 bg-transparent border-b-2 border-gray-400 dark:border-gray-500 focus:outline-none focus:border-blue-500 w-full"
-              />
-            </div>
-            <div class="md:col-span-2">
-              <button id="goalBtn" class="btn btn-green btn-block">Set</button>
+                <label
+                  for="goalValue"
+                  class="text-md font-medium text-gray-700 dark:text-gray-300"
+                  >Wealth Goal (<span data-currency-symbol>£</span>)</label
+                >
+                <input
+                  type="number"
+                  step="any"
+                  id="goalValue"
+                  placeholder="e.g. 1000000"
+                  class="text-center text-3xl font-bold mt-2 bg-transparent border-b-2 border-gray-400 dark:border-gray-500 focus:outline-none focus:border-blue-500 w-full"
+                />
+              </div>
+              <div
+                class="flex flex-col items-center justify-center p-4 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 stat-box"
+              >
+                <label
+                  for="goalYear"
+                  class="text-md font-medium text-gray-700 dark:text-gray-300"
+                  >Target Year</label
+                >
+                <input
+                  type="number"
+                  id="goalYear"
+                  placeholder="e.g. 2050"
+                  class="text-center text-3xl font-bold mt-2 bg-transparent border-b-2 border-gray-400 dark:border-gray-500 focus:outline-none focus:border-blue-500 w-full"
+                />
+              </div>
+              <div class="md:col-span-2">
+                <button id="goalBtn" class="btn btn-green btn-block">Set</button>
+              </div>
             </div>
           </div>
         </div>
