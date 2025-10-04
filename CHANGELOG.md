@@ -2,6 +2,9 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
+## [1.1.14] - 2025-10-04
+- Simplify asset table deposit details by removing the end-of-period assumption text.
+
 ## [1.1.13] - 2025-10-04
 - Keep asset tables and portfolio insights from adding scheduled deposits to the current value entered by the user.
 
