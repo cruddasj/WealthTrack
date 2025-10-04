@@ -4494,7 +4494,7 @@ function renderAssetBreakdownChart() {
   updateChartTheme();
 }
 
-function updateFuturePortfolioCard({ triggeredBySubmit = false } = {}) {
+function updateFuturePortfolioCard() {
   const card = $("futurePortfolioCard");
   if (!card) return;
   const messageEl = $("futurePortfolioMessage");
@@ -4533,10 +4533,6 @@ function updateFuturePortfolioCard({ triggeredBySubmit = false } = {}) {
     resetOutputs(
       "Select a growth scenario and future date to see the projected breakdown.",
     );
-    if (triggeredBySubmit) {
-      if (!scenarioKey && scenarioSelect) scenarioSelect.focus();
-      else if (dateInput) dateInput.focus();
-    }
     return;
   }
 
@@ -4550,9 +4546,6 @@ function updateFuturePortfolioCard({ triggeredBySubmit = false } = {}) {
   targetDate.setHours(0, 0, 0, 0);
   if (targetDate <= today) {
     resetOutputs("Choose a future date to view projected values.");
-    if (triggeredBySubmit) {
-      dateInput.focus();
-    }
     return;
   }
 
@@ -5436,10 +5429,6 @@ function handleFormSubmit(e) {
       buildStressHeader();
       renderStressEvents();
       setupCardCollapsing();
-      break;
-    }
-    case "futurePortfolioForm": {
-      updateFuturePortfolioCard({ triggeredBySubmit: true });
       break;
     }
     case "taxImpactForm": {
