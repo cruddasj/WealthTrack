@@ -6,6 +6,7 @@ let assets = [];
 let liabilities = [];
 let snapshots = [];
 let simEvents = [];
+let simEventsEnabled = true;
 let stressAssetIds = new Set();
 let goalValue = 0;
 let goalTargetDate = null;
@@ -1155,6 +1156,7 @@ function saveCurrentProfile() {
   activeProfile.liabilities = liabilities;
   activeProfile.snapshots = snapshots;
   activeProfile.simEvents = simEvents;
+  activeProfile.simEventsEnabled = areSimEventsEnabled();
   activeProfile.goalValue = goalValue;
   activeProfile.goalTargetDate = goalTargetDate;
   activeProfile.inflationRate = inflationRate;
@@ -1539,6 +1541,7 @@ function initProfiles() {
       liabilities: load(LS.liabs, []),
       snapshots: load(LS.snaps, []),
       simEvents: load(LS.events, []),
+      simEventsEnabled: true,
       goalValue: +localStorage.getItem(LS.goal) || 0,
       goalTargetDate: +localStorage.getItem(LS.goalDate) || null,
       fireExpenses: 0,
@@ -1623,6 +1626,16 @@ function initProfiles() {
         p.firstTimeContentHidden = getStoredFirstTimeHidden();
         profilesUpdated = true;
       }
+      if (Object.prototype.hasOwnProperty.call(p, "simEventsEnabled")) {
+        const normalizedToggle = !!p.simEventsEnabled;
+        if (normalizedToggle !== p.simEventsEnabled) {
+          p.simEventsEnabled = normalizedToggle;
+          profilesUpdated = true;
+        }
+      } else {
+        p.simEventsEnabled = true;
+        profilesUpdated = true;
+      }
       if (Object.prototype.hasOwnProperty.call(p, "mobileNavSticky")) {
         const normalizedSticky = sanitizeMobileNavSticky(
           p.mobileNavSticky,
@@ -1661,6 +1674,7 @@ function initProfiles() {
   liabilities = activeProfile.liabilities || [];
   snapshots = activeProfile.snapshots || [];
   simEvents = activeProfile.simEvents || [];
+  simEventsEnabled = activeProfile.simEventsEnabled !== false;
   goalValue = activeProfile.goalValue || 0;
   goalTargetDate = activeProfile.goalTargetDate || null;
   inflationRate =
@@ -1720,6 +1734,55 @@ function initProfiles() {
   localStorage.setItem(LS.activeProfile, activeProfile.id);
 }
 initProfiles();
+
+function areSimEventsEnabled() {
+  return !!simEventsEnabled;
+}
+
+function getActiveSimEvents() {
+  return areSimEventsEnabled() ? simEvents : [];
+}
+
+function updateScenarioToggleUI() {
+  const toggle = $("scenarioEventsToggle");
+  if (toggle) {
+    const nextChecked = areSimEventsEnabled();
+    if (toggle.checked !== nextChecked) toggle.checked = nextChecked;
+  }
+  const status = $("scenarioEventsStatus");
+  if (status) {
+    const hasEvents = simEvents.length > 0;
+    if (areSimEventsEnabled()) {
+      status.textContent = hasEvents
+        ? "One-off events are applied to forecasts. Toggle off to compare projections without them."
+        : "One-off events you add will be applied to forecasts. Toggle off if you want to keep them saved but ignore them temporarily.";
+    } else {
+      status.textContent =
+        "Forecasts currently ignore one-off events. Your saved events stay listed here until you turn them back on.";
+    }
+  }
+}
+
+function setScenarioEventsEnabled(enabled, { persistProfile = true } = {}) {
+  const normalized = !!enabled;
+  if (simEventsEnabled === normalized) {
+    updateScenarioToggleUI();
+    return normalized;
+  }
+  simEventsEnabled = normalized;
+  if (activeProfile) {
+    activeProfile.simEventsEnabled = normalized;
+    if (persistProfile) persist();
+  }
+  lastForecastScenarios = null;
+  updateScenarioToggleUI();
+  updateWealthChart();
+  updatePassiveIncome();
+  updateFireForecastCard();
+  updateFuturePortfolioCard();
+  refreshFireProjection();
+  return normalized;
+}
 
 const calculateCurrentValue = (asset, now = Date.now()) => {
   if (!asset) return 0;
@@ -1934,6 +1997,7 @@ function buildForecastScenarios(yearsOverride = null, opts = {}) {
   const assetDetails = includeBreakdown ? [] : null;
   const globalEvents = [];
   const eventsByAsset = new Map();
+  const activeEvents = getActiveSimEvents();
   const consideredAssets = passiveOnly
     ? assets.filter((a) => a && a.includeInPassive !== false)
     : assets;
@@ -1941,7 +2005,7 @@ function buildForecastScenarios(yearsOverride = null, opts = {}) {
   const taxDetails = computeAssetTaxDetails();
   const taxDetailMap = taxDetails.detailMap;
 
-  simEvents.forEach((ev) => {
+  activeEvents.forEach((ev) => {
     if (ev.assetId && assetIds.has(ev.assetId)) {
       if (!eventsByAsset.has(ev.assetId)) eventsByAsset.set(ev.assetId, []);
       eventsByAsset.get(ev.assetId).push(ev);
@@ -3012,7 +3076,7 @@ function updatePassiveIncome() {
   }
 
   const eventsByAsset = new Map();
-  simEvents.forEach((ev) => {
+  getActiveSimEvents().forEach((ev) => {
     if (!ev || ev.assetId == null) return;
     if (!selectedIds.has(ev.assetId)) return;
     if (!eventsByAsset.has(ev.assetId)) eventsByAsset.set(ev.assetId, []);
@@ -3403,6 +3467,7 @@ function switchProfile(id, { showFeedback = false } = {}) {
   liabilities = activeProfile.liabilities || [];
   snapshots = activeProfile.snapshots || [];
   simEvents = activeProfile.simEvents || [];
+  simEventsEnabled = activeProfile.simEventsEnabled !== false;
   goalValue = activeProfile.goalValue || 0;
   goalTargetDate = activeProfile.goalTargetDate || null;
   inflationRate =
@@ -3491,6 +3556,7 @@ function addProfile(name) {
     liabilities: [],
     snapshots: [],
     simEvents: [],
+    simEventsEnabled: true,
     goalValue: 0,
     goalTargetDate: null,
     fireExpenses: 0,
@@ -3543,6 +3609,7 @@ function deleteActiveProfile() {
     liabilities = [];
     snapshots = [];
     simEvents = [];
+    simEventsEnabled = true;
     goalValue = 0;
     goalTargetDate = null;
     fireExpenses = 0;
@@ -3962,6 +4029,7 @@ function renderEvents() {
     .join("");
   persist();
   updateWealthChart();
+  updateScenarioToggleUI();
 }
 
 function renderSnapshots() {
@@ -5127,7 +5195,7 @@ function updateFuturePortfolioCard() {
   if (Number.isFinite(periodStartTime) && Number.isFinite(targetTime)) {
     const adjustmentsByAsset = new Map();
     const globalEvents = [];
-    simEvents.forEach((event) => {
+    getActiveSimEvents().forEach((event) => {
       if (!event || !Number.isFinite(event.date)) return;
       if (event.date < periodStartTime || event.date > targetTime) return;
       if (event.assetId) {
@@ -5246,8 +5314,12 @@ function updateFuturePortfolioCard() {
   if (messageEl) messageEl.classList.add("hidden");
   if (resultEl) resultEl.classList.remove("hidden");
   if (totalEl) totalEl.textContent = fmtCurrency(total);
-  if (noteEl)
-    noteEl.textContent = `All values are projected for ${formattedDate} using your ${scenarioLabel} growth scenario.`;
+  if (noteEl) {
+    const toggleNote = areSimEventsEnabled()
+      ? ""
+      : " One-off events are currently disabled, so projections ignore saved scenario adjustments.";
+    noteEl.textContent = `All values are projected for ${formattedDate} using your ${scenarioLabel} growth scenario.${toggleNote}`;
+  }
 }
 
 function updateSnapshotChart() {
@@ -5363,7 +5435,8 @@ function forecastGoalDate(
   const assetIds = new Set(assetList.map((a) => a.dateAdded));
   const taxDetails = computeAssetTaxDetails();
   const taxDetailMap = taxDetails.detailMap;
-  [...simEvents, ...extraEvents].forEach((ev) => {
+  const combinedEvents = [...getActiveSimEvents(), ...extraEvents];
+  combinedEvents.forEach((ev) => {
     if (ev.assetId) {
       if (assetIds.has(ev.assetId)) {
         if (!eventsByAsset.has(ev.assetId))
@@ -7444,6 +7517,11 @@ window.addEventListener("load", () => {
         navigateTo("data-entry");
     });
   }
+
+  updateScenarioToggleUI();
+  const scenarioToggle = $("scenarioEventsToggle");
+  if (scenarioToggle)
+    on(scenarioToggle, "change", (e) => setScenarioEventsEnabled(e.target.checked));
 
   // Enable collapsible cards
   setupCardCollapsing();

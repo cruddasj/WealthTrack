@@ -1,5 +1,12 @@
 [
   {
+    "version": "1.1.28",
+    "date": "2025-10-05",
+    "changes": [
+      "Add a Scenario Modelling toggle so you can turn all one-off events on or off without deleting them when comparing forecasts."
+    ]
+  },
+  {
     "version": "1.1.27",
     "date": "2025-10-05",
     "changes": [

@@ -2,6 +2,9 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
+## [1.1.28] - 2025-10-05
+- Add a Scenario Modelling toggle so you can turn all one-off events on or off without deleting them when comparing forecasts.
+
 ## [1.1.27] - 2025-10-05
 - Keep the Run Stress Test button reliably launching Monte Carlo simulations for every goal.
 - Make Future Portfolio forecasts line up with Scenario Modelling by respecting the date you pick and slotting one-off events into the right month.

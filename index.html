@@ -678,6 +678,32 @@
             Choose whether the event is a gain or loss, then enter the
             absolute amount or percentage impact you want to simulate.
           </p>
+          <div class="mt-4">
+            <label class="dark-mode-toggle gap-3">
+              <div class="flex-1">
+                <span class="block text-sm font-semibold text-gray-900 dark:text-gray-100"
+                  >Apply one-off events to forecasts</span
+                >
+                <p
+                  id="scenarioEventsStatus"
+                  class="mt-1 text-xs text-gray-500 dark:text-gray-400"
+                >
+                  One-off events are applied to forecasts. Toggle off to compare
+                  projections without them.
+                </p>
+              </div>
+              <input
+                type="checkbox"
+                id="scenarioEventsToggle"
+                class="peer"
+                checked
+                aria-describedby="scenarioEventsStatus"
+              />
+              <span class="toggle-track"
+                ><span class="toggle-thumb"></span
+              ></span>
+            </label>
+          </div>
           <form
             id="eventForm"
             class="grid grid-cols-1 gap-3"
