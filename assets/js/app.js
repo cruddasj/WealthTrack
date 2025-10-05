@@ -1,3 +1,4 @@
+'use strict';
 // --- State ---
 let profiles = [];
 let activeProfile = null;
