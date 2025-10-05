@@ -1307,6 +1307,26 @@ const toTimestamp = (value) => {
 const parseDateInput = (value, fallback) => {
   const defaultTime = Number.isFinite(fallback) ? fallback : startOfToday();
   if (!value) return defaultTime;
+
+  // Treat ISO "YYYY-MM-DD" values as local dates instead of UTC to avoid the
+  // browser shifting Sunday selections (and other days) to the previous day in
+  // negative timezones.
+  const isoMatch = /^\d{4}-\d{2}-\d{2}$/.test(value);
+  if (isoMatch) {
+    const [year, month, day] = value.split("-").map((part) => parseInt(part, 10));
+    if (
+      Number.isInteger(year) &&
+      Number.isInteger(month) &&
+      Number.isInteger(day)
+    ) {
+      const localDate = new Date(year, month - 1, day);
+      if (Number.isFinite(localDate.getTime())) {
+        localDate.setHours(0, 0, 0, 0);
+        return localDate.getTime();
+      }
+    }
+  }
+
   const parsed = new Date(value);
   const time = parsed.getTime();
   if (!Number.isFinite(time)) return defaultTime;
