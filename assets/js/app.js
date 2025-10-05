@@ -4102,6 +4102,9 @@ function updateProgressCheckResult() {
 
   const now = new Date();
   now.setHours(0, 0, 0, 0);
+  const snapshotDay = new Date(snapshot.date);
+  const hasSnapshotDay = Number.isFinite(snapshotDay?.getTime?.());
+  if (hasSnapshotDay) snapshotDay.setHours(0, 0, 0, 0);
   // Ensure data is sorted and valid
   const series = forecastSeries
     .map((e) => ({ date: new Date(e.date), value: Number(e.value) }))
@@ -4114,34 +4117,44 @@ function updateProgressCheckResult() {
     return;
   }
 
-  // Find bounding points around "now"
-  let prev = null;
-  let next = null;
-  for (const pt of series) {
-    if (pt.date <= now) prev = pt;
-    if (pt.date >= now) {
-      next = pt;
-      break;
-    }
-  }
-
   let forecastValue;
   let comparisonDate = now;
-  if (prev && next && prev.date.getTime() !== next.date.getTime()) {
-    // Linear interpolation between prev and next
-    const span = next.date - prev.date;
-    const alpha = Math.min(1, Math.max(0, (now - prev.date) / span));
-    forecastValue = prev.value + alpha * (next.value - prev.value);
-  } else if (prev) {
-    // After last known point; use last value
-    forecastValue = prev.value;
-  } else if (next) {
-    // Before first known point; use first value
-    forecastValue = next.value;
+  const sameDayAsSnapshot = hasSnapshotDay && now <= snapshotDay;
+
+  if (sameDayAsSnapshot) {
+    const snapshotTotal = Number(snapshot.value);
+    forecastValue = Number.isFinite(snapshotTotal)
+      ? snapshotTotal
+      : calculateNetWorth();
+    comparisonDate = snapshotDay;
   } else {
-    result.innerHTML =
-      '<p class="text-sm text-gray-500 dark:text-gray-400">Saved projection data for this snapshot could not be read.</p>';
-    return;
+    // Find bounding points around "now"
+    let prev = null;
+    let next = null;
+    for (const pt of series) {
+      if (pt.date <= now) prev = pt;
+      if (pt.date >= now) {
+        next = pt;
+        break;
+      }
+    }
+
+    if (prev && next && prev.date.getTime() !== next.date.getTime()) {
+      // Linear interpolation between prev and next
+      const span = next.date - prev.date;
+      const alpha = Math.min(1, Math.max(0, (now - prev.date) / span));
+      forecastValue = prev.value + alpha * (next.value - prev.value);
+    } else if (prev) {
+      // After last known point; use last value
+      forecastValue = prev.value;
+    } else if (next) {
+      // Before first known point; use first value
+      forecastValue = next.value;
+    } else {
+      result.innerHTML =
+        '<p class="text-sm text-gray-500 dark:text-gray-400">Saved projection data for this snapshot could not be read.</p>';
+      return;
+    }
   }
 
   const currentNetWorth = calculateNetWorth();

@@ -1,5 +1,12 @@
 [ 
   {
+    "version": "1.1.22",
+    "date": "2025-10-05",
+    "changes": [
+      "Keep Forecast Progress Check from immediately flagging you as behind the saved projection when you review a snapshot on the same day you captured it."
+    ]
+  },
+  {
     "version": "1.1.21",
     "date": "2025-10-04",
     "changes": [
