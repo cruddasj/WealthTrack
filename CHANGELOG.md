@@ -2,6 +2,10 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
+## [1.1.24] - 2025-10-05
+- Include one-off Scenario Modelling events in the Future Portfolio card as soon as they take place, even when you pick a date later in the same month.
+- Restore the Run Stress Test action so simulations kick off reliably once you have a goal and at least one asset selected.
+
 ## [1.1.23] - 2025-10-05
 - Keep the Future Portfolio card from including one-off events that occur after the selected date.
 
@@ -70,3 +74,4 @@ All notable changes to WealthTrack will be documented in this file. This project
 
 ## [1.0.25] - 2024-05-15
 - Baseline WealthTrack release.
+
