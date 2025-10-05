@@ -2,7 +2,7 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
-## [1.1.30] - 2025-10-05
+## [1.1.31] - 2025-10-05
 - Keep the passive income date picker from jumping back a day when you choose Sundays or other dates.
 
 ## [1.1.29] - 2025-10-05
