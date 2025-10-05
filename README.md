@@ -1,6 +1,8 @@
 # WealthTrack
 
-> **These works are a personal endeavour and are in no way associated with either my immediate employer or the clients of said employer. This application has been built solely for the purpose of teaching and supporting financial literacy, and for exploring advances in Artificial Intelligence for these purposes.**
+> **These works are a personal project and in no way associated with my employer.**
+
+## Purpose
 
 WealthTrack is a personal wealth projection and planning tool built as a single-page application. It helps you capture assets and goals, run forecasts, explore portfolio insights, and maintain historical snapshots.
 
@@ -36,13 +38,6 @@ WealthTrack is installable as a Progressive Web App (PWA):
 3. The `index.html` file registers the service worker and includes the manifest and icon references.
 
 To install the app, open it in a supporting browser (Chrome, Edge, or mobile equivalents) and use the “Install”/“Add to Home Screen” option.
-
-## Deploying to GitHub Pages
-
-1. Push the repository to GitHub.
-2. In the repository settings, enable **GitHub Pages** and select the `main` branch with the `/ (root)` folder.
-3. After GitHub builds the site, your app will be available at `https://<username>.github.io/wealth-tracker/`.
-4. Because the manifest uses relative paths, the PWA will work whether you host it locally or via GitHub Pages.
 
 ## Development Notes
 
@@ -84,7 +79,3 @@ Notes:
 - Edit styles in `src/styles.css` (uses `@tailwind`/`@layer`/`@apply`).
 - Do not edit `assets/styles.css` by hand; it is generated.
 - If you add new HTML/JS files that include Tailwind classes, update `tailwind.config.js` `content` globs so the classes are included in the build.
-
-## License
-
-This project is provided as-is; feel free to adapt it to suit your needs.

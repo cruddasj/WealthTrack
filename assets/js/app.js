@@ -5089,9 +5089,17 @@ function updateFuturePortfolioCard() {
 
   let index = labels.findIndex((date) => date >= targetDate);
   if (index >= 0) {
-    const labelTime = labels[index]?.getTime?.() ?? Number.NaN;
+    const labelDate = labels[index];
+    const labelTime = labelDate?.getTime?.() ?? Number.NaN;
     const targetTime = targetDate.getTime();
-    if (Number.isFinite(labelTime) && labelTime > targetTime && index > 0) {
+    if (
+      labelDate &&
+      Number.isFinite(labelTime) &&
+      labelTime > targetTime &&
+      index > 0 &&
+      (labelDate.getMonth() !== targetDate.getMonth() ||
+        labelDate.getFullYear() !== targetDate.getFullYear())
+    ) {
       index -= 1;
     }
   }
@@ -5105,12 +5113,64 @@ function updateFuturePortfolioCard() {
   const rawRows = assetDetails.map((detail) => {
     const values = detail[scenarioKey] || detail.base || [];
     return {
+      id: detail.id,
       name: detail.name || "Asset",
       value: values[index] ?? 0,
     };
   });
 
+  const periodStart = index > 0 ? labels[index - 1] : labels[index];
+  const periodStartTime = periodStart?.getTime?.();
+  const targetTime = targetDate.getTime();
   const valueThreshold = 0.005;
+  if (Number.isFinite(periodStartTime) && Number.isFinite(targetTime)) {
+    const adjustmentsByAsset = new Map();
+    const globalEvents = [];
+    simEvents.forEach((event) => {
+      if (!event || !Number.isFinite(event.date)) return;
+      if (event.date < periodStartTime || event.date > targetTime) return;
+      if (event.assetId) {
+        const list = adjustmentsByAsset.get(event.assetId) || [];
+        list.push(event);
+        adjustmentsByAsset.set(event.assetId, list);
+      } else {
+        globalEvents.push(event);
+      }
+    });
+    adjustmentsByAsset.forEach((events) => events.sort((a, b) => a.date - b.date));
+    globalEvents.sort((a, b) => a.date - b.date);
+    rawRows.forEach((row) => {
+      if (!row?.id) return;
+      const events = adjustmentsByAsset.get(row.id);
+      if (!events || events.length === 0) return;
+      let value = row.value;
+      events.forEach((evt) => {
+        value = evt.isPercent ? value * (1 + evt.amount / 100) : value + evt.amount;
+      });
+      row.value = value;
+    });
+    let globalRowValue = 0;
+    globalEvents.forEach((evt) => {
+      if (evt.isPercent) {
+        const factor = 1 + evt.amount / 100;
+        rawRows.forEach((row) => {
+          row.value *= factor;
+        });
+        globalRowValue *= factor;
+      } else {
+        globalRowValue += evt.amount;
+      }
+    });
+    if (Math.abs(globalRowValue) > valueThreshold) {
+      rawRows.push({
+        id: null,
+        name: "Portfolio adjustments",
+        value: globalRowValue,
+        isGlobal: true,
+      });
+    }
+  }
+
   const rows = rawRows.filter((row) => Math.abs(row.value) > valueThreshold);
   const sortedRows = rows.sort((a, b) => b.value - a.value);
   if (!sortedRows.length) {
@@ -5264,6 +5324,7 @@ function generateRandomEvents(labels, assetIdSet = null) {
   const assetList = assetIdSet
     ? assets.filter((a) => assetIdSet.has(a.dateAdded))
     : assets;
+  const nowTs = Date.now();
   years.forEach((y) => {
     assetList.forEach((a) => {
       if (Math.random() < 0.3) {
@@ -6165,16 +6226,26 @@ function handleFormSubmit(e) {
       break;
     }
     case "stressTestForm": {
-      const runs = parseInt(form.stressRuns.value) || 100;
-      const scenario = form.stressScenario.value;
+      const runsInput = document.getElementById("stressRuns");
+      const scenarioSelect = document.getElementById("stressScenario");
+      let runs = Number.parseInt(runsInput?.value ?? "", 10);
+      if (!Number.isFinite(runs) || runs <= 0) runs = 100;
+      if (runs > 1000) runs = 1000;
+      const scenario = scenarioSelect?.value || "base";
       if (!canRunStressTest()) {
         updateEmptyStates();
         break;
       }
+      if (!stressAssetIds.size) {
+        assets.forEach((a) => stressAssetIds.add(a.dateAdded));
+        renderStressAssetOptions();
+      }
       const selected = [...stressAssetIds];
       if (selected.length === 0) {
-        $("stressTestResult").innerHTML =
-          '<p class="text-red-600">Select at least one asset for the stress test.</p>';
+        const target = $("stressTestResult");
+        if (target)
+          target.innerHTML =
+            '<p class="text-red-600">Select at least one asset for the stress test.</p>';
         break;
       }
       const res = runStressTest(runs, scenario, selected);
@@ -6187,12 +6258,6 @@ function handleFormSubmit(e) {
         const y = getGoalTargetYear();
         return y ? `Not met by ${y}` : "Not met in 30 years";
       };
-      const scenarioLabel =
-        {
-          low: "Low Growth",
-          base: "Expected Growth",
-          high: "High Growth",
-        }[scenario] || "Expected Growth";
       const cls = (d) => (d ? "text-green-500" : "text-red-600");
       const horizonText = (() => {
         const y = getGoalTargetYear();
@@ -6229,8 +6294,10 @@ function handleFormSubmit(e) {
       </div>
     </div>`;
       const resEl = $("stressTestResult");
-      resEl.className = "mt-4 text-sm";
-      resEl.innerHTML = html;
+      if (resEl) {
+        resEl.className = "mt-4 text-sm";
+        resEl.innerHTML = html;
+      }
       buildStressHeader();
       renderStressEvents();
       setupCardCollapsing();
