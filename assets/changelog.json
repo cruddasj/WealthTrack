@@ -1,5 +1,12 @@
 [ 
   {
+    "version": "1.1.23",
+    "date": "2025-10-05",
+    "changes": [
+      "Keep the Future Portfolio card from including one-off events that occur after the date you select."
+    ]
+  },
+  {
     "version": "1.1.22",
     "date": "2025-10-05",
     "changes": [
