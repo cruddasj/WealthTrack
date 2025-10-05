@@ -3971,7 +3971,7 @@ function updateScenarioEventsUI() {
       status.className =
         baseClass + "text-green-600 dark:text-green-400";
       status.textContent =
-        "One-off events you add below are applied to all forecasts.";
+        "Scenario Modelling events are enabled.";
     } else {
       status.className =
         baseClass + "text-amber-600 dark:text-amber-400";
