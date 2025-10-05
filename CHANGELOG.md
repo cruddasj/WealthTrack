@@ -2,6 +2,9 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
+## [1.1.25] - 2025-10-05
+- Restore the Run Stress Test button so Monte Carlo simulations start when clicked.
+
 ## [1.1.24] - 2025-10-05
 - Include one-off Scenario Modelling events in the Future Portfolio card as soon as they take place, even when you pick a date later in the same month.
 - Restore the Run Stress Test action so simulations kick off reliably once you have a goal and at least one asset selected.
