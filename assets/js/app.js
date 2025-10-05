@@ -5897,10 +5897,15 @@ function sizeBrandLogo() {
   const title = $("brandTitle");
   if (!logo || !title) return;
   try {
-    const w = title.offsetWidth || 0;
+    const rect = title.getBoundingClientRect();
+    const measuredWidth = rect && Number.isFinite(rect.width) ? rect.width : 0;
+    const w =
+      measuredWidth || title.offsetWidth || title.scrollWidth || logo.offsetWidth || 0;
     logo.style.height = "auto";
     if (w > 0) {
       logo.style.width = w + "px";
+    } else {
+      logo.style.removeProperty("width");
     }
     logo.style.marginBottom = "4px";
   } catch (_) {}
