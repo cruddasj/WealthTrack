@@ -1,5 +1,12 @@
 [
   {
+    "version": "1.1.28",
+    "date": "2025-10-05",
+    "changes": [
+      "Add a Scenario Modelling toggle so you can pause or resume all one-off events across forecasts without deleting them."
+    ]
+  },
+  {
     "version": "1.1.27",
     "date": "2025-10-05",
     "changes": [

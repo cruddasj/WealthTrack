@@ -6,6 +6,7 @@ let assets = [];
 let liabilities = [];
 let snapshots = [];
 let simEvents = [];
+let scenarioEventsEnabled = true;
 let stressAssetIds = new Set();
 let goalValue = 0;
 let goalTargetDate = null;
@@ -1064,6 +1065,10 @@ function normalizeImportedProfile(profile, index = 0) {
       profile?.mobileNavSticky,
       readStoredMobileNavSticky(),
     ),
+    scenarioEventsEnabled:
+      profile?.scenarioEventsEnabled != null
+        ? !!profile.scenarioEventsEnabled
+        : true,
   };
 }
 
@@ -1155,6 +1160,7 @@ function saveCurrentProfile() {
   activeProfile.liabilities = liabilities;
   activeProfile.snapshots = snapshots;
   activeProfile.simEvents = simEvents;
+  activeProfile.scenarioEventsEnabled = scenarioEventsEnabled;
   activeProfile.goalValue = goalValue;
   activeProfile.goalTargetDate = goalTargetDate;
   activeProfile.inflationRate = inflationRate;
@@ -1401,6 +1407,7 @@ function loadDemoData() {
       { name: "Bonus", amount: 2000, isPercent: false, date: nextYear },
       { name: "Car Purchase", amount: -10000, isPercent: false, date: twoYears },
     ];
+    scenarioEventsEnabled = true;
 
     // Goal in ~10 years; calibrate so only High hits the goal
     const targetYr = new Date().getFullYear() + 10;
@@ -1557,6 +1564,7 @@ function initProfiles() {
       passiveIncomeAssetSelection: null,
       firstTimeContentHidden: getStoredFirstTimeHidden(),
       mobileNavSticky: storedNavSticky,
+      scenarioEventsEnabled: true,
     };
     profiles = [def];
     id = def.id;
@@ -1636,6 +1644,16 @@ function initProfiles() {
         p.mobileNavSticky = storedNavSticky;
         profilesUpdated = true;
       }
+      if (!Object.prototype.hasOwnProperty.call(p, "scenarioEventsEnabled")) {
+        p.scenarioEventsEnabled = true;
+        profilesUpdated = true;
+      } else {
+        const normalizedScenario = !!p.scenarioEventsEnabled;
+        if (normalizedScenario !== p.scenarioEventsEnabled) {
+          p.scenarioEventsEnabled = normalizedScenario;
+          profilesUpdated = true;
+        }
+      }
       const normalizedSelection = sanitizePassiveSelection(
         p.passiveIncomeAssetSelection ?? p.passiveIncomeSelection,
       );
@@ -1661,6 +1679,11 @@ function initProfiles() {
   liabilities = activeProfile.liabilities || [];
   snapshots = activeProfile.snapshots || [];
   simEvents = activeProfile.simEvents || [];
+  scenarioEventsEnabled =
+    activeProfile.scenarioEventsEnabled != null
+      ? !!activeProfile.scenarioEventsEnabled
+      : true;
+  activeProfile.scenarioEventsEnabled = scenarioEventsEnabled;
   goalValue = activeProfile.goalValue || 0;
   goalTargetDate = activeProfile.goalTargetDate || null;
   inflationRate =
@@ -1934,6 +1957,7 @@ function buildForecastScenarios(yearsOverride = null, opts = {}) {
   const assetDetails = includeBreakdown ? [] : null;
   const globalEvents = [];
   const eventsByAsset = new Map();
+  const activeEvents = scenarioEventsEnabled ? simEvents : [];
   const consideredAssets = passiveOnly
     ? assets.filter((a) => a && a.includeInPassive !== false)
     : assets;
@@ -1941,7 +1965,7 @@ function buildForecastScenarios(yearsOverride = null, opts = {}) {
   const taxDetails = computeAssetTaxDetails();
   const taxDetailMap = taxDetails.detailMap;
 
-  simEvents.forEach((ev) => {
+  activeEvents.forEach((ev) => {
     if (ev.assetId && assetIds.has(ev.assetId)) {
       if (!eventsByAsset.has(ev.assetId)) eventsByAsset.set(ev.assetId, []);
       eventsByAsset.get(ev.assetId).push(ev);
@@ -3012,7 +3036,8 @@ function updatePassiveIncome() {
   }
 
   const eventsByAsset = new Map();
-  simEvents.forEach((ev) => {
+  const activeEvents = scenarioEventsEnabled ? simEvents : [];
+  activeEvents.forEach((ev) => {
     if (!ev || ev.assetId == null) return;
     if (!selectedIds.has(ev.assetId)) return;
     if (!eventsByAsset.has(ev.assetId)) eventsByAsset.set(ev.assetId, []);
@@ -3508,6 +3533,7 @@ function addProfile(name) {
     passiveIncomeAssetSelection: null,
     firstTimeContentHidden: isFirstTimeContentHidden(),
     mobileNavSticky: isMobileNavSticky,
+    scenarioEventsEnabled: true,
   });
   if (
     profiles.length === 2 &&
@@ -3543,6 +3569,7 @@ function deleteActiveProfile() {
     liabilities = [];
     snapshots = [];
     simEvents = [];
+    scenarioEventsEnabled = true;
     goalValue = 0;
     goalTargetDate = null;
     fireExpenses = 0;
@@ -3934,6 +3961,45 @@ function updateTotals() {
   if (elWealthForecast) elWealthForecast.textContent = current;
 }
 
+function updateScenarioEventsUI() {
+  const toggle = $("scenarioEventsToggle");
+  if (toggle) toggle.checked = !!scenarioEventsEnabled;
+  const status = $("scenarioEventsStatus");
+  if (status) {
+    const baseClass = "text-xs font-medium mt-1 ";
+    if (scenarioEventsEnabled) {
+      status.className =
+        baseClass + "text-green-600 dark:text-green-400";
+      status.textContent =
+        "One-off events you add below are applied to all forecasts.";
+    } else {
+      status.className =
+        baseClass + "text-amber-600 dark:text-amber-400";
+      status.textContent =
+        "Scenario Modelling events are paused. They're saved but won't affect forecasts until you turn this back on.";
+    }
+  }
+}
+
+function applyScenarioEventsEnabled(
+  enabled,
+  { persistChoice = true, refresh = true } = {},
+) {
+  const normalized = !!enabled;
+  scenarioEventsEnabled = normalized;
+  if (activeProfile) activeProfile.scenarioEventsEnabled = normalized;
+  updateScenarioEventsUI();
+  if (persistChoice) persist();
+  if (refresh) {
+    lastForecastScenarios = null;
+    updateWealthChart();
+    if (!(assets.length || liabilities.length)) {
+      updateFuturePortfolioCard();
+    }
+    updatePassiveIncome();
+  }
+}
+
 function renderEvents() {
   const body = $("eventTableBody");
   const container = body.closest(".overflow-x-auto");
@@ -3960,8 +4026,10 @@ function renderEvents() {
     </tr>`;
     })
     .join("");
+  updateScenarioEventsUI();
   persist();
   updateWealthChart();
+  updatePassiveIncome();
 }
 
 function renderSnapshots() {
@@ -5028,6 +5096,7 @@ function updateFuturePortfolioCard() {
   const tableContainer = $("futurePortfolioTableContainer");
   const scenarioSelect = $("futurePortfolioScenario");
   const dateInput = $("futurePortfolioDate");
+  const eventsActive = !!scenarioEventsEnabled;
 
   const resetOutputs = (message) => {
     if (futurePortfolioChart) {
@@ -5124,10 +5193,15 @@ function updateFuturePortfolioCard() {
   const periodStartTime = periodStart?.getTime?.();
   const targetTime = targetDate.getTime();
   const valueThreshold = 0.005;
-  if (Number.isFinite(periodStartTime) && Number.isFinite(targetTime)) {
+  if (
+    eventsActive &&
+    Number.isFinite(periodStartTime) &&
+    Number.isFinite(targetTime)
+  ) {
     const adjustmentsByAsset = new Map();
     const globalEvents = [];
-    simEvents.forEach((event) => {
+    const activeEvents = scenarioEventsEnabled ? simEvents : [];
+    activeEvents.forEach((event) => {
       if (!event || !Number.isFinite(event.date)) return;
       if (event.date < periodStartTime || event.date > targetTime) return;
       if (event.assetId) {
@@ -5246,8 +5320,12 @@ function updateFuturePortfolioCard() {
   if (messageEl) messageEl.classList.add("hidden");
   if (resultEl) resultEl.classList.remove("hidden");
   if (totalEl) totalEl.textContent = fmtCurrency(total);
-  if (noteEl)
-    noteEl.textContent = `All values are projected for ${formattedDate} using your ${scenarioLabel} growth scenario.`;
+  if (noteEl) {
+    const baseText = `All values are projected for ${formattedDate} using your ${scenarioLabel} growth scenario.`;
+    noteEl.textContent = eventsActive
+      ? baseText
+      : `${baseText} Scenario Modelling events are currently paused, so one-off adjustments are not included.`;
+  }
 }
 
 function updateSnapshotChart() {
@@ -5363,7 +5441,8 @@ function forecastGoalDate(
   const assetIds = new Set(assetList.map((a) => a.dateAdded));
   const taxDetails = computeAssetTaxDetails();
   const taxDetailMap = taxDetails.detailMap;
-  [...simEvents, ...extraEvents].forEach((ev) => {
+  const baseEvents = scenarioEventsEnabled ? simEvents : [];
+  [...baseEvents, ...extraEvents].forEach((ev) => {
     if (ev.assetId) {
       if (assetIds.has(ev.assetId)) {
         if (!eventsByAsset.has(ev.assetId))
@@ -6703,6 +6782,15 @@ window.addEventListener("load", () => {
 
   setupProfilePickers();
   setupPassiveIncomeAssetPicker();
+
+  const scenarioToggle = $("scenarioEventsToggle");
+  if (scenarioToggle) {
+    scenarioToggle.checked = !!scenarioEventsEnabled;
+    on(scenarioToggle, "change", (e) =>
+      applyScenarioEventsEnabled(e.target.checked),
+    );
+  }
+  updateScenarioEventsUI();
 
   const bandSelect = $("taxBandSelect");
   if (bandSelect)

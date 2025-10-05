@@ -678,6 +678,36 @@
             Choose whether the event is a gain or loss, then enter the
             absolute amount or percentage impact you want to simulate.
           </p>
+          <div class="mb-4 p-3 rounded-lg bg-gray-100 dark:bg-gray-700">
+            <div
+              class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
+            >
+              <div>
+                <p class="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                  Scenario Modelling toggle
+                </p>
+                <p id="scenarioEventsStatus" class="text-xs font-medium mt-1">
+                  One-off events you add below are applied to all forecasts.
+                </p>
+              </div>
+              <label class="dark-mode-toggle self-start sm:self-end">
+                <input
+                  type="checkbox"
+                  id="scenarioEventsToggle"
+                  checked
+                  aria-label="Toggle Scenario Modelling events"
+                />
+                <span class="toggle-track"
+                  ><span class="toggle-thumb"></span
+                ></span>
+              </label>
+            </div>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-3">
+              Turn this off to temporarily exclude every one-off event from all
+              forecasts. Your events stay saved, so you can re-enable Scenario
+              Modelling at any time to compare results.
+            </p>
+          </div>
           <form
             id="eventForm"
             class="grid grid-cols-1 gap-3"
@@ -795,7 +825,7 @@
           </h3>
           <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
             Select a growth scenario and future date to see how your assets could evolve based on your forecasts.
-            Forecasts include any one-off events you've added through the Scenario Modelling card.
+            Forecasts include any one-off events you've added through the Scenario Modelling card when the toggle is on.
           </p>
           <form
             id="futurePortfolioForm"
@@ -823,7 +853,7 @@
             class="mt-4 text-sm text-gray-600 dark:text-gray-300"
           >
             Select a growth scenario and future date to see the projected breakdown, including any one-off Scenario
-            Modelling events in your forecast.
+            Modelling events while the toggle is enabled.
           </p>
           <div id="futurePortfolioResult" class="mt-4 hidden">
             <div
