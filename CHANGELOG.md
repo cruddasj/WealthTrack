@@ -2,6 +2,9 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
+## [1.1.23] - 2025-10-05
+- Keep the Future Portfolio card from including one-off events that occur after the selected date.
+
 ## [1.1.22] - 2025-10-05
 - Keep the Forecast Progress Check from marking you behind the saved projection when you take a snapshot and review it on the same day.
 

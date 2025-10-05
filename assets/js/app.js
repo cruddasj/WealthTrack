@@ -5087,7 +5087,14 @@ function updateFuturePortfolioCard() {
     return;
   }
 
-  const index = labels.findIndex((date) => date >= targetDate);
+  let index = labels.findIndex((date) => date >= targetDate);
+  if (index >= 0) {
+    const labelTime = labels[index]?.getTime?.() ?? Number.NaN;
+    const targetTime = targetDate.getTime();
+    if (Number.isFinite(labelTime) && labelTime > targetTime && index > 0) {
+      index -= 1;
+    }
+  }
   if (index < 0) {
     resetOutputs(
       "Extend your forecast horizon (for example by updating your goal target year) to cover this date.",
