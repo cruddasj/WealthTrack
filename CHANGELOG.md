@@ -2,6 +2,9 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
+## [1.1.24] - 2025-10-05
+- Ensure the Future Portfolio card reflects one-off asset events that occur before the selected forecast date within the same month.
+
 ## [1.1.23] - 2025-10-05
 - Keep the Future Portfolio card from including one-off events that occur after the selected date.
 

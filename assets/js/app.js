@@ -5087,26 +5087,53 @@ function updateFuturePortfolioCard() {
     return;
   }
 
-  let index = labels.findIndex((date) => date >= targetDate);
-  if (index >= 0) {
-    const labelTime = labels[index]?.getTime?.() ?? Number.NaN;
-    const targetTime = targetDate.getTime();
-    if (Number.isFinite(labelTime) && labelTime > targetTime && index > 0) {
-      index -= 1;
-    }
-  }
-  if (index < 0) {
+  const lastLabel = labels[labels.length - 1];
+  if (!lastLabel || targetDate > lastLabel) {
     resetOutputs(
       "Extend your forecast horizon (for example by updating your goal target year) to cover this date.",
     );
     return;
   }
 
+  let index = 0;
+  for (let i = 0; i < labels.length; i += 1) {
+    const label = labels[i];
+    if (!label) continue;
+    if (label > targetDate) break;
+    index = i;
+  }
+
+  const baselineLabel = labels[index];
+  const baselineTime = baselineLabel?.getTime?.() ?? Number.NaN;
+  const targetTime = targetDate.getTime();
+
+  const eventsByAsset = new Map();
+  const sortedEvents = simEvents.slice().sort((a, b) => a.date - b.date);
+  sortedEvents.forEach((event) => {
+    if (!event || !event.assetId) return;
+    if (!eventsByAsset.has(event.assetId)) eventsByAsset.set(event.assetId, []);
+    eventsByAsset.get(event.assetId).push(event);
+  });
+
   const rawRows = assetDetails.map((detail) => {
     const values = detail[scenarioKey] || detail.base || [];
+    let value = values[index] ?? 0;
+    if (!Number.isFinite(value)) value = 0;
+    if (Number.isFinite(baselineTime)) {
+      const events = eventsByAsset.get(detail.id) || [];
+      events.forEach((evt) => {
+        if (!evt) return;
+        if (!(evt.date > baselineTime && evt.date <= targetTime)) return;
+        if (evt.isPercent) {
+          value *= 1 + evt.amount / 100;
+        } else {
+          value += evt.amount;
+        }
+      });
+    }
     return {
       name: detail.name || "Asset",
-      value: values[index] ?? 0,
+      value,
     };
   });
 
