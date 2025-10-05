@@ -6069,7 +6069,13 @@ function setupMobileHeaderOffsetWatcher() {
 // --- Events and init ---
 function handleFormSubmit(e) {
   e.preventDefault();
-  const form = e.target;
+  let form = e.currentTarget;
+  if (!(form instanceof HTMLFormElement)) {
+    if (e.target instanceof HTMLFormElement) form = e.target;
+    else if (e.target?.closest) form = e.target.closest("form");
+    else form = null;
+  }
+  if (!form) return;
   switch (form.id) {
     case "assetForm": {
       const newAsset = {

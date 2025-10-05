@@ -1,4 +1,11 @@
-[ 
+[
+  {
+    "version": "1.1.25",
+    "date": "2025-10-05",
+    "changes": [
+      "Restore the Run Stress Test button so Monte Carlo simulations start when clicked."
+    ]
+  },
   {
     "version": "1.1.24",
     "date": "2025-10-05",
