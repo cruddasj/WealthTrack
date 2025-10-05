@@ -3976,7 +3976,7 @@ function updateScenarioEventsUI() {
       status.className =
         baseClass + "text-amber-600 dark:text-amber-400";
       status.textContent =
-        "Scenario Modelling events are paused. They're saved but won't affect forecasts until you turn this back on.";
+        "Scenario Modelling events are paused.";
     }
   }
 }
