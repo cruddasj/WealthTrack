@@ -1,4 +1,12 @@
 [{
+    "version": "1.1.32",
+    "date": "2025-10-05",
+    "changes": [
+      "Provide iOS with high-resolution PNG touch icons so the installed app no longer shows a blank tile.",
+      "Improve the sidebar logo sizing logic so the brand mark reliably appears when the menu expands on mobile Safari."
+    ]
+  },
+  {
     "version": "1.1.31",
     "date": "2025-10-05",
     "changes": [

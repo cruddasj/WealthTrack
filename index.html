@@ -7,7 +7,10 @@
     <meta name="theme-color" content="#111827" />
     <link rel="manifest" href="manifest.webmanifest" />
     <link rel="icon" href="assets/icons/app-logo.svg" type="image/svg+xml" />
-    <link rel="apple-touch-icon" href="assets/icons/app-logo.svg" />
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/icons/icon-192.png" />
+    <link rel="apple-touch-icon" sizes="152x152" href="assets/icons/icon-192.png" />
+    <link rel="apple-touch-icon" sizes="120x120" href="assets/icons/icon-192.png" />
+    <link rel="apple-touch-icon" sizes="76x76" href="assets/icons/icon-192.png" />
 
     <!-- Inter font -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -42,7 +45,14 @@
     style="min-height: 100vh; min-height: 100dvh;"
   >
     <!-- SVG sprite: app logo + small icons -->
-    <svg aria-hidden="true" width="0" height="0" style="position: absolute">
+    <svg
+      aria-hidden="true"
+      width="0"
+      height="0"
+      style="position: absolute"
+      xmlns="http://www.w3.org/2000/svg"
+      xmlns:xlink="http://www.w3.org/1999/xlink"
+    >
       <defs>
         <symbol id="app-logo" viewBox="200 100 600 600">
           <!-- original complex logo paths, defined once -->
@@ -118,7 +128,7 @@
           class="h-10 w-10 mr-2 text-gray-800 dark:text-white -mt-2"
           fill="currentColor"
         >
-          <use href="#app-logo" />
+          <use href="#app-logo" xlink:href="#app-logo" />
         </svg>
         <h1 class="text-xl font-bold text-gray-900 dark:text-gray-100">
           WealthTrack
@@ -143,7 +153,7 @@
             fill="currentColor"
             style="height: auto"
           >
-            <use href="#app-logo" />
+            <use href="#app-logo" xlink:href="#app-logo" />
           </svg>
           <h1
             id="brandTitle"
