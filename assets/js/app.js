@@ -1239,6 +1239,12 @@ const firstDepositOnOrAfter = (startTs, monthsPerPeriod, depositDay) => {
   }
   return candidate;
 };
+const getForecastMonthStart = (value) => {
+  const date = new Date(value);
+  date.setHours(0, 0, 0, 0);
+  date.setDate(1);
+  return date;
+};
 const DEPOSIT_MONTH_STEPS = { monthly: 1, quarterly: 3, yearly: 12 };
 
 const createDepositIterator = (asset, referenceTime = Date.now()) => {
@@ -1999,8 +2005,8 @@ function buildForecastScenarios(yearsOverride = null, opts = {}) {
       }
       while (eventIndex < assetEvents.length) {
         const evt = assetEvents[eventIndex];
-        const evtDate = new Date(evt.date);
-        if (currentDate < evtDate) break;
+        const evtMonthStart = getForecastMonthStart(evt.date);
+        if (currentDate < evtMonthStart) break;
         if (evt.date < startTimestamp) {
           eventIndex++;
           continue;
@@ -2079,8 +2085,8 @@ function buildForecastScenarios(yearsOverride = null, opts = {}) {
   });
 
   globalEvents.forEach((event) => {
-    const eventDate = new Date(event.date);
-    const idx = labels.findIndex((label) => label >= eventDate);
+    const eventMonthStart = getForecastMonthStart(event.date);
+    const idx = labels.findIndex((label) => label >= eventMonthStart);
     if (idx < 0) return;
     if (event.isPercent) {
       const factor = 1 + event.amount / 100;
