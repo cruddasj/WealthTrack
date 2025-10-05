@@ -5324,7 +5324,7 @@ function generateRandomEvents(labels, assetIdSet = null) {
   const assetList = assetIdSet
     ? assets.filter((a) => assetIdSet.has(a.dateAdded))
     : assets;
-  const nowTs = Date.now();
+
   years.forEach((y) => {
     assetList.forEach((a) => {
       if (Math.random() < 0.3) {
@@ -5352,6 +5352,7 @@ function forecastGoalDate(
   const labels = getForecastLabels(years);
   const totalMonths = years * 12;
   let base = Array(labels.length).fill(0);
+  const nowTs = Date.now();
 
   const globalEvents = [];
   const eventsByAsset = new Map();
