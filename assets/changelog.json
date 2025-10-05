@@ -1,5 +1,5 @@
 [{
-    "version": "1.1.30",
+    "version": "1.1.31",
     "date": "2025-10-05",
     "changes": [
       "Keep the passive income date picker from jumping back a day when you choose Sundays or other dates."
