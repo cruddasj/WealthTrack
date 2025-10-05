@@ -1,5 +1,13 @@
 [ 
   {
+    "version": "1.1.24",
+    "date": "2025-10-05",
+    "changes": [
+      "Include one-off Scenario Modelling events in the Future Portfolio card as soon as they take place, even when you pick a date later in the same month.",
+      "Restore the Run Stress Test action so simulations kick off once a goal and asset selection are available."
+    ]
+  },
+  {
     "version": "1.1.23",
     "date": "2025-10-05",
     "changes": [
