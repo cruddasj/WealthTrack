@@ -5426,18 +5426,23 @@ function generateRandomEvents(labels, assetIdSet = null) {
   const assetList = assetIdSet
     ? assets.filter((a) => assetIdSet.has(a.dateAdded))
     : assets;
+  const earliestEventDate = startOfToday() + 24 * 60 * 60 * 1000;
 
   years.forEach((y) => {
     assetList.forEach((a) => {
       if (Math.random() < 0.3) {
         const m = Math.floor(Math.random() * 12);
         const amt = Math.max(-15, Math.min(15, randomNormal(0, 5)));
+        let date = new Date(y, m, 1).getTime();
+        if (date < earliestEventDate) {
+          date = earliestEventDate;
+        }
         events.push({
           name: a.name,
           assetId: a.dateAdded,
           amount: amt,
           isPercent: true,
-          date: new Date(y, m, 1).getTime(),
+          date,
         });
       }
     });

@@ -1,4 +1,11 @@
 [{
+    "version": "1.1.33",
+    "date": "2025-10-09",
+    "changes": [
+      "Keep stress test sample events in the future so Monte Carlo simulations only model upcoming scenarios."
+    ]
+  },
+  {
     "version": "1.1.32",
     "date": "2025-10-05",
     "changes": [
