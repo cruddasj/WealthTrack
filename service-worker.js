@@ -2,7 +2,7 @@ const APP_VERSION = "1.1.33";
 const CACHE_VERSION = APP_VERSION && APP_VERSION.endsWith("-dev")
   ? "dev"
   : APP_VERSION;
-const CACHE_NAME = `wealthtrack-cache-${CACHE_VERSION}`;
+const CACHE_NAME = `pwa-starter-template-cache-${CACHE_VERSION}`;
 
 const CORE_ASSETS = [
   "./",

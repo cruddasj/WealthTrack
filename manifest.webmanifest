@@ -1,12 +1,12 @@
 {
-  "name": "WealthTrack",
-  "short_name": "WealthTrack",
+  "name": "PWA Starter Template",
+  "short_name": "PWA Template",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#111827",
-  "description": "Model your assets, goals, and wealth projections with WealthTrack.",
+  "description": "A progressive web app starter with navigation, theming, and changelog scaffolding.",
   "icons": [
     { "src": "assets/icons/icon-1024-maskable.png", "sizes": "1024x1024", "type": "image/png", "purpose": "maskable" },
     { "src": "assets/icons/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
