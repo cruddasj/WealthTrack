@@ -4,16 +4,14 @@
 
 ## Purpose
 
-WealthTrack is a personal wealth projection and planning tool built as a single-page application. It helps you capture assets and goals, run forecasts, explore portfolio insights, and maintain historical snapshots.
+WealthTrack is a lightweight Progressive Web App shell that delivers the base installation experience, theme controls, and update surfaces for future personal finance tools.
 
 ## Features
 
-- **Financial Inputs** – Track assets, liabilities, and savings targets.
-- **Forecasts** – Model future balances with configurable growth assumptions, one-off events, and stress tests.
-- **Portfolio Insights** – Visualise allocations, income projections, and stress scenarios.
-- **Snapshots** – Save checkpoints and review progress over time.
-- **Custom Themes** – Switch between dark mode and alternate visual themes.
-- **Secure Profiles** – Create multiple profiles with optional password protection.
+- **Progressive Web App base** – Installable shell with offline caching managed by the service worker.
+- **Custom Themes** – Toggle dark mode or choose alternate visual themes.
+- **Update tools** – Check for service worker updates and review release notes from the built-in changelog.
+- **Local reset** – Clear locally stored data with a single action during testing.
 
 ## Getting Started
 
@@ -42,7 +40,6 @@ To install the app, open it in a supporting browser (Chrome, Edge, or mobile equ
 ## Development Notes
 
 - Styles are built with Tailwind CSS (CLI, v3). The source stylesheet is `src/styles.css` and the compiled output is `assets/styles.css`, which is checked into the repo so GitHub Pages can deploy without a build step.
-- Chart.js powers the data visualisations; Hammer.js and the Chart.js Zoom plugin enable gesture controls.
 - All application state is stored in `localStorage`. Clearing the browser storage resets the app to defaults.
 
 ### App Versioning
