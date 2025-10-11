@@ -4,16 +4,15 @@
 
 ## Purpose
 
-WealthTrack is a personal wealth projection and planning tool built as a single-page application. It helps you capture assets and goals, run forecasts, explore portfolio insights, and maintain historical snapshots.
+WealthTrack is now a streamlined Progressive Web App shell. It provides a responsive layout, theme controls, and update tooling that you can build upon when creating bespoke financial tooling or any other offline-first experience.
 
 ## Features
 
-- **Financial Inputs** – Track assets, liabilities, and savings targets.
-- **Forecasts** – Model future balances with configurable growth assumptions, one-off events, and stress tests.
-- **Portfolio Insights** – Visualise allocations, income projections, and stress scenarios.
-- **Snapshots** – Save checkpoints and review progress over time.
-- **Custom Themes** – Switch between dark mode and alternate visual themes.
-- **Secure Profiles** – Create multiple profiles with optional password protection.
+- **Responsive welcome experience** – Introduces the app and highlights Progressive Web App capabilities.
+- **Settings dashboard** – Manage theme preferences, toggle first-time guidance, clear local data, and trigger update checks.
+- **Dark mode & themes** – Switch between light/dark appearances and pick from predefined visual themes.
+- **Changelog viewer** – Surfaces the latest release notes from `assets/changelog.json` so users stay informed.
+- **Installable PWA** – Manifest and service worker support allow WealthTrack to run offline once cached.
 
 ## Getting Started
 
@@ -33,25 +32,18 @@ Then visit `http://localhost:8080` in your browser.
 
 WealthTrack is installable as a Progressive Web App (PWA):
 
-1. The `manifest.webmanifest` file describes the app metadata and reuses the sidebar logo for install icons.
+1. The `manifest.webmanifest` file describes the app metadata and icon set.
 2. `service-worker.js` caches the core assets so the app can load offline after the first visit.
-3. The `index.html` file registers the service worker and includes the manifest and icon references.
+3. `assets/js/app.js` registers the service worker and handles update checks from the Settings page.
 
 To install the app, open it in a supporting browser (Chrome, Edge, or mobile equivalents) and use the “Install”/“Add to Home Screen” option.
 
 ## Development Notes
 
 - Styles are built with Tailwind CSS (CLI, v3). The source stylesheet is `src/styles.css` and the compiled output is `assets/styles.css`, which is checked into the repo so GitHub Pages can deploy without a build step.
-- Chart.js powers the data visualisations; Hammer.js and the Chart.js Zoom plugin enable gesture controls.
 - All application state is stored in `localStorage`. Clearing the browser storage resets the app to defaults.
-
-### App Versioning
-
-- The Settings page shows the current app version so users can reference it when sharing feedback.
-- A pull request workflow (`.github/workflows/pr-version.yml`) bumps the semantic version by looking at existing `v*` tags (or the `VERSION_BASE` seed), updates `assets/version.json`, and stamps the service worker cache identifier so the change is committed alongside the rest of the PR.
-- The Pages deployment workflow (`.github/workflows/static.yml`) reads the checked-in version, creates the matching `v*` tag and release on pushes to `main`, and prunes older releases to keep only the five most recent.
-- The base major/minor version is sourced from `VERSION_BASE`; edit that file before opening a PR if you need to roll to a new major/minor series.
-- The service worker cache is stamped with the release version so clients automatically pick up the newest assets without needing to clear site data.
+- The Settings page reads the version from `assets/version.json`. Keep it aligned with your release process.
+- The in-app changelog reads from `assets/changelog.json`. Update both that file and `CHANGELOG.md` together when shipping a release.
 
 ### Rebuilding CSS
 

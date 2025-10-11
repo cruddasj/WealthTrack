@@ -1,41 +1,9 @@
-[{
-    "version": "1.1.33",
-    "date": "2025-10-09",
-    "changes": [
-      "Keep stress test sample events in the future so Monte Carlo simulations only model upcoming scenarios."
-    ]
-  },
+[
   {
-    "version": "1.1.32",
-    "date": "2025-10-05",
+    "version": "0.0.0",
+    "date": "2024-01-01",
     "changes": [
-      "Provide iOS with high-resolution PNG touch icons so the installed app no longer shows a blank tile.",
-      "Improve the sidebar logo sizing logic so the brand mark reliably appears when the menu expands on mobile Safari."
-    ]
-  },
-  {
-    "version": "1.1.31",
-    "date": "2025-10-05",
-    "changes": [
-      "Keep the passive income date picker from jumping back a day when you choose Sundays or other dates."
-    ]
-  },
-  {
-    "version": "1.1.29",
-    "date": "2025-10-05",
-    "changes": [
-      "Add a Scenario Modelling toggle so you can pause or resume all one-off events across forecasts without deleting them."
-    ]
-  },
-  {
-    "version": "1.1.28",
-    "date": "2025-10-05",
-    "changes": [
-      "Keep the Run Stress Test button reliably launching Monte Carlo simulations for every goal.",
-      "Make Future Portfolio forecasts line up with Scenario Modelling by respecting the date you pick and slotting one-off events into the right month.",
-      "Present clearer snapshot comparisons by moving the card alongside other snapshot tools, renaming it for clarity, and listing each portfolio's asset totals.",
-      "Preserve the balances you enter by applying recurring deposits at the end of each period, preventing double counting, and simplifying the deposit messaging.",
-      "Add an interest rate difference calculator with clearer field labels so you can compare bank offers at a glance."
+      "Create base Progressive Web app."
     ]
   }
 ]
