@@ -1,6 +1,31 @@
 # Changelog
 
-All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
+All notable changes to this template will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
+
+## [1.1.40] - 2025-10-16
+- Restore the Layout Settings card with the original theme names, mobile navigation pin toggle, and dark mode switch styling.
+- Bring back the production-style Version and changelog cards so update checks and release notes match the original visuals.
+- Align the supporting CSS with the original design system to keep the template components visually identical to the source app.
+
+## [1.1.39] - 2025-10-15
+- Move the update checker and changelog cards to the settings view, presenting release notes inside collapsible sections like the original app.
+
+## [1.1.38] - 2025-10-14
+- Left align the mobile header logo and name so the template matches the original navigation layout.
+
+## [1.1.37] - 2025-10-13
+- Remove the mobile menu toggle border and background so the header icon matches the original navigation styling.
+- Restore the template button color palette, bringing back the familiar green primary and gray secondary actions.
+
+## [1.1.36] - 2025-10-11
+- Recreate the dark mode switch styling so the toggle visuals match the original app on desktop and mobile.
+
+## [1.1.35] - 2025-10-12
+- Restore Font Awesome navigation icons so the template sidebar mirrors the original visuals.
+- Center the mobile dark mode toggle to match the drawer layout from the production app.
+
+- Restore the original sidebar, mobile drawer, and card grid so the starter keeps the familiar layout while serving as a blank slate.
+- Keep the update checker, changelog viewer, and appearance controls ready for reuse across future projects.
 
 ## [1.1.33] - 2025-10-09
 - Keep stress test sample events in the future so Monte Carlo simulations only model upcoming scenarios.
@@ -27,5 +52,5 @@ All notable changes to WealthTrack will be documented in this file. This project
 - Add repository and JSON changelog files to keep release notes in sync.
 
 ## [1.0.25] - 2024-05-15
-- Baseline WealthTrack release.
+- Baseline template release.
 
