@@ -1,7 +1,7 @@
 {
-  "name": "wealthtrack",
+  "name": "pwa-starter-template",
   "version": "1.0.0",
-  "description": "WealthTrack is a personal wealth projection and planning tool built as a single-page application. It helps you capture assets and goals, run forecasts, explore portfolio insights, and maintain historical snapshots.",
+  "description": "A progressive web app starter that provides a sidebar layout, theming controls, and changelog scaffolding.",
   "main": "service-worker.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -11,15 +11,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/cruddasj/WealthTrack.git"
+    "url": "git+https://github.com/example/pwa-starter-template.git"
   },
   "keywords": [],
   "author": "James Cruddas",
   "type": "commonjs",
   "bugs": {
-    "url": "https://github.com/cruddasj/WealthTrack/issues"
+    "url": "https://github.com/example/pwa-starter-template/issues"
   },
-  "homepage": "https://github.com/cruddasj/WealthTrack#readme",
+  "homepage": "https://github.com/example/pwa-starter-template#readme",
   "devDependencies": {
     "sharp": "^0.33.4",
     "tailwindcss": "^3.4.14"

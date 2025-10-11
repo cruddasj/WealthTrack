@@ -1,4 +1,87 @@
 [{
+    "version": "1.1.44",
+    "date": "2025-10-20",
+    "changes": [
+      "Restore the collapsible changelog accordions and update checker loading state so releases mirror the original app.",
+      "Align the settings card width, sidebar dark mode toggle, and mobile drawer styling with the source layout."
+    ]
+  },
+  {
+    "version": "1.1.43",
+    "date": "2025-10-19",
+    "changes": [
+      "Ensure the mobile navigation header uses the same opaque card surface so it no longer appears transparent on small screens."
+    ]
+  },
+  {
+    "version": "1.1.42",
+    "date": "2025-10-18",
+    "changes": [
+      "Restore the solid background and shadow on the mobile navigation header so it matches the original app."
+    ]
+  },
+  {
+    "version": "1.1.41",
+    "date": "2025-10-17",
+    "changes": [
+      "Remove the footer copyright section so the template mirrors the original WealthTrack layout.",
+      "Restore the dark mode toggle markup and styling so the switch matches the source app exactly."
+    ]
+  },
+  {
+    "version": "1.1.40",
+    "date": "2025-10-16",
+    "changes": [
+      "Restore the Layout Settings card with the original theme names, the navigation pin toggle, and the original dark mode switch styling.",
+      "Bring back the production-style Version and changelog cards and align the CSS so update controls match the source app."
+    ]
+  },
+  {
+    "version": "1.1.39",
+    "date": "2025-10-15",
+    "changes": [
+      "Move the update checker and changelog cards to the settings view and display release notes inside collapsible sections."
+    ]
+  },
+  {
+    "version": "1.1.38",
+    "date": "2025-10-14",
+    "changes": [
+      "Left align the mobile header logo and name so the navigation matches the original layout."
+    ]
+  },
+  {
+    "version": "1.1.37",
+    "date": "2025-10-13",
+    "changes": [
+      "Remove the mobile menu toggle border so the header matches the original navigation styling.",
+      "Restore the template button color palette so primary and secondary actions use the familiar green and gray tones."
+    ]
+  },
+  {
+    "version": "1.1.36",
+    "date": "2025-10-11",
+    "changes": [
+      "Recreate the dark mode switch styling so the toggle matches the original visuals on every screen."
+    ]
+  },
+  {
+    "version": "1.1.35",
+    "date": "2025-10-12",
+    "changes": [
+      "Restore Font Awesome navigation icons so the sidebar matches the original styling.",
+      "Center the dark mode toggle in the mobile drawer to reflect the existing app layout."
+    ]
+  },
+  {
+    "version": "1.1.34",
+    "date": "2025-10-11",
+    "changes": [
+      "Bring back the original sidebar, mobile drawer, and card grid so the starter keeps the familiar layout for new projects.",
+      "Keep the automatic update checker, changelog card, and appearance controls ready to reuse in any app you build from this shell."
+    ]
+  },
+  {
     "version": "1.1.33",
     "date": "2025-10-09",
     "changes": [

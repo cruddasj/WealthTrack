@@ -1,19 +1,18 @@
-# WealthTrack
+# PWA Starter Template
 
 > **These works are a personal project and in no way associated with my employer.**
 
 ## Purpose
 
-WealthTrack is a personal wealth projection and planning tool built as a single-page application. It helps you capture assets and goals, run forecasts, explore portfolio insights, and maintain historical snapshots.
+This repository packages a progressive web app shell with the navigation layout, theming controls, and changelog tooling lifted from the original implementation. Use it as a starting point for projects that need an opinionated sidebar experience without rebuilding every component from scratch.
 
 ## Features
 
-- **Financial Inputs** – Track assets, liabilities, and savings targets.
-- **Forecasts** – Model future balances with configurable growth assumptions, one-off events, and stress tests.
-- **Portfolio Insights** – Visualise allocations, income projections, and stress scenarios.
-- **Snapshots** – Save checkpoints and review progress over time.
-- **Custom Themes** – Switch between dark mode and alternate visual themes.
-- **Secure Profiles** – Create multiple profiles with optional password protection.
+- **Responsive layout** – Persistent left navigation on desktop that condenses into a mobile drawer with the familiar toggle interactions.
+- **Appearance settings** – Dark mode switch, theme selector, and mobile navigation pin toggle with persisted preferences.
+- **Version tracking** – Ready-made Version and Changelog cards that connect to `assets/version.json` and `assets/changelog.json` for release notes.
+- **PWA ready** – Manifest metadata, installable icons, and a service worker tuned for static hosting.
+- **Accessible controls** – Keyboard friendly navigation, focus states, and semantic markup.
 
 ## Getting Started
 
@@ -31,27 +30,24 @@ Then visit `http://localhost:8080` in your browser.
 
 ## Progressive Web App
 
-WealthTrack is installable as a Progressive Web App (PWA):
+The template ships with everything required for installation as a Progressive Web App (PWA):
 
-1. The `manifest.webmanifest` file describes the app metadata and reuses the sidebar logo for install icons.
+1. `manifest.webmanifest` describes the app metadata and references the bundled icons.
 2. `service-worker.js` caches the core assets so the app can load offline after the first visit.
-3. The `index.html` file registers the service worker and includes the manifest and icon references.
+3. `index.html` registers the service worker and includes the manifest and icon references.
 
 To install the app, open it in a supporting browser (Chrome, Edge, or mobile equivalents) and use the “Install”/“Add to Home Screen” option.
 
 ## Development Notes
 
-- Styles are built with Tailwind CSS (CLI, v3). The source stylesheet is `src/styles.css` and the compiled output is `assets/styles.css`, which is checked into the repo so GitHub Pages can deploy without a build step.
-- Chart.js powers the data visualisations; Hammer.js and the Chart.js Zoom plugin enable gesture controls.
+- Styles are built with Tailwind CSS (CLI v3). The source stylesheet is `src/styles.css` and the compiled output is `assets/styles.css`, which is checked into the repo so GitHub Pages can deploy without a build step.
 - All application state is stored in `localStorage`. Clearing the browser storage resets the app to defaults.
+- Font Awesome powers the sidebar icons.
 
 ### App Versioning
 
-- The Settings page shows the current app version so users can reference it when sharing feedback.
-- A pull request workflow (`.github/workflows/pr-version.yml`) bumps the semantic version by looking at existing `v*` tags (or the `VERSION_BASE` seed), updates `assets/version.json`, and stamps the service worker cache identifier so the change is committed alongside the rest of the PR.
-- The Pages deployment workflow (`.github/workflows/static.yml`) reads the checked-in version, creates the matching `v*` tag and release on pushes to `main`, and prunes older releases to keep only the five most recent.
-- The base major/minor version is sourced from `VERSION_BASE`; edit that file before opening a PR if you need to roll to a new major/minor series.
-- The service worker cache is stamped with the release version so clients automatically pick up the newest assets without needing to clear site data.
+- The Settings page shows the current template version and changelog, driven by `assets/version.json` and `assets/changelog.json`.
+- Update both changelog files when shipping new releases so users see accurate notes inside the Version and Changelog cards.
 
 ### Rebuilding CSS
 
@@ -78,4 +74,3 @@ npm run watch:css
 Notes:
 - Edit styles in `src/styles.css` (uses `@tailwind`/`@layer`/`@apply`).
 - Do not edit `assets/styles.css` by hand; it is generated.
-- If you add new HTML/JS files that include Tailwind classes, update `tailwind.config.js` `content` globs so the classes are included in the build.
