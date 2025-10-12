@@ -6,6 +6,7 @@ All notable changes to WealthTrack will be documented in this file. This project
 - Mark milestone recommendations as optimistic whenever the target sits above the scenario average and keep stretch goal explana
 tions aligned with that logic.
 - Soften milestone progress messaging so falling short no longer appears in warning red text.
+- Rename the forecast milestones card so it now surfaces suggested milestones in the dashboard copy.
 
 ## [1.1.37] - 2025-10-12
 - Base milestone targets on the average of low, expected, and high forecasts, highlight optimistic stretch goals, and explain how each figure is derived from future projections.
