@@ -601,9 +601,12 @@
 #brandTitle {
   display: inline-block;
 }
+#brandLogo {
+  width: clamp(8rem, 60vw, 12rem);
+  max-width: 100%;
+}
 @media (min-width: 768px) {
   #brandLogo {
-    max-width: 100%;
     display: block;
   }
 }

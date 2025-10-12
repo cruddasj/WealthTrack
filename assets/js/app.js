@@ -6932,6 +6932,13 @@ window.addEventListener("load", () => {
   // Mobile menu
   const sidebar = $("sidebar"),
     overlay = $("overlay");
+  const scheduleBrandLogoResize = () => {
+    if (typeof requestAnimationFrame === "function") {
+      requestAnimationFrame(() => requestAnimationFrame(sizeBrandLogo));
+    } else {
+      setTimeout(sizeBrandLogo, 50);
+    }
+  };
   const setMenuState = (open) => {
     if (!sidebar || !overlay) return;
     const hideSidebar = !open;
@@ -6949,6 +6956,9 @@ window.addEventListener("load", () => {
         body.style.overflow = "";
         body.style.touchAction = "";
       }
+    }
+    if (!hideSidebar || window.innerWidth >= 768) {
+      scheduleBrandLogoResize();
     }
   };
   const toggleMenu = () => {

@@ -2,6 +2,9 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
+## [1.1.35] - 2025-10-12
+- Ensure the sidebar logo resizes after the menu opens so it stays visible on Safari.
+
 ## [1.1.33] - 2025-10-09
 - Keep stress test sample events in the future so Monte Carlo simulations only model upcoming scenarios.
 
