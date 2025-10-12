@@ -5061,6 +5061,7 @@ function updateForecastRecommendationsCard(
       const roundedDefault = Math.round(average / 10000) * 10000;
       let milestoneTarget = roundedDefault;
       let optimistic = false;
+      let usedStretchRounding = false;
       if (Number.isFinite(highValue) && average >= 200000) {
         const optimisticCandidate = Math.ceil(average / 100000) * 100000;
         const hasHeadroom =
@@ -5075,7 +5076,12 @@ function updateForecastRecommendationsCard(
         if (hasHeadroom && notTooFar && meaningfulJump) {
           milestoneTarget = optimisticCandidate;
           optimistic = true;
+          usedStretchRounding = true;
         }
+      }
+
+      if (!optimistic && milestoneTarget > average) {
+        optimistic = true;
       }
 
       const scenarioBreakdown = [];
@@ -5116,7 +5122,7 @@ function updateForecastRecommendationsCard(
       const outlookSummary = `Milestone outlook: <span class="font-semibold ${outlookToneClass}">${outlookLabel}</span>.`;
 
       let roundingSummary;
-      if (optimistic) {
+      if (usedStretchRounding) {
         const highContext = Number.isFinite(highValue)
           ? ` Your high growth scenario reaches about ${fmtCurrency(
               highValue,
@@ -5125,6 +5131,10 @@ function updateForecastRecommendationsCard(
         roundingSummary = `Rounded up to the next £100,000 from ${fmtCurrency(
           average,
         )} to stay within reach of that stretch.${highContext}`;
+      } else if (optimistic) {
+        roundingSummary = `Rounded to the nearest £10,000 from ${fmtCurrency(
+          average,
+        )}, leaving this target slightly ahead of the average so you can treat it as a stretch.`;
       } else {
         roundingSummary = `Rounded to the nearest £10,000 from ${fmtCurrency(
           average,
@@ -5136,7 +5146,7 @@ function updateForecastRecommendationsCard(
       const currentNetWorthFormatted = fmtCurrency(currentNetWorth);
       const statusClass =
         gap > 0
-          ? "text-red-600 dark:text-red-400"
+          ? "text-slate-700 dark:text-slate-200"
           : gap < 0
             ? "text-green-500 dark:text-green-300"
             : "text-blue-600 dark:text-blue-300";
