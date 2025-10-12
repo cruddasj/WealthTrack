@@ -3670,8 +3670,11 @@ function updateEmptyStates() {
   // Hide full cards for brand-new users
   const ForecastCard = $("ForecastCard");
   const forecastGoalsCard = $("forecastGoalsCard");
+  const forecastRecommendationsCard = $("forecastRecommendationsCard");
   if (ForecastCard) ForecastCard.hidden = !canForecast;
   if (forecastGoalsCard) forecastGoalsCard.hidden = !goalInsightsAvailable;
+  if (forecastRecommendationsCard)
+    forecastRecommendationsCard.hidden = !canForecast;
   const saveSnapCard = $("saveSnapshotCard");
   if (saveSnapCard) saveSnapCard.hidden = isFresh;
   const snapHistCard = $("snapshotHistoryCard");
@@ -4679,6 +4682,7 @@ function updateWealthChart() {
     lastForecastScenarios = null;
     assetForecasts = new Map();
     liabilityForecasts = new Map();
+    updateForecastRecommendationsCard();
     refreshFireProjection();
     return;
   }
@@ -4952,6 +4956,7 @@ function updateWealthChart() {
     </div>`;
   }
 
+  updateForecastRecommendationsCard(labels, base);
   updateFuturePortfolioCard();
   updateInflationImpactCard();
   updateProgressCheckResult();
@@ -4972,6 +4977,93 @@ function getGoalHitsFromChart() {
     base: getHit(ds[1]?.data),
     high: getHit(ds[2]?.data),
   };
+}
+
+function updateForecastRecommendationsCard(labels = null, baseSeries = null) {
+  const container = $("forecastRecommendationsBody");
+  if (!container) return;
+  if (
+    !Array.isArray(labels) ||
+    !Array.isArray(baseSeries) ||
+    labels.length === 0 ||
+    labels.length !== baseSeries.length
+  ) {
+    container.innerHTML =
+      '<p class="text-sm text-gray-600 dark:text-gray-300">Update your assets and rerun the forecast to see suggested milestones.</p>';
+    return;
+  }
+
+  const now = new Date();
+  const currentNetWorth = calculateNetWorth();
+  const firstLabel = labels[0];
+  const lastLabel = labels[labels.length - 1];
+  const minTime = firstLabel instanceof Date ? firstLabel.getTime() : null;
+  const maxTime = lastLabel instanceof Date ? lastLabel.getTime() : null;
+  const horizons = [
+    { years: 1, label: "In 1 year" },
+    { years: 3, label: "In 3 years" },
+    { years: 5, label: "In 5 years" },
+  ];
+
+  const findForecastValue = (years) => {
+    const target = new Date(now);
+    target.setFullYear(target.getFullYear() + years);
+    const targetTime = target.getTime();
+    if ((maxTime != null && targetTime > maxTime) || (minTime != null && targetTime < minTime)) {
+      return null;
+    }
+    let bestIndex = -1;
+    let smallestDiff = Infinity;
+    for (let i = 0; i < labels.length; i++) {
+      const label = labels[i];
+      if (!(label instanceof Date)) continue;
+      const diff = Math.abs(label.getTime() - targetTime);
+      if (diff < smallestDiff) {
+        smallestDiff = diff;
+        bestIndex = i;
+      }
+    }
+    if (bestIndex < 0) return null;
+    const value = baseSeries[bestIndex];
+    return Number.isFinite(value) ? value : null;
+  };
+
+  const segments = horizons
+    .map((horizon) => {
+      const forecastValue = findForecastValue(horizon.years);
+      if (!Number.isFinite(forecastValue)) return null;
+      const roundedTarget = Math.round(forecastValue / 10000) * 10000;
+      const gap = roundedTarget - currentNetWorth;
+      const statusClass =
+        gap > 0
+          ? "text-red-600 dark:text-red-400"
+          : gap < 0
+            ? "text-green-500 dark:text-green-300"
+            : "text-blue-600 dark:text-blue-300";
+      const statusText =
+        gap > 0
+          ? `About ${fmtCurrency(Math.abs(gap))} away today.`
+          : gap < 0
+            ? `Already ahead by ${fmtCurrency(Math.abs(gap))}.`
+            : "Right on target today.";
+      return `
+        <div class="p-4 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 stat-box text-left space-y-2">
+          <h4 class="text-md font-medium text-gray-700 dark:text-gray-300">${horizon.label}</h4>
+          <p class="text-2xl font-bold">${fmtCurrency(roundedTarget)}</p>
+          <p class="text-xs text-gray-600 dark:text-gray-300">Rounded from ${fmtCurrency(forecastValue)} using the expected forecast.</p>
+          <p class="text-sm font-medium ${statusClass}">${statusText}</p>
+        </div>
+      `;
+    })
+    .filter(Boolean);
+
+  if (segments.length === 0) {
+    container.innerHTML =
+      '<p class="text-sm text-gray-600 dark:text-gray-300">Extend your forecast horizon to cover the next few years and unlock suggested milestones.</p>';
+    return;
+  }
+
+  container.innerHTML = segments.join("");
 }
 
 function updateInflationImpactCard() {
