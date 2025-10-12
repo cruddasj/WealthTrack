@@ -1,4 +1,11 @@
 [{
+    "version": "1.1.37",
+    "date": "2025-10-13",
+    "changes": [
+      "Explain how milestone targets are calculated, averaging your low, expected, and high forecasts and highlighting optimistic stretch goals when the range supports them."
+    ]
+  },
+  {
     "version": "1.1.36",
     "date": "2025-10-12",
     "changes": [

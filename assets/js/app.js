@@ -4956,7 +4956,7 @@ function updateWealthChart() {
     </div>`;
   }
 
-  updateForecastRecommendationsCard(labels, base);
+  updateForecastRecommendationsCard(labels, base, low, high);
   updateFuturePortfolioCard();
   updateInflationImpactCard();
   updateProgressCheckResult();
@@ -4979,7 +4979,12 @@ function getGoalHitsFromChart() {
   };
 }
 
-function updateForecastRecommendationsCard(labels = null, baseSeries = null) {
+function updateForecastRecommendationsCard(
+  labels = null,
+  baseSeries = null,
+  lowSeries = null,
+  highSeries = null,
+) {
   const container = $("forecastRecommendationsBody");
   if (!container) return;
   if (
@@ -4993,8 +4998,13 @@ function updateForecastRecommendationsCard(labels = null, baseSeries = null) {
     return;
   }
 
+  const hasScenarioBands =
+    Array.isArray(lowSeries) &&
+    Array.isArray(highSeries) &&
+    lowSeries.length === labels.length &&
+    highSeries.length === labels.length;
+
   const now = new Date();
-  const currentNetWorth = calculateNetWorth();
   const firstLabel = labels[0];
   const lastLabel = labels[labels.length - 1];
   const minTime = firstLabel instanceof Date ? firstLabel.getTime() : null;
@@ -5005,7 +5015,7 @@ function updateForecastRecommendationsCard(labels = null, baseSeries = null) {
     { years: 5, label: "In 5 years" },
   ];
 
-  const findForecastValue = (years) => {
+  const findForecastPoint = (years) => {
     const target = new Date(now);
     target.setFullYear(target.getFullYear() + years);
     const targetTime = target.getTime();
@@ -5025,33 +5035,76 @@ function updateForecastRecommendationsCard(labels = null, baseSeries = null) {
     }
     if (bestIndex < 0) return null;
     const value = baseSeries[bestIndex];
-    return Number.isFinite(value) ? value : null;
+    if (!Number.isFinite(value)) return null;
+    const pointDate = labels[bestIndex];
+    const lowValue = hasScenarioBands ? lowSeries[bestIndex] : null;
+    const highValue = hasScenarioBands ? highSeries[bestIndex] : null;
+    return {
+      index: bestIndex,
+      value,
+      lowValue: Number.isFinite(lowValue) ? lowValue : null,
+      highValue: Number.isFinite(highValue) ? highValue : null,
+      date: pointDate instanceof Date ? pointDate : null,
+    };
   };
+
+  const fmtMonthYear = (date) =>
+    date instanceof Date
+      ? date.toLocaleString("default", { month: "short", year: "numeric" })
+      : null;
 
   const segments = horizons
     .map((horizon) => {
-      const forecastValue = findForecastValue(horizon.years);
-      if (!Number.isFinite(forecastValue)) return null;
-      const roundedTarget = Math.round(forecastValue / 10000) * 10000;
-      const gap = roundedTarget - currentNetWorth;
-      const statusClass =
-        gap > 0
-          ? "text-red-600 dark:text-red-400"
-          : gap < 0
-            ? "text-green-500 dark:text-green-300"
-            : "text-blue-600 dark:text-blue-300";
-      const statusText =
-        gap > 0
-          ? `About ${fmtCurrency(Math.abs(gap))} away today.`
-          : gap < 0
-            ? `Already ahead by ${fmtCurrency(Math.abs(gap))}.`
-            : "Right on target today.";
+      const point = findForecastPoint(horizon.years);
+      if (!point) return null;
+      const { value: expectedValue, lowValue, highValue, date } = point;
+      const usableLow = Number.isFinite(lowValue) ? lowValue : expectedValue;
+      const usableHigh = Number.isFinite(highValue) ? highValue : expectedValue;
+      const averageValue = hasScenarioBands
+        ? (usableLow + expectedValue + usableHigh) / 3
+        : expectedValue;
+
+      const roundedTo10k = Math.round(averageValue / 10000) * 10000;
+      const roundedTo100k = Math.round(averageValue / 100000) * 100000;
+      const canUseOptimistic =
+        hasScenarioBands &&
+        usableHigh != null &&
+        averageValue >= 250000 &&
+        roundedTo100k >= averageValue &&
+        roundedTo100k <= usableHigh * 1.02 &&
+        usableHigh - usableLow >= 150000;
+      const milestoneValue = canUseOptimistic ? roundedTo100k : roundedTo10k;
+      const optimistic = canUseOptimistic && milestoneValue > averageValue;
+
+      const rangeLabel = hasScenarioBands
+        ? `${fmtCurrency(usableLow)} – ${fmtCurrency(usableHigh)}`
+        : `${fmtCurrency(expectedValue)}`;
+      const averageLabel = hasScenarioBands
+        ? `${fmtCurrency(averageValue)} average`
+        : `${fmtCurrency(expectedValue)} expected`;
+      const pointLabel = fmtMonthYear(date);
+      const roundingLabel = optimistic
+        ? `<p class="text-xs text-amber-600 dark:text-amber-300 font-medium">Rounded to the nearest £100k to set an optimistic stretch goal that still sits within your high growth projection.</p>`
+        : `<p class="text-xs text-gray-600 dark:text-gray-300">Rounded to the nearest £10k for a practical milestone.</p>`;
+
+      const scenarioExplanation = hasScenarioBands
+        ? `<p class="text-xs text-gray-600 dark:text-gray-300">Calculated as the midpoint of ${fmtCurrency(
+            usableLow,
+          )} (low), ${fmtCurrency(expectedValue)} (expected), and ${fmtCurrency(
+            usableHigh,
+          )} (high) projected for ${pointLabel || "this period"}.</p>`
+        : `<p class="text-xs text-gray-600 dark:text-gray-300">Based on the expected growth projection for ${pointLabel || "this period"}.</p>`;
+
       return `
         <div class="p-4 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 stat-box text-left space-y-2">
-          <h4 class="text-md font-medium text-gray-700 dark:text-gray-300">${horizon.label}</h4>
-          <p class="text-2xl font-bold">${fmtCurrency(roundedTarget)}</p>
-          <p class="text-xs text-gray-600 dark:text-gray-300">Rounded from ${fmtCurrency(forecastValue)} using the expected forecast.</p>
-          <p class="text-sm font-medium ${statusClass}">${statusText}</p>
+          <div class="flex items-baseline justify-between gap-3">
+            <h4 class="text-md font-medium text-gray-700 dark:text-gray-300">${horizon.label}</h4>
+            ${pointLabel ? `<span class="text-xs text-gray-500 dark:text-gray-400">Around ${pointLabel}</span>` : ""}
+          </div>
+          <p class="text-2xl font-bold">${fmtCurrency(milestoneValue)}</p>
+          ${scenarioExplanation}
+          ${roundingLabel}
+          <p class="text-sm text-gray-700 dark:text-gray-200">Staying close to this target keeps you within the projected range of ${rangeLabel} (${averageLabel}).</p>
         </div>
       `;
     })
@@ -5063,7 +5116,13 @@ function updateForecastRecommendationsCard(labels = null, baseSeries = null) {
     return;
   }
 
-  container.innerHTML = segments.join("");
+  const intro = hasScenarioBands
+    ? `<div class="p-3 rounded-lg bg-blue-50 text-blue-900 dark:bg-blue-900/40 dark:text-blue-100 text-sm mb-4">
+        These milestones average your low, expected, and high growth forecasts so you can plan around the middle of your projected wealth range.
+      </div>`
+    : "";
+
+  container.innerHTML = intro + segments.join("");
 }
 
 function updateInflationImpactCard() {

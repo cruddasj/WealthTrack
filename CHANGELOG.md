@@ -2,6 +2,9 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
+## [1.1.37] - 2025-10-13
+- Explain how milestone targets are calculated, averaging your low, expected, and high forecasts and highlighting optimistic stretch goals when the range supports them.
+
 ## [1.1.36] - 2025-10-12
 - Suggest rounded 1, 3, and 5-year forecast milestones and show how far you are from each target so you can set actionable goals.
 
