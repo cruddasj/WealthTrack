@@ -4956,7 +4956,7 @@ function updateWealthChart() {
     </div>`;
   }
 
-  updateForecastRecommendationsCard(labels, base);
+  updateForecastRecommendationsCard(labels, low, base, high);
   updateFuturePortfolioCard();
   updateInflationImpactCard();
   updateProgressCheckResult();
@@ -4979,15 +4979,25 @@ function getGoalHitsFromChart() {
   };
 }
 
-function updateForecastRecommendationsCard(labels = null, baseSeries = null) {
+function updateForecastRecommendationsCard(
+  labels = null,
+  lowSeries = null,
+  baseSeries = null,
+  highSeries = null,
+) {
   const container = $("forecastRecommendationsBody");
   if (!container) return;
-  if (
-    !Array.isArray(labels) ||
-    !Array.isArray(baseSeries) ||
-    labels.length === 0 ||
-    labels.length !== baseSeries.length
-  ) {
+  const arraysValid =
+    Array.isArray(labels) &&
+    Array.isArray(lowSeries) &&
+    Array.isArray(baseSeries) &&
+    Array.isArray(highSeries) &&
+    labels.length > 0 &&
+    labels.length === lowSeries.length &&
+    labels.length === baseSeries.length &&
+    labels.length === highSeries.length;
+
+  if (!arraysValid) {
     container.innerHTML =
       '<p class="text-sm text-gray-600 dark:text-gray-300">Update your assets and rerun the forecast to see suggested milestones.</p>';
     return;
@@ -5005,11 +5015,13 @@ function updateForecastRecommendationsCard(labels = null, baseSeries = null) {
     { years: 5, label: "In 5 years" },
   ];
 
-  const findForecastValue = (years) => {
-    const target = new Date(now);
-    target.setFullYear(target.getFullYear() + years);
-    const targetTime = target.getTime();
-    if ((maxTime != null && targetTime > maxTime) || (minTime != null && targetTime < minTime)) {
+  const getValueAtDate = (series, targetDate) => {
+    if (!Array.isArray(series) || !(targetDate instanceof Date)) return null;
+    const targetTime = targetDate.getTime();
+    if (
+      (maxTime != null && targetTime > maxTime) ||
+      (minTime != null && targetTime < minTime)
+    ) {
       return null;
     }
     let bestIndex = -1;
@@ -5024,16 +5036,104 @@ function updateForecastRecommendationsCard(labels = null, baseSeries = null) {
       }
     }
     if (bestIndex < 0) return null;
-    const value = baseSeries[bestIndex];
-    return Number.isFinite(value) ? value : null;
+    const value = series[bestIndex];
+    if (Number.isFinite(value)) return value;
+    if (value && typeof value.y === "number") return value.y;
+    return null;
   };
 
   const segments = horizons
     .map((horizon) => {
-      const forecastValue = findForecastValue(horizon.years);
-      if (!Number.isFinite(forecastValue)) return null;
-      const roundedTarget = Math.round(forecastValue / 10000) * 10000;
-      const gap = roundedTarget - currentNetWorth;
+      const targetDate = new Date(now);
+      targetDate.setFullYear(targetDate.getFullYear() + horizon.years);
+      const lowValue = getValueAtDate(lowSeries, targetDate);
+      const baseValue = getValueAtDate(baseSeries, targetDate);
+      const highValue = getValueAtDate(highSeries, targetDate);
+      const availableValues = [lowValue, baseValue, highValue].filter((v) =>
+        Number.isFinite(v),
+      );
+      if (availableValues.length === 0) return null;
+
+      const average =
+        availableValues.reduce((sum, value) => sum + value, 0) /
+        availableValues.length;
+
+      const roundedDefault = Math.round(average / 10000) * 10000;
+      let milestoneTarget = roundedDefault;
+      let optimistic = false;
+      if (Number.isFinite(highValue) && average >= 200000) {
+        const optimisticCandidate = Math.ceil(average / 100000) * 100000;
+        const hasHeadroom =
+          optimisticCandidate > milestoneTarget &&
+          optimisticCandidate > 0 &&
+          highValue >= optimisticCandidate;
+        const notTooFar =
+          optimisticCandidate - average <=
+          Math.max(average * 0.12, 200000);
+        const meaningfulJump =
+          optimisticCandidate - milestoneTarget >= 50000;
+        if (hasHeadroom && notTooFar && meaningfulJump) {
+          milestoneTarget = optimisticCandidate;
+          optimistic = true;
+        }
+      }
+
+      const scenarioBreakdown = [];
+      if (Number.isFinite(lowValue))
+        scenarioBreakdown.push({ label: "Low", value: lowValue });
+      if (Number.isFinite(baseValue))
+        scenarioBreakdown.push({ label: "Expected", value: baseValue });
+      if (Number.isFinite(highValue))
+        scenarioBreakdown.push({ label: "High", value: highValue });
+      const scenarioSummary = scenarioBreakdown.length
+        ? `
+            <div class="space-y-0.5">
+              <p class="text-xs font-medium text-gray-600 dark:text-gray-300">Scenario range:</p>
+              ${scenarioBreakdown
+                .map(
+                  ({ label, value }) => `
+                    <p class="text-xs text-gray-500 dark:text-gray-400 flex justify-between">
+                      <span>${label}</span>
+                      <span class="font-medium">${fmtCurrency(value)}</span>
+                    </p>
+                  `,
+                )
+                .join("")}
+            </div>
+          `.trim()
+        : '<p class="text-xs text-gray-500 dark:text-gray-400">Scenario forecasts unavailable for this horizon.</p>';
+
+      const averageSummary = `Average across scenarios: ${fmtCurrency(
+        average,
+      )}.`;
+
+      const outlookLabel = optimistic
+        ? "Optimistic stretch goal"
+        : "Conservative baseline target";
+      const outlookToneClass = optimistic
+        ? "text-blue-700 dark:text-blue-200"
+        : "text-slate-700 dark:text-slate-200";
+      const outlookSummary = `Milestone outlook: <span class="font-semibold ${outlookToneClass}">${outlookLabel}</span>.`;
+
+      let roundingSummary;
+      if (optimistic) {
+        const highContext = Number.isFinite(highValue)
+          ? ` Your high growth scenario reaches about ${fmtCurrency(
+              highValue,
+            )}, so this stretch remains plausible.`
+          : "";
+        roundingSummary = `Rounded up to the next £100,000 from ${fmtCurrency(
+          average,
+        )} to stay within reach of that stretch.${highContext}`;
+      } else {
+        roundingSummary = `Rounded to the nearest £10,000 from ${fmtCurrency(
+          average,
+        )} to keep the target grounded.`;
+      }
+
+      const gap = milestoneTarget - currentNetWorth;
+      const gapAmount = fmtCurrency(Math.abs(gap));
+      const currentNetWorthFormatted = fmtCurrency(currentNetWorth);
       const statusClass =
         gap > 0
           ? "text-red-600 dark:text-red-400"
@@ -5042,15 +5142,34 @@ function updateForecastRecommendationsCard(labels = null, baseSeries = null) {
             : "text-blue-600 dark:text-blue-300";
       const statusText =
         gap > 0
-          ? `About ${fmtCurrency(Math.abs(gap))} away today.`
+          ? `${gapAmount} of additional growth beyond today's ${currentNetWorthFormatted} net worth keeps you aligned to this projection.`
           : gap < 0
-            ? `Already ahead by ${fmtCurrency(Math.abs(gap))}.`
-            : "Right on target today.";
+            ? `You're about ${gapAmount} ahead of this projection with today's ${currentNetWorthFormatted} net worth.`
+            : `You're right on pace at ${currentNetWorthFormatted} compared with this projection.`;
+
+      const targetDateLabel = targetDate.toLocaleString("default", {
+        month: "short",
+        year: "numeric",
+      });
+
+      const badgeClass = optimistic
+        ? "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-200"
+        : "bg-slate-200 text-slate-700 dark:bg-slate-700/60 dark:text-slate-200";
+      const badgeLabel = optimistic ? "Optimistic stretch" : "Conservative";
+      const optimisticBadge = `<span class="ml-2 inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold uppercase tracking-wide ${badgeClass}">${badgeLabel}</span>`;
+
       return `
         <div class="p-4 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 stat-box text-left space-y-2">
-          <h4 class="text-md font-medium text-gray-700 dark:text-gray-300">${horizon.label}</h4>
-          <p class="text-2xl font-bold">${fmtCurrency(roundedTarget)}</p>
-          <p class="text-xs text-gray-600 dark:text-gray-300">Rounded from ${fmtCurrency(forecastValue)} using the expected forecast.</p>
+          <div class="flex items-center justify-between">
+            <h4 class="text-md font-medium text-gray-700 dark:text-gray-300">${horizon.label}</h4>
+            ${optimisticBadge}
+          </div>
+          <p class="text-xs text-gray-600 dark:text-gray-300">${targetDateLabel}</p>
+          <p class="text-2xl font-bold">${fmtCurrency(milestoneTarget)}</p>
+          <p class="text-xs text-gray-600 dark:text-gray-300">${averageSummary}</p>
+          ${scenarioSummary}
+          <p class="text-xs text-gray-500 dark:text-gray-400">${outlookSummary}</p>
+          <p class="text-xs text-gray-500 dark:text-gray-400">${roundingSummary}</p>
           <p class="text-sm font-medium ${statusClass}">${statusText}</p>
         </div>
       `;
