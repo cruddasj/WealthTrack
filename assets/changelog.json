@@ -1,9 +1,11 @@
-[{
+[
+  {
     "version": "1.1.38",
     "date": "2025-10-12",
     "changes": [
       "Treat any milestone that exceeds the scenario average as an optimistic stretch and refresh the accompanying explanation to match.",
-      "Show milestone progress in a neutral tone so falling short no longer appears as red warning text."
+      "Show milestone progress in a neutral tone so falling short no longer appears as red warning text.",
+      "Rename the forecast milestones card so it now surfaces suggested milestones in the dashboard copy."
     ]
   },
   {
