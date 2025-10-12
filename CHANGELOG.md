@@ -2,6 +2,9 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
+## [1.1.36] - 2025-10-12
+- Restore the Safari mobile menu button by explicitly setting the icon stroke color.
+
 ## [1.1.35] - 2025-10-12
 - Ensure the sidebar logo resizes after the menu opens so it stays visible on Safari.
 
