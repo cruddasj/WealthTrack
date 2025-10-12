@@ -17,14 +17,16 @@ const PNG_TRANSPARENT = { compressionLevel: 9 }; // keep alpha channel for launc
 async function run() {
   const svgRaw = await fs.promises.readFile(srcSvg, 'utf8');
   const svgWhiteStr = svgRaw.replace('<svg ', '<svg fill="#ffffff" ');
+  const svgBlackStr = svgRaw.replace('<svg ', '<svg fill="#000000" ');
   const svgWhite = Buffer.from(svgWhiteStr);
+  const svgBlack = Buffer.from(svgBlackStr);
 
   for (const size of sizes) {
     // Maskable (splash): dark tile + white logo centered
     {
       const outMaskable = path.join(outDir, `icon-${size}-maskable.png`);
       const density = Math.max(MIN_DENSITY, size);
-      const logoBuf = await sharp(svgWhite, { density, limitInputPixels: false })
+      const logoBuf = await sharp(svgBlack, { density, limitInputPixels: false })
         .resize(Math.round(size * SCALE_MASKABLE), Math.round(size * SCALE_MASKABLE), { fit: 'contain' })
         .png(PNG_TRANSPARENT)
         .toBuffer();
