@@ -1,12 +1,4 @@
 [{
-    "version": "1.1.38",
-    "date": "2025-10-12",
-    "changes": [
-      "Treat milestones that sit above the scenario average as optimistic stretches so their labels stay accurate.",
-      "Neutralise the progress reminder when you're behind a projection so the guidance stays calm."
-    ]
-  },
-  {
     "version": "1.1.37",
     "date": "2025-10-12",
     "changes": [
