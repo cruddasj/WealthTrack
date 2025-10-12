@@ -5060,7 +5060,8 @@ function updateForecastRecommendationsCard(
 
       const roundedDefault = Math.round(average / 10000) * 10000;
       let milestoneTarget = roundedDefault;
-      let optimistic = false;
+      let milestoneSource = "rounded";
+
       if (Number.isFinite(highValue) && average >= 200000) {
         const optimisticCandidate = Math.ceil(average / 100000) * 100000;
         const hasHeadroom =
@@ -5074,9 +5075,11 @@ function updateForecastRecommendationsCard(
           optimisticCandidate - milestoneTarget >= 50000;
         if (hasHeadroom && notTooFar && meaningfulJump) {
           milestoneTarget = optimisticCandidate;
-          optimistic = true;
+          milestoneSource = "stretch";
         }
       }
+
+      const optimistic = milestoneTarget > average;
 
       const scenarioBreakdown = [];
       if (Number.isFinite(lowValue))
@@ -5116,7 +5119,7 @@ function updateForecastRecommendationsCard(
       const outlookSummary = `Milestone outlook: <span class="font-semibold ${outlookToneClass}">${outlookLabel}</span>.`;
 
       let roundingSummary;
-      if (optimistic) {
+      if (milestoneSource === "stretch") {
         const highContext = Number.isFinite(highValue)
           ? ` Your high growth scenario reaches about ${fmtCurrency(
               highValue,
@@ -5125,6 +5128,10 @@ function updateForecastRecommendationsCard(
         roundingSummary = `Rounded up to the next £100,000 from ${fmtCurrency(
           average,
         )} to stay within reach of that stretch.${highContext}`;
+      } else if (optimistic) {
+        roundingSummary = `Rounded to the nearest £10,000 from ${fmtCurrency(
+          average,
+        )}, nudging the target slightly above the overall forecast average.`;
       } else {
         roundingSummary = `Rounded to the nearest £10,000 from ${fmtCurrency(
           average,
@@ -5136,9 +5143,9 @@ function updateForecastRecommendationsCard(
       const currentNetWorthFormatted = fmtCurrency(currentNetWorth);
       const statusClass =
         gap > 0
-          ? "text-red-600 dark:text-red-400"
+          ? "text-slate-700 dark:text-slate-200"
           : gap < 0
-            ? "text-green-500 dark:text-green-300"
+            ? "text-emerald-600 dark:text-emerald-300"
             : "text-blue-600 dark:text-blue-300";
       const statusText =
         gap > 0
