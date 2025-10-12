@@ -1,4 +1,12 @@
 [{
+    "version": "1.1.37",
+    "date": "2025-10-12",
+    "changes": [
+      "Base milestone targets on the average of low, expected, and high forecasts, highlight optimistic stretch goals, and explain how each figure is derived from future projections.",
+      "Clarify milestone context with separate scenario lines, explicit optimistic versus conservative labels, and refreshed progress wording."
+    ]
+  },
+  {
     "version": "1.1.36",
     "date": "2025-10-12",
     "changes": [
