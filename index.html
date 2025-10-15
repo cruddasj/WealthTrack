@@ -205,6 +205,12 @@
             Snapshots
           </span>
         </button>
+        <button class="nav-btn" data-target="standard-week">
+          <span class="flex items-center">
+            <i class="fa-solid fa-calendar-week h-5 w-5 mr-3"></i>
+            Standard week
+          </span>
+        </button>
         <button class="nav-btn" data-target="calculators">
           <span class="flex items-center">
             <i class="fa-solid fa-calculator h-5 w-5 mr-3"></i>
@@ -1408,6 +1414,132 @@
             >
               Select a snapshot to see how you're tracking against its saved
               expected projection.
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="standard-week" class="content-section">
+        <h2 class="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-6">
+          Standard week
+        </h2>
+
+        <div class="card">
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100">
+            Accrual settings
+          </h3>
+          <div class="card-body">
+            <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
+              Decide whether leave accrues each month and how the entitlement is credited throughout the organisation's leave
+              year.
+            </p>
+            <form id="standardAccrualForm" class="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
+              <div class="md:col-span-2">
+                <label class="form-label flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="standardUseMonthlyAccrual"
+                    class="h-4 w-4 text-blue-600 border-gray-300 rounded"
+                    checked
+                  />
+                  Use monthly accrual
+                </label>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Turn off to treat the full annual allowance as available immediately.
+                </p>
+              </div>
+              <div>
+                <label for="standardAccrualRate" class="form-label">Accrual rate (days per month)</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  id="standardAccrualRate"
+                  class="input-field"
+                  value="2"
+                />
+              </div>
+              <div>
+                <label for="standardAccrualMethod" class="form-label">How accrual is applied</label>
+                <select id="standardAccrualMethod" class="input-field">
+                  <option value="start">Credited at the start of each month</option>
+                  <option value="prorata">Accrued pro-rata throughout the month</option>
+                </select>
+              </div>
+            </form>
+            <div id="standardAccrualSummary" class="mt-4 text-sm text-gray-700 dark:text-gray-300"></div>
+          </div>
+        </div>
+
+        <div id="standardAnnualAllowanceCard" class="card hidden">
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100">
+            Annual leave allowance
+          </h3>
+          <div class="card-body">
+            <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
+              Provide the total entitlement when monthly accrual is turned off. This allowance is used immediately in leave projections.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label for="standardAnnualLeaveAllowance" class="form-label">Annual leave allowance (days)</label>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.1"
+                  id="standardAnnualLeaveAllowance"
+                  class="input-field"
+                  value="24"
+                />
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Used instead of monthly accrual when the full allowance is available from day one.
+                </p>
+              </div>
+            </div>
+            <p id="standardAnnualAllowanceSummary" class="text-sm text-gray-700 dark:text-gray-300 mt-4"></p>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100">
+            Proposed leave period
+          </h3>
+          <div class="card-body">
+            <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
+              Select dates to estimate the working days that require leave, see how much entitlement will be accrued, and list UK
+              bank holidays inside the request.
+            </p>
+            <form class="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
+              <div>
+                <label for="standardProposedStart" class="form-label">Start date</label>
+                <input type="date" id="standardProposedStart" class="input-field" />
+              </div>
+              <div>
+                <label for="standardProposedEnd" class="form-label">End date</label>
+                <input type="date" id="standardProposedEnd" class="input-field" />
+              </div>
+              <div class="md:col-span-2">
+                <label for="standardLeaveTakenToDate" class="form-label">Leave already taken this year (days)</label>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.1"
+                  id="standardLeaveTakenToDate"
+                  class="input-field"
+                  placeholder="0"
+                />
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Deducts approved leave from the balance before forecasting this request.
+                </p>
+              </div>
+            </form>
+            <div id="standardProposedSummary" class="mt-6"></div>
+            <div class="mt-6">
+              <h4 class="text-md font-medium text-gray-800 dark:text-gray-200 mb-2">
+                Bank holidays within this period
+              </h4>
+              <div id="standardHolidayList" class="text-sm text-gray-700 dark:text-gray-300"></div>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-3">
+                Bank holiday dates follow the published England and Wales calendar.
+              </p>
             </div>
           </div>
         </div>
