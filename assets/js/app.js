@@ -1345,6 +1345,453 @@ const toDateInputValue = (timestamp) => {
   return `${year}-${month}-${day}`;
 };
 
+const fmtDateLong = new Intl.DateTimeFormat("en-GB", {
+  day: "2-digit",
+  month: "short",
+  year: "numeric",
+}).format;
+
+const leaveDaysFormatter = new Intl.NumberFormat("en-GB", {
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 2,
+});
+
+const toDayTimestamp = (value) => {
+  const time = toTimestamp(value);
+  if (!Number.isFinite(time)) return null;
+  const date = new Date(time);
+  date.setHours(0, 0, 0, 0);
+  return date.getTime();
+};
+
+const LEAVE_BANK_HOLIDAY_DATA = [
+  { name: "New Year's Day", date: "2024-01-01" },
+  { name: "Good Friday", date: "2024-03-29" },
+  { name: "Easter Monday", date: "2024-04-01" },
+  { name: "Early May bank holiday", date: "2024-05-06" },
+  { name: "Spring bank holiday", date: "2024-05-27" },
+  { name: "Summer bank holiday", date: "2024-08-26" },
+  { name: "Christmas Day", date: "2024-12-25" },
+  { name: "Boxing Day", date: "2024-12-26" },
+  { name: "New Year's Day", date: "2025-01-01" },
+  { name: "Good Friday", date: "2025-04-18" },
+  { name: "Easter Monday", date: "2025-04-21" },
+  { name: "Early May bank holiday", date: "2025-05-05" },
+  { name: "Spring bank holiday", date: "2025-05-26" },
+  { name: "Summer bank holiday", date: "2025-08-25" },
+  { name: "Christmas Day", date: "2025-12-25" },
+  { name: "Boxing Day", date: "2025-12-26" },
+];
+
+const LEAVE_BANK_HOLIDAYS = LEAVE_BANK_HOLIDAY_DATA.map((holiday) => {
+  const ts = parseDateInput(holiday.date, startOfToday());
+  const normalized = toDayTimestamp(ts);
+  if (normalized == null) return null;
+  const date = new Date(normalized);
+  const day = date.getDay();
+  return {
+    name: holiday.name,
+    date: holiday.date,
+    timestamp: normalized,
+    weekend: day === 0 || day === 6,
+  };
+})
+  .filter(Boolean)
+  .sort((a, b) => a.timestamp - b.timestamp);
+
+const normalizeWorkingYearStart = (value) => {
+  if (value == null) return null;
+  if (value instanceof Date && !Number.isNaN(value)) {
+    return toDayTimestamp(value.getTime());
+  }
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return toDayTimestamp(value);
+  }
+  if (typeof value === "string" && value.trim() !== "") {
+    const parsed = parseDateInput(value, null);
+    return toDayTimestamp(parsed);
+  }
+  return null;
+};
+
+const getOrganisationWorkingYearStart = () => {
+  const candidates = [
+    activeProfile?.organisationWorkingYearStart,
+    activeProfile?.organizationWorkingYearStart,
+    activeProfile?.workingYearStart,
+    activeProfile?.leaveYearStart,
+  ];
+  for (const candidate of candidates) {
+    const normalized = normalizeWorkingYearStart(candidate);
+    if (normalized != null) return normalized;
+  }
+  const today = new Date(startOfToday());
+  today.setMonth(0, 1);
+  today.setHours(0, 0, 0, 0);
+  return today.getTime();
+};
+
+const leavePlannerState = {
+  useMonthlyAccrual: true,
+  accrualRate: 2,
+  accrualMethod: "start",
+  leaveYearStart: getOrganisationWorkingYearStart(),
+  annualAllowance: 24,
+  leaveTakenToDate: 0,
+};
+
+const refreshLeavePlannerWorkingYear = () => {
+  leavePlannerState.leaveYearStart = getOrganisationWorkingYearStart();
+};
+
+function formatLeaveDays(value) {
+  if (!Number.isFinite(value)) return "0";
+  return leaveDaysFormatter.format(value);
+}
+
+function getAnnualAllowance(state) {
+  if (!state) return 0;
+  if (state.useMonthlyAccrual) {
+    const rate = Number.isFinite(state.accrualRate) ? state.accrualRate : 0;
+    if (!(rate > 0)) return 0;
+    return rate * 12;
+  }
+  const total = Number.isFinite(state.annualAllowance)
+    ? state.annualAllowance
+    : 0;
+  return total > 0 ? total : 0;
+}
+
+function getBankHolidaysWithinRange(startTs, endTs) {
+  if (!Number.isFinite(startTs) || !Number.isFinite(endTs)) return [];
+  return LEAVE_BANK_HOLIDAYS.filter(
+    (holiday) => holiday.timestamp >= startTs && holiday.timestamp <= endTs,
+  );
+}
+
+function countWorkingDays(startTs, endTs, holidaySet) {
+  if (!Number.isFinite(startTs) || !Number.isFinite(endTs) || endTs < startTs)
+    return 0;
+  const startDate = new Date(startTs);
+  const endDate = new Date(endTs);
+  let working = 0;
+  const cursor = new Date(startDate.getTime());
+  while (cursor.getTime() <= endDate.getTime()) {
+    const day = cursor.getDay();
+    const ts = cursor.getTime();
+    if (day !== 0 && day !== 6 && !holidaySet.has(ts)) working += 1;
+    cursor.setDate(cursor.getDate() + 1);
+  }
+  return working;
+}
+
+function calculateAccruedLeave(targetTs, state) {
+  if (!state) return 0;
+  const annualAllowance = getAnnualAllowance(state);
+  if (!(annualAllowance > 0)) return 0;
+  if (!state.useMonthlyAccrual) return annualAllowance;
+  const rate = Number.isFinite(state.accrualRate) ? state.accrualRate : 0;
+  const startTs = toDayTimestamp(state.leaveYearStart);
+  const targetDay = toDayTimestamp(targetTs);
+  if (startTs == null || targetDay == null) return 0;
+  if (targetDay < startTs) return 0;
+  const targetDate = new Date(targetDay);
+  const cycleStart = new Date(startTs);
+  let accrued = 0;
+  let guard = 0;
+  while (cycleStart.getTime() <= targetDate.getTime() && guard < 240) {
+    const cycleEnd = new Date(cycleStart.getTime());
+    cycleEnd.setMonth(cycleEnd.getMonth() + 1);
+    if (state.accrualMethod === "start") {
+      accrued += rate;
+    } else if (targetDate >= cycleEnd) {
+      accrued += rate;
+    } else {
+      const total = cycleEnd.getTime() - cycleStart.getTime();
+      if (total > 0) {
+        const elapsed = targetDate.getTime() - cycleStart.getTime();
+        const ratio = Math.max(0, Math.min(1, elapsed / total));
+        accrued += rate * ratio;
+      }
+    }
+    if (accrued >= annualAllowance) {
+      accrued = annualAllowance;
+      break;
+    }
+    cycleStart.setMonth(cycleStart.getMonth() + 1);
+    guard += 1;
+  }
+  return Math.min(accrued, annualAllowance);
+}
+
+function renderBankHolidayList(container, holidays) {
+  if (!container) return;
+  if (!Array.isArray(holidays) || holidays.length === 0) {
+    container.innerHTML =
+      '<p class="text-sm text-gray-500 dark:text-gray-400">No UK bank holidays fall within these dates.</p>';
+    return;
+  }
+  const items = holidays
+    .map((holiday) => {
+      const label = fmtDateLong(new Date(holiday.timestamp));
+      const weekendBadge = holiday.weekend
+        ? '<span class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full bg-gray-200 dark:bg-gray-600 text-xs text-gray-700 dark:text-gray-200">Weekend</span>'
+        : "";
+      return `<li class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1"><span class="font-medium text-gray-900 dark:text-gray-100">${holiday.name}</span><span class="text-sm text-gray-600 dark:text-gray-300 flex items-center">${label}${weekendBadge}</span></li>`;
+    })
+    .join("");
+  container.innerHTML = `<ul class="space-y-2">${items}</ul>`;
+}
+
+function updateStandardAccrualSummary() {
+  const summary = $("standardAccrualSummary");
+  if (!summary) return;
+  const methodSelect = $("standardAccrualMethod");
+  const rateInput = $("standardAccrualRate");
+  const annualCard = $("standardAnnualAllowanceCard");
+  const annualSummary = $("standardAnnualAllowanceSummary");
+  const annualInput = $("standardAnnualLeaveAllowance");
+  const useMonthly = !!leavePlannerState.useMonthlyAccrual;
+  if (methodSelect) methodSelect.disabled = !useMonthly;
+  if (rateInput) {
+    rateInput.disabled = !useMonthly;
+    rateInput.value = Number(
+      leavePlannerState.accrualRate.toFixed(2),
+    ).toString();
+  }
+  if (annualCard) annualCard.classList.toggle("hidden", useMonthly);
+  if (annualInput) annualInput.disabled = useMonthly;
+  const annualAllowance = getAnnualAllowance(leavePlannerState);
+  if (annualInput) {
+    annualInput.value = Number(
+      leavePlannerState.annualAllowance.toFixed(2),
+    ).toString();
+  }
+  const startTs = toDayTimestamp(leavePlannerState.leaveYearStart);
+  const startLabel = startTs != null ? fmtDateLong(new Date(startTs)) : null;
+  const settingsNote = startLabel
+    ? `Working year start: <span class="font-semibold">${startLabel}</span>. Update this on the Settings page.`
+    : "Set the organisation working year start from the Settings page to keep accruals aligned.";
+  if (useMonthly) {
+    const rate = Number.isFinite(leavePlannerState.accrualRate)
+      ? leavePlannerState.accrualRate
+      : 0;
+    if (!(rate > 0)) {
+      summary.innerHTML = `
+        <p class="text-sm text-gray-500 dark:text-gray-400">Enter a monthly accrual rate above zero to calculate entitlement.</p>
+        <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">${settingsNote}</p>
+      `;
+      if (annualSummary) annualSummary.textContent = "";
+      return;
+    }
+    const methodText =
+      leavePlannerState.accrualMethod === "start"
+        ? "credited at the start of each month"
+        : "accrued evenly throughout the month";
+    const methodLine = `Accrual is ${methodText} ${
+      startLabel ? `from ${startLabel}` : "from the configured working year start"
+    }.`;
+    summary.innerHTML = `
+      <p>Monthly accrual of <span class="font-semibold">${formatLeaveDays(rate)}</span> day(s), roughly <span class="font-semibold">${formatLeaveDays(annualAllowance)}</span> days per year.</p>
+      <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">${methodLine}</p>
+      <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">${settingsNote}</p>
+    `;
+    if (annualSummary) annualSummary.textContent = "";
+    return;
+  }
+  if (!(annualAllowance > 0)) {
+    summary.innerHTML = `
+      <p class="text-sm text-gray-500 dark:text-gray-400">Enter the total annual leave available to include it in these projections.</p>
+      <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">${settingsNote}</p>
+    `;
+    if (annualSummary) annualSummary.textContent = "";
+    return;
+  }
+  summary.innerHTML = `
+    <p>The full annual allowance of <span class="font-semibold">${formatLeaveDays(annualAllowance)}</span> day(s) is available immediately.</p>
+    <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">${settingsNote}</p>
+  `;
+  if (annualSummary)
+    annualSummary.innerHTML = `Full allowance remaining before approved leave: <span class="font-semibold">${formatLeaveDays(
+      annualAllowance,
+    )}</span> day(s).`;
+}
+
+function updateStandardProposedLeave() {
+  const summary = $("standardProposedSummary");
+  const list = $("standardHolidayList");
+  if (!summary || !list) return;
+  const annualAllowance = getAnnualAllowance(leavePlannerState);
+  if (!(annualAllowance > 0)) {
+    const message = leavePlannerState.useMonthlyAccrual
+      ? "Enter a monthly accrual rate to see how much leave will be available."
+      : "Enter the annual leave allowance to see how much leave will be available.";
+    summary.innerHTML = `<p class="text-sm text-gray-500 dark:text-gray-400">${message}</p>`;
+    renderBankHolidayList(list, []);
+    return;
+  }
+  const startInput = $("standardProposedStart");
+  const endInput = $("standardProposedEnd");
+  const startValue = startInput?.value || "";
+  const endValue = endInput?.value || "";
+  const startTs = startValue ? parseDateInput(startValue, null) : null;
+  const endTs = endValue ? parseDateInput(endValue, null) : null;
+  if (startTs == null || endTs == null) {
+    summary.innerHTML =
+      '<p class="text-sm text-gray-500 dark:text-gray-400">Choose a start and end date to review the leave requirement.</p>';
+    renderBankHolidayList(list, []);
+    return;
+  }
+  const normalizedStart = toDayTimestamp(startTs);
+  const normalizedEnd = toDayTimestamp(endTs);
+  if (normalizedStart == null || normalizedEnd == null) {
+    summary.innerHTML =
+      '<p class="text-sm text-gray-500 dark:text-gray-400">Enter valid dates to project the leave balance.</p>';
+    renderBankHolidayList(list, []);
+    return;
+  }
+  if (normalizedEnd < normalizedStart) {
+    summary.innerHTML =
+      '<p class="text-sm text-red-600 dark:text-red-400">End date must be on or after the start date.</p>';
+    renderBankHolidayList(list, []);
+    return;
+  }
+  const holidaysInRange = getBankHolidaysWithinRange(normalizedStart, normalizedEnd);
+  renderBankHolidayList(list, holidaysInRange);
+  const weekdayHolidays = holidaysInRange.filter((holiday) => !holiday.weekend);
+  const holidaySet = new Set(weekdayHolidays.map((holiday) => holiday.timestamp));
+  const workingDaysRequired = countWorkingDays(normalizedStart, normalizedEnd, holidaySet);
+  const totalDays =
+    Math.floor((normalizedEnd - normalizedStart) / (24 * 60 * 60 * 1000)) + 1;
+  const accruedAtStart = calculateAccruedLeave(normalizedStart, leavePlannerState);
+  const accruedAtEnd = calculateAccruedLeave(normalizedEnd, leavePlannerState);
+  const leaveTaken = Number.isFinite(leavePlannerState.leaveTakenToDate)
+    ? leavePlannerState.leaveTakenToDate
+    : 0;
+  const netStart = accruedAtStart - leaveTaken;
+  const netEnd = accruedAtEnd - leaveTaken;
+  const availableAtStart = Math.max(netStart, 0);
+  const availableAtEnd = Math.max(netEnd, 0);
+  const remainingAfterLeave = availableAtEnd - workingDaysRequired;
+  const shortAtStart = workingDaysRequired - availableAtStart;
+  const existingDeficit = netStart < 0 ? Math.abs(netStart) : 0;
+  const startStatus = existingDeficit > 0
+    ? `<p class="text-sm text-red-600 dark:text-red-400">You're already overdrawn by ${formatLeaveDays(existingDeficit)} day(s) before this request.</p>`
+    : shortAtStart > 0
+    ? `<p class="text-sm text-amber-600 dark:text-amber-400">You will be short by ${formatLeaveDays(shortAtStart)} day(s) at the start of this leave.</p>`
+    : '<p class="text-sm text-green-600 dark:text-green-400">Enough leave is accrued by the start date.</p>';
+  const endStatus = remainingAfterLeave < 0
+    ? `<p class="text-sm text-red-600 dark:text-red-400">You would exceed your accrued balance by ${formatLeaveDays(Math.abs(remainingAfterLeave))} day(s) by the end of this period.</p>`
+    : `<p class="text-sm text-green-600 dark:text-green-400">Projected balance after the leave: ${formatLeaveDays(remainingAfterLeave)} day(s).</p>`;
+  summary.innerHTML = `
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="flex flex-col items-center justify-center gap-1 p-4 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 stat-box">
+        <h4 class="text-md font-medium text-gray-700 dark:text-gray-300">Days requested</h4>
+        <span class="text-3xl font-bold">${formatLeaveDays(workingDaysRequired)}</span>
+        <p class="text-xs text-gray-500 dark:text-gray-400">Weekdays excluding bank holidays.</p>
+      </div>
+      <div class="flex flex-col items-center justify-center gap-1 p-4 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 stat-box">
+        <h4 class="text-md font-medium text-gray-700 dark:text-gray-300">Accrued by start</h4>
+        <span class="text-3xl font-bold">${formatLeaveDays(accruedAtStart)}</span>
+        <p class="text-xs text-gray-500 dark:text-gray-400">${formatLeaveDays(leaveTaken)} day(s) already taken.</p>
+      </div>
+      <div class="flex flex-col items-center justify-center gap-1 p-4 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 stat-box">
+        <h4 class="text-md font-medium text-gray-700 dark:text-gray-300">Accrued by end</h4>
+        <span class="text-3xl font-bold">${formatLeaveDays(accruedAtEnd)}</span>
+        <p class="text-xs text-gray-500 dark:text-gray-400">Balance before deducting this request.</p>
+      </div>
+    </div>
+    <div class="mt-4 space-y-2 text-sm text-gray-700 dark:text-gray-300">
+      <p>Leave remaining if approved: <span class="font-semibold">${formatLeaveDays(Math.max(remainingAfterLeave, 0))} day(s)</span>.</p>
+      <p>Total calendar days selected: ${totalDays}. Bank holidays in range: ${holidaysInRange.length}${
+        weekdayHolidays.length !== holidaysInRange.length
+          ? ` (${weekdayHolidays.length} reduce the leave needed)`
+          : ""
+      }.</p>
+    </div>
+    <div class="mt-4 space-y-2">
+      ${startStatus}
+      ${endStatus}
+    </div>
+  `;
+}
+
+function initStandardWeekPlanner() {
+  const section = $("standard-week");
+  if (!section) return;
+  refreshLeavePlannerWorkingYear();
+  const monthlyCheckbox = $("standardUseMonthlyAccrual");
+  if (monthlyCheckbox) {
+    monthlyCheckbox.checked = !!leavePlannerState.useMonthlyAccrual;
+    on(monthlyCheckbox, "change", (e) => {
+      leavePlannerState.useMonthlyAccrual = e.target.checked;
+      updateStandardAccrualSummary();
+      updateStandardProposedLeave();
+    });
+  }
+  const rateInput = $("standardAccrualRate");
+  if (rateInput) {
+    rateInput.value = Number(leavePlannerState.accrualRate.toFixed(2)).toString();
+    on(rateInput, "input", (e) => {
+      const raw = e.target.value;
+      leavePlannerState.accrualRate =
+        raw === ""
+          ? leavePlannerState.accrualRate
+          : toNonNegativeNumber(raw, leavePlannerState.accrualRate);
+      updateStandardAccrualSummary();
+      updateStandardProposedLeave();
+    });
+  }
+  const methodSelect = $("standardAccrualMethod");
+  if (methodSelect) {
+    methodSelect.value = leavePlannerState.accrualMethod;
+    on(methodSelect, "change", (e) => {
+      leavePlannerState.accrualMethod = e.target.value === "prorata" ? "prorata" : "start";
+      updateStandardAccrualSummary();
+      updateStandardProposedLeave();
+    });
+  }
+  const annualInput = $("standardAnnualLeaveAllowance");
+  if (annualInput) {
+    annualInput.value = Number(
+      leavePlannerState.annualAllowance.toFixed(2),
+    ).toString();
+    on(annualInput, "input", (e) => {
+      const raw = e.target.value;
+      leavePlannerState.annualAllowance =
+        raw === ""
+          ? leavePlannerState.annualAllowance
+          : toNonNegativeNumber(raw, leavePlannerState.annualAllowance);
+      updateStandardAccrualSummary();
+      updateStandardProposedLeave();
+    });
+  }
+  const startInput = $("standardProposedStart");
+  if (startInput) {
+    startInput.value = toDateInputValue(startOfToday());
+    on(startInput, "change", () => updateStandardProposedLeave());
+  }
+  const endInput = $("standardProposedEnd");
+  if (endInput) {
+    const defaultEnd = new Date(startOfToday());
+    defaultEnd.setDate(defaultEnd.getDate() + 4);
+    endInput.value = toDateInputValue(defaultEnd.getTime());
+    on(endInput, "change", () => updateStandardProposedLeave());
+  }
+  const leaveTakenInput = $("standardLeaveTakenToDate");
+  if (leaveTakenInput) {
+    leaveTakenInput.value = "";
+    on(leaveTakenInput, "input", (e) => {
+      const raw = e.target.value;
+      leavePlannerState.leaveTakenToDate =
+        raw === "" ? 0 : toNonNegativeNumber(raw, leavePlannerState.leaveTakenToDate);
+      updateStandardProposedLeave();
+    });
+  }
+  updateStandardAccrualSummary();
+  updateStandardProposedLeave();
+}
+
 const getStartDate = (item) => {
   if (!item) return startOfToday();
   const start = toTimestamp(item.startDate);
@@ -3522,6 +3969,9 @@ function switchProfile(id, { showFeedback = false } = {}) {
   updateFireForecastCard();
   updateEmptyStates();
   refreshFireProjection();
+  refreshLeavePlannerWorkingYear();
+  updateStandardAccrualSummary();
+  updateStandardProposedLeave();
   persist();
   renderProfileOptions();
   if (showFeedback && activeProfile) {
@@ -7090,6 +7540,7 @@ window.addEventListener("load", () => {
   renderProfileOptions();
   updateFireFormInputs();
   refreshFireProjection();
+  initStandardWeekPlanner();
   on($("profileSelect"), "change", (e) =>
     switchProfile(e.target.value, { showFeedback: true }),
   );

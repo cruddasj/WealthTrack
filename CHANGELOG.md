@@ -2,6 +2,16 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
+## [1.1.41] - 2025-10-14
+- Pull the Standard week planner's working year start from Settings so the leave-year picker is no longer duplicated on the card.
+- Show an annual leave allowance card when monthly accrual is disabled and feed that total into availability summaries.
+- Move the leave-taken input onto its own row for better readability on wider layouts.
+
+## [1.1.40] - 2025-10-14
+- Replace the "How accrual is applied" toggle with a dropdown on the Standard week planner so it is easier to use on mobile screens.
+- List the bank holiday names and dates that fall within a proposed leave period to mirror the other leave planner cards.
+- Add an optional field for leave already taken this year and subtract it from the projected balance in the proposed leave summary.
+
 ## [1.1.38] - 2025-10-12
 - Mark milestone recommendations as optimistic whenever the target sits above the scenario average and keep stretch goal explana
 tions aligned with that logic.

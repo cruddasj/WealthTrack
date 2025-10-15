@@ -1,4 +1,22 @@
-[
+[ 
+  {
+    "version": "1.1.41",
+    "date": "2025-10-14",
+    "changes": [
+      "Use the organisation working year setting on the Standard week planner instead of a duplicate leave-year field.",
+      "Display an annual leave allowance card when monthly accrual is turned off and apply that total to projections.",
+      "Move the leave-taken input onto its own line for improved readability on larger screens."
+    ]
+  },
+  {
+    "version": "1.1.40",
+    "date": "2025-10-14",
+    "changes": [
+      "Replace the \"How accrual is applied\" toggle with a dropdown on the Standard week planner so it is easier to use on mobile screens.",
+      "List the bank holiday names and dates that fall within a proposed leave period to mirror the other leave planner cards.",
+      "Add an optional field for leave already taken this year and subtract it from the projected balance in the proposed leave summary."
+    ]
+  },
   {
     "version": "1.1.38",
     "date": "2025-10-12",
