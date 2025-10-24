@@ -51,7 +51,9 @@ const getLatestById = (id) => {
   const nodes = document.querySelectorAll(`[id="${id}"]`);
   return nodes.length ? nodes[nodes.length - 1] : null;
 };
-const LS = {
+const LS_PREFIX = "wealthtrack:";
+const storageKey = (key) => `${LS_PREFIX}${key}`;
+const LEGACY_LS_KEYS = {
   assets: "assets",
   liabs: "liabilities",
   snaps: "snapshots",
@@ -70,6 +72,9 @@ const LS = {
   forecastTip: "forecastTipSeen",
   view: "activeView",
 };
+const LS = Object.fromEntries(
+  Object.entries(LEGACY_LS_KEYS).map(([name, key]) => [name, storageKey(key)]),
+);
 const save = (k, v) => localStorage.setItem(k, JSON.stringify(v));
 const load = (k, d) => JSON.parse(localStorage.getItem(k)) || d;
 const getLocalStorageItem = (key) => {
@@ -79,6 +84,45 @@ const getLocalStorageItem = (key) => {
     return null;
   }
 };
+
+const migrateStorageKeys = () => {
+  if (typeof localStorage === "undefined") return;
+  try {
+    Object.values(LEGACY_LS_KEYS).forEach((legacyKey) => {
+      const prefixedKey = storageKey(legacyKey);
+      const existingPrefixed = localStorage.getItem(prefixedKey);
+      if (existingPrefixed !== null) {
+        localStorage.removeItem(legacyKey);
+        return;
+      }
+      const legacyValue = localStorage.getItem(legacyKey);
+      if (legacyValue !== null) {
+        localStorage.setItem(prefixedKey, legacyValue);
+        localStorage.removeItem(legacyKey);
+      }
+    });
+
+    const legacyCollapseKeys = [];
+    for (let i = 0; i < localStorage.length; i += 1) {
+      const key = localStorage.key(i);
+      if (!key || key.startsWith(LS_PREFIX)) continue;
+      if (key.startsWith("cardCollapsed:")) legacyCollapseKeys.push(key);
+    }
+
+    legacyCollapseKeys.forEach((legacyKey) => {
+      const prefixedKey = storageKey(legacyKey);
+      if (localStorage.getItem(prefixedKey) === null) {
+        const legacyValue = localStorage.getItem(legacyKey);
+        if (legacyValue !== null) {
+          localStorage.setItem(prefixedKey, legacyValue);
+        }
+      }
+      localStorage.removeItem(legacyKey);
+    });
+  } catch (_) {}
+};
+
+migrateStorageKeys();
 
 const COLLAPSE_CARDS_BY_DEFAULT = (() => {
   try {
@@ -1559,6 +1603,7 @@ function initProfiles() {
   let id = localStorage.getItem(LS.activeProfile);
   const storedNavSticky = readStoredMobileNavSticky();
   try {
+    localStorage.removeItem(storageKey("currency"));
     localStorage.removeItem("currency");
   } catch (_) {}
   if (!profiles) {
@@ -5931,7 +5976,7 @@ function setupCardCollapsing() {
       const baseId = card.id
         ? `id:${card.id}`
         : `title:${sanitize(title)}`;
-      const key = `cardCollapsed:${baseId}`;
+      const key = storageKey(`cardCollapsed:${baseId}`);
       card.dataset.collapseKey = key;
 
       // Inject chevron if not present
