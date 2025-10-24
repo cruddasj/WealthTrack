@@ -1,4 +1,11 @@
-[
+[ 
+  {
+    "version": "1.1.40",
+    "date": "2025-10-24",
+    "changes": [
+      "Keep WealthTrack data safe by saving it under app-specific browser storage keys so sibling templates can't wipe your settings."
+    ]
+  },
   {
     "version": "1.1.38",
     "date": "2025-10-12",
