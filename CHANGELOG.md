@@ -2,6 +2,9 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
+## [1.1.41] - 2025-12-01
+- Capture monthly income and spending as cash flow so forecasts and goals reflect your regular money movement.
+
 ## [1.1.40] - 2025-10-24
 - Store WealthTrack settings and data under app-specific browser storage keys so clearing another template app no longer erases your information.
 
