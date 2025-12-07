@@ -612,6 +612,66 @@
           </div>
         </div>
 
+        <div class="card transition">
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Cash Flow (Income &amp; Spend)</h3>
+          <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
+            Capture your monthly income and recurring spending. The net amount feeds into every forecast alongside your assets
+            and liabilities.
+          </p>
+          <form id="cashFlowForm" class="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
+            <div>
+              <label for="cashFlowIncome" class="form-label required-label">
+                Monthly Income (<span data-currency-symbol>£</span>)
+              </label>
+              <input type="number" step="any" id="cashFlowIncome" class="input-field" required />
+            </div>
+            <div>
+              <label for="cashFlowIncomeLabel" class="form-label">Income Source</label>
+              <input
+                type="text"
+                id="cashFlowIncomeLabel"
+                class="input-field"
+                placeholder="Salary, Pension, Side business, etc."
+                list="cashFlowIncomeOptions"
+              />
+              <datalist id="cashFlowIncomeOptions">
+                <option value="Salary"></option>
+                <option value="Pension"></option>
+              </datalist>
+            </div>
+            <div>
+              <label for="cashFlowExpenses" class="form-label">Monthly Spend (<span data-currency-symbol>£</span>)</label>
+              <input type="number" step="any" id="cashFlowExpenses" class="input-field" />
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                Recurring bills, subscriptions, or other regular outgoings.
+              </p>
+            </div>
+            <div>
+              <label for="cashFlowExpenseLabel" class="form-label">Spending Type</label>
+              <input
+                type="text"
+                id="cashFlowExpenseLabel"
+                class="input-field"
+                placeholder="Bills, Subscriptions, Mortgage, etc."
+                list="cashFlowExpenseOptions"
+              />
+              <datalist id="cashFlowExpenseOptions">
+                <option value="Bills"></option>
+                <option value="Housing"></option>
+                <option value="Subscriptions"></option>
+              </datalist>
+            </div>
+            <div class="md:col-span-2 flex items-end">
+              <button type="submit" class="btn btn-green btn-block">Save Cash Flow</button>
+            </div>
+          </form>
+          <div id="cashFlowSummary" class="mt-4 text-sm text-gray-700 dark:text-gray-300"></div>
+          <div class="mt-3 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 text-blue-900 dark:text-blue-100 text-xs rounded-lg p-3">
+            Net monthly cash flow is applied to all growth scenarios so projections reflect your income and spending even when
+            they are not tied to a specific asset.
+          </div>
+        </div>
+
         <div class="card">
           <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Goals</h3>
           <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">

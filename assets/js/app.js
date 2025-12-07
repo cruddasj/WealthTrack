@@ -4,6 +4,10 @@ let profiles = [];
 let activeProfile = null;
 let assets = [];
 let liabilities = [];
+let cashFlowIncome = 0;
+let cashFlowIncomeLabel = "Salary";
+let cashFlowExpenses = 0;
+let cashFlowExpenseLabel = "Spending";
 let snapshots = [];
 let simEvents = [];
 let scenarioEventsEnabled = true;
@@ -1061,6 +1065,16 @@ function normalizeImportedProfile(profile, index = 0) {
     profile?.id != null && profile.id !== ""
       ? profile.id
       : Date.now() + index;
+  const incomeLabel = normalizeCashFlowLabel(
+    profile?.cashFlowIncomeLabel ??
+      normalizeLegacyIncomeType(profile?.cashFlowIncomeType),
+    DEFAULT_INCOME_LABEL,
+  );
+  const expenseLabel = normalizeCashFlowLabel(
+    profile?.cashFlowExpenseLabel,
+    DEFAULT_EXPENSE_LABEL,
+  );
+
   return {
     id: baseId,
     name: profile?.name || `Profile ${index + 1}`,
@@ -1072,6 +1086,17 @@ function normalizeImportedProfile(profile, index = 0) {
       };
     }),
     liabilities: ensureArray(profile?.liabilities),
+    cashFlowIncome:
+      profile?.cashFlowIncome != null
+        ? Math.max(0, Number(profile.cashFlowIncome) || 0)
+        : 0,
+    cashFlowIncomeLabel: incomeLabel,
+    cashFlowIncomeType: incomeLabel,
+    cashFlowExpenses:
+      profile?.cashFlowExpenses != null
+        ? Math.max(0, Number(profile.cashFlowExpenses) || 0)
+        : 0,
+    cashFlowExpenseLabel: expenseLabel,
     snapshots: ensureArray(profile?.snapshots),
     simEvents: ensureArray(profile?.simEvents),
     goalValue: profile?.goalValue || 0,
@@ -1202,6 +1227,11 @@ function saveCurrentProfile() {
   if (!activeProfile) return;
   activeProfile.assets = assets;
   activeProfile.liabilities = liabilities;
+  activeProfile.cashFlowIncome = cashFlowIncome;
+  activeProfile.cashFlowIncomeLabel = cashFlowIncomeLabel;
+  activeProfile.cashFlowIncomeType = cashFlowIncomeLabel;
+  activeProfile.cashFlowExpenses = cashFlowExpenses;
+  activeProfile.cashFlowExpenseLabel = cashFlowExpenseLabel;
   activeProfile.snapshots = snapshots;
   activeProfile.simEvents = simEvents;
   activeProfile.scenarioEventsEnabled = scenarioEventsEnabled;
@@ -1238,6 +1268,52 @@ function persist() {
 function updateGoalButton() {
   const btn = $("goalBtn");
   if (btn) btn.textContent = goalValue > 0 && goalTargetDate ? "Update" : "Set";
+}
+
+const hasCashFlowData = () => cashFlowIncome > 0 || cashFlowExpenses > 0;
+const hasForecastInputs = () =>
+  assets.length > 0 || liabilities.length > 0 || hasCashFlowData();
+
+const DEFAULT_INCOME_LABEL = "Salary";
+const DEFAULT_EXPENSE_LABEL = "Spending";
+
+const normalizeCashFlowLabel = (value, fallback) => {
+  const label = (value ?? "").toString().trim();
+  if (!label) return fallback;
+  return label.slice(0, 60);
+};
+
+const normalizeLegacyIncomeType = (value) => {
+  if (value === "pension") return "Pension";
+  if (value === "salary") return "Salary";
+  return normalizeCashFlowLabel(value, DEFAULT_INCOME_LABEL);
+};
+
+function getCashFlowInputs({ useFormValues = false } = {}) {
+  let income = cashFlowIncome;
+  let expenses = cashFlowExpenses;
+  let incomeLabel = cashFlowIncomeLabel;
+  let expenseLabel = cashFlowExpenseLabel;
+
+  if (useFormValues) {
+    const incomeInput = getLatestById("cashFlowIncome");
+    const expenseInput = getLatestById("cashFlowExpenses");
+    const incomeLabelInput = getLatestById("cashFlowIncomeLabel");
+    const expenseLabelInput = getLatestById("cashFlowExpenseLabel");
+    const parsedIncome = Number.parseFloat(incomeInput?.value ?? "");
+    const parsedExpenses = Number.parseFloat(expenseInput?.value ?? "");
+    if (Number.isFinite(parsedIncome)) income = parsedIncome;
+    if (Number.isFinite(parsedExpenses)) expenses = parsedExpenses;
+    if (incomeLabelInput?.value) incomeLabel = incomeLabelInput.value;
+    if (expenseLabelInput?.value) expenseLabel = expenseLabelInput.value;
+  }
+
+  income = toNonNegativeNumber(income, 0);
+  expenses = toNonNegativeNumber(expenses, 0);
+  incomeLabel = normalizeCashFlowLabel(incomeLabel, DEFAULT_INCOME_LABEL);
+  expenseLabel = normalizeCashFlowLabel(expenseLabel, DEFAULT_EXPENSE_LABEL);
+
+  return { income, expenses, net: income - expenses, incomeLabel, expenseLabel };
 }
 
 const perYear = { none: 0, monthly: 12, quarterly: 4, yearly: 1 };
@@ -1467,6 +1543,11 @@ function loadDemoData() {
       },
     ];
 
+    cashFlowIncome = 4500;
+    cashFlowIncomeLabel = "Salary";
+    cashFlowExpenses = 2500;
+    cashFlowExpenseLabel = "Recurring bills";
+
     // A couple of what-if events
     const nextYear = new Date(new Date().getFullYear() + 1, 0, 15).getTime();
     const twoYears = new Date(new Date().getFullYear() + 2, 5, 1).getTime();
@@ -1506,6 +1587,15 @@ function loadDemoData() {
     activeProfile.taxSettings = taxSettings;
     invalidateTaxCache();
 
+    if (activeProfile) {
+      activeProfile.cashFlowIncome = cashFlowIncome;
+      activeProfile.cashFlowIncomeLabel = cashFlowIncomeLabel;
+      activeProfile.cashFlowIncomeType = cashFlowIncomeLabel;
+      activeProfile.cashFlowExpenses = cashFlowExpenses;
+      activeProfile.cashFlowExpenseLabel = cashFlowExpenseLabel;
+    }
+
+    updateCashFlowInputs();
     updateFireFormInputs();
     updateFireForecastInputs();
 
@@ -1612,6 +1702,11 @@ function initProfiles() {
       name: "Default",
       assets: load(LS.assets, []),
       liabilities: load(LS.liabs, []),
+      cashFlowIncome: 0,
+      cashFlowIncomeLabel: DEFAULT_INCOME_LABEL,
+      cashFlowIncomeType: DEFAULT_INCOME_LABEL,
+      cashFlowExpenses: 0,
+      cashFlowExpenseLabel: DEFAULT_EXPENSE_LABEL,
       snapshots: load(LS.snaps, []),
       simEvents: load(LS.events, []),
       goalValue: +localStorage.getItem(LS.goal) || 0,
@@ -1712,6 +1807,39 @@ function initProfiles() {
         p.mobileNavSticky = storedNavSticky;
         profilesUpdated = true;
       }
+      const incomeVal = Number(p.cashFlowIncome);
+      if (!Number.isFinite(incomeVal) || incomeVal < 0) {
+        p.cashFlowIncome = 0;
+        profilesUpdated = true;
+      } else if (incomeVal !== p.cashFlowIncome) {
+        p.cashFlowIncome = incomeVal;
+        profilesUpdated = true;
+      }
+      const expenseVal = Number(p.cashFlowExpenses);
+      if (!Number.isFinite(expenseVal) || expenseVal < 0) {
+        p.cashFlowExpenses = 0;
+        profilesUpdated = true;
+      } else if (expenseVal !== p.cashFlowExpenses) {
+        p.cashFlowExpenses = expenseVal;
+        profilesUpdated = true;
+      }
+      const normalizedIncomeLabel = normalizeCashFlowLabel(
+        p.cashFlowIncomeLabel ?? normalizeLegacyIncomeType(p.cashFlowIncomeType),
+        DEFAULT_INCOME_LABEL,
+      );
+      if (normalizedIncomeLabel !== p.cashFlowIncomeLabel) {
+        p.cashFlowIncomeLabel = normalizedIncomeLabel;
+        p.cashFlowIncomeType = normalizedIncomeLabel;
+        profilesUpdated = true;
+      }
+      const normalizedExpenseLabel = normalizeCashFlowLabel(
+        p.cashFlowExpenseLabel,
+        DEFAULT_EXPENSE_LABEL,
+      );
+      if (normalizedExpenseLabel !== p.cashFlowExpenseLabel) {
+        p.cashFlowExpenseLabel = normalizedExpenseLabel;
+        profilesUpdated = true;
+      }
       if (!Object.prototype.hasOwnProperty.call(p, "scenarioEventsEnabled")) {
         p.scenarioEventsEnabled = true;
         profilesUpdated = true;
@@ -1745,6 +1873,23 @@ function initProfiles() {
   activeProfile = profiles.find((p) => p.id == id) || profiles[0];
   assets = activeProfile.assets || [];
   liabilities = activeProfile.liabilities || [];
+  cashFlowIncome =
+    activeProfile.cashFlowIncome != null
+      ? Math.max(0, Number(activeProfile.cashFlowIncome) || 0)
+      : 0;
+  cashFlowIncomeLabel = normalizeCashFlowLabel(
+    activeProfile.cashFlowIncomeLabel ??
+      normalizeLegacyIncomeType(activeProfile.cashFlowIncomeType),
+    DEFAULT_INCOME_LABEL,
+  );
+  cashFlowExpenses =
+    activeProfile.cashFlowExpenses != null
+      ? Math.max(0, Number(activeProfile.cashFlowExpenses) || 0)
+      : 0;
+  cashFlowExpenseLabel = normalizeCashFlowLabel(
+    activeProfile.cashFlowExpenseLabel,
+    DEFAULT_EXPENSE_LABEL,
+  );
   snapshots = activeProfile.snapshots || [];
   simEvents = activeProfile.simEvents || [];
   scenarioEventsEnabled =
@@ -1799,6 +1944,11 @@ function initProfiles() {
   activeProfile.fireForecastFrequency = fireForecastFrequency;
   activeProfile.fireForecastInflation = fireForecastInflation;
   activeProfile.fireForecastRetireDate = fireForecastRetireDate;
+  activeProfile.cashFlowIncome = cashFlowIncome;
+  activeProfile.cashFlowIncomeLabel = cashFlowIncomeLabel;
+  activeProfile.cashFlowIncomeType = cashFlowIncomeLabel;
+  activeProfile.cashFlowExpenses = cashFlowExpenses;
+  activeProfile.cashFlowExpenseLabel = cashFlowExpenseLabel;
   normalizeData();
   loadPassiveAssetSelection(activeProfile);
   taxSettings = normalizeTaxSettings(activeProfile.taxSettings);
@@ -1811,6 +1961,7 @@ function initProfiles() {
   localStorage.setItem(LS.activeProfile, activeProfile.id);
 }
 initProfiles();
+updateCashFlowInputs();
 
 const calculateCurrentValue = (asset, now = Date.now()) => {
   if (!asset) return 0;
@@ -2018,6 +2169,9 @@ function buildForecastScenarios(yearsOverride = null, opts = {}) {
     ? Array(labels.length).fill(0)
     : null;
   const liabilityTotalsHigh = includeBreakdown
+    ? Array(labels.length).fill(0)
+    : null;
+  const cashFlowTotals = includeBreakdown
     ? Array(labels.length).fill(0)
     : null;
 
@@ -2232,6 +2386,31 @@ function buildForecastScenarios(yearsOverride = null, opts = {}) {
     });
   }
 
+  const cashFlow = getCashFlowInputs();
+  const includeCashFlow =
+    !passiveOnly && (cashFlow.income > 0 || cashFlow.expenses > 0);
+  if (includeCashFlow && cashFlow.net !== 0) {
+    let running = 0;
+    for (let i = 0; i < labels.length; i++) {
+      base[i] += running;
+      low[i] += running;
+      high[i] += running;
+      if (cashFlowTotals) cashFlowTotals[i] = running;
+      if (i < labels.length - 1) running += cashFlow.net;
+    }
+  }
+
+  if (includeBreakdown && includeCashFlow) {
+    assetDetails.push({
+      id: "__cash_flow__",
+      name: "Cash flow (net)",
+      base: cashFlowTotals || Array(labels.length).fill(0),
+      low: cashFlowTotals || Array(labels.length).fill(0),
+      high: cashFlowTotals || Array(labels.length).fill(0),
+      isCashFlow: true,
+    });
+  }
+
   if (includeBreakdown) {
     const diffTolerance = 0.005;
     const diffBase = Array(labels.length).fill(0);
@@ -2245,9 +2424,10 @@ function buildForecastScenarios(yearsOverride = null, opts = {}) {
       const baseLiabs = liabilityTotalsBase ? liabilityTotalsBase[i] || 0 : 0;
       const lowLiabs = liabilityTotalsLow ? liabilityTotalsLow[i] || 0 : 0;
       const highLiabs = liabilityTotalsHigh ? liabilityTotalsHigh[i] || 0 : 0;
-      const baseDiff = (base[i] || 0) - baseAssets - baseLiabs;
-      const lowDiff = (low[i] || 0) - lowAssets - lowLiabs;
-      const highDiff = (high[i] || 0) - highAssets - highLiabs;
+      const baseCashFlow = cashFlowTotals ? cashFlowTotals[i] || 0 : 0;
+      const baseDiff = (base[i] || 0) - baseAssets - baseLiabs - baseCashFlow;
+      const lowDiff = (low[i] || 0) - lowAssets - lowLiabs - baseCashFlow;
+      const highDiff = (high[i] || 0) - highAssets - highLiabs - baseCashFlow;
       diffBase[i] = baseDiff;
       diffLow[i] = lowDiff;
       diffHigh[i] = highDiff;
@@ -3494,6 +3674,23 @@ function switchProfile(id, { showFeedback = false } = {}) {
   if (!activeProfile) return;
   assets = activeProfile.assets || [];
   liabilities = activeProfile.liabilities || [];
+  cashFlowIncome =
+    activeProfile.cashFlowIncome != null
+      ? Math.max(0, Number(activeProfile.cashFlowIncome) || 0)
+      : 0;
+  cashFlowIncomeLabel = normalizeCashFlowLabel(
+    activeProfile.cashFlowIncomeLabel ??
+      normalizeLegacyIncomeType(activeProfile.cashFlowIncomeType),
+    DEFAULT_INCOME_LABEL,
+  );
+  cashFlowExpenses =
+    activeProfile.cashFlowExpenses != null
+      ? Math.max(0, Number(activeProfile.cashFlowExpenses) || 0)
+      : 0;
+  cashFlowExpenseLabel = normalizeCashFlowLabel(
+    activeProfile.cashFlowExpenseLabel,
+    DEFAULT_EXPENSE_LABEL,
+  );
   snapshots = activeProfile.snapshots || [];
   simEvents = activeProfile.simEvents || [];
   goalValue = activeProfile.goalValue || 0;
@@ -3546,6 +3743,7 @@ function switchProfile(id, { showFeedback = false } = {}) {
     : "";
   const inflEl = $("inflationRate");
   if (inflEl) inflEl.value = inflationRate;
+  updateCashFlowInputs();
   updateFireFormInputs();
   updateFireForecastInputs();
   updateGoalButton();
@@ -3582,6 +3780,11 @@ function addProfile(name) {
     name: name || `Profile ${profiles.length + 1}`,
     assets: [],
     liabilities: [],
+    cashFlowIncome: 0,
+    cashFlowIncomeLabel: DEFAULT_INCOME_LABEL,
+    cashFlowIncomeType: DEFAULT_INCOME_LABEL,
+    cashFlowExpenses: 0,
+    cashFlowExpenseLabel: DEFAULT_EXPENSE_LABEL,
     snapshots: [],
     simEvents: [],
     goalValue: 0,
@@ -3640,6 +3843,10 @@ function deleteActiveProfile() {
     scenarioEventsEnabled = true;
     goalValue = 0;
     goalTargetDate = null;
+    cashFlowIncome = 0;
+    cashFlowIncomeLabel = DEFAULT_INCOME_LABEL;
+    cashFlowExpenses = 0;
+    cashFlowExpenseLabel = DEFAULT_EXPENSE_LABEL;
     fireExpenses = 0;
     fireExpensesFrequency = "annual";
     fireWithdrawalRate = 4;
@@ -3657,6 +3864,7 @@ function deleteActiveProfile() {
     updateFireFormInputs();
     updateFireForecastInputs();
     updateGoalButton();
+    updateCashFlowInputs();
     renderAssets();
     renderLiabilities();
     renderEvents();
@@ -3682,14 +3890,16 @@ function canRunStressTest() {
 function updateEmptyStates() {
   const hasAssets = assets.length > 0;
   const hasLiabs = liabilities.length > 0;
+  const hasCashFlow = hasCashFlowData();
   const hasGoalData = goalValue > 0 || goalTargetDate;
   const hasGoal = goalValue > 0 && goalTargetDate;
-  const canForecast = hasAssets || hasLiabs;
+  const canForecast = hasAssets || hasLiabs || hasCashFlow;
   const goalInsightsAvailable = canForecast && hasGoal;
   const canStressTest = canRunStressTest();
   const hasAnyData =
     hasAssets ||
     hasLiabs ||
+    hasCashFlow ||
     snapshots.length > 0 ||
     simEvents.length > 0 ||
     hasGoalData;
@@ -3710,7 +3920,7 @@ function updateEmptyStates() {
 
   // Events hint
   const evHint = $("eventsHint");
-  if (evHint) evHint.classList.toggle("hidden", hasAssets || hasLiabs);
+  if (evHint) evHint.classList.toggle("hidden", canForecast);
 
   // Hide full cards for brand-new users
   const ForecastCard = $("ForecastCard");
@@ -4030,6 +4240,52 @@ function updateTotals() {
   const elWealthForecast = $("totalWealthForecast");
   if (elWealthOld) elWealthOld.textContent = current;
   if (elWealthForecast) elWealthForecast.textContent = current;
+}
+
+function updateCashFlowSummary() {
+  const summary = $("cashFlowSummary");
+  if (!summary) return;
+  const { income, expenses, net, incomeLabel, expenseLabel } = getCashFlowInputs({
+    useFormValues: true,
+  });
+  const baseClass = "text-sm text-gray-700 dark:text-gray-300";
+  if (!(income > 0) && !(expenses > 0)) {
+    summary.className = baseClass;
+    summary.textContent =
+      "Add your monthly income and spending to weave cash flow into future projections.";
+    return;
+  }
+  const annualImpact = net * 12;
+  const netClass =
+    net >= 0
+      ? "text-green-600 dark:text-green-400 font-semibold"
+      : "text-red-600 dark:text-red-400 font-semibold";
+  summary.className = `${baseClass} space-y-1`;
+  summary.innerHTML = `
+    <p>Monthly income (${incomeLabel}): ${fmtCurrency(income)}</p>
+    <p>Monthly spend (${expenseLabel}): ${fmtCurrency(expenses)}</p>
+    <p class="${netClass}">Net monthly cash flow: ${fmtCurrency(net)} (${fmtCurrency(
+      annualImpact,
+    )} per year)</p>
+  `;
+}
+
+function updateCashFlowInputs() {
+  const { income, expenses, incomeLabel, expenseLabel } = getCashFlowInputs();
+  const formatNumber = (val) => {
+    const num = Number.parseFloat(val);
+    if (!Number.isFinite(num)) return "";
+    return Number(num.toFixed(2)).toString();
+  };
+  const incomeInput = $("cashFlowIncome");
+  if (incomeInput) incomeInput.value = formatNumber(income);
+  const expenseInput = $("cashFlowExpenses");
+  if (expenseInput) expenseInput.value = formatNumber(expenses);
+  const incomeLabelInput = $("cashFlowIncomeLabel");
+  if (incomeLabelInput) incomeLabelInput.value = incomeLabel;
+  const expenseLabelInput = $("cashFlowExpenseLabel");
+  if (expenseLabelInput) expenseLabelInput.value = expenseLabel;
+  updateCashFlowSummary();
 }
 
 function updateScenarioEventsUI() {
@@ -4718,7 +4974,7 @@ function renderSnapshotComparisonResult() {
 }
 
 function updateWealthChart() {
-  const hasData = assets.length > 0 || liabilities.length > 0;
+  const hasData = hasForecastInputs();
   $("wealthChart").hidden = !hasData;
   $("wealthChartMessage").hidden = hasData;
   if (!hasData) {
@@ -4949,7 +5205,7 @@ function updateWealthChart() {
 
   const wrap = $("forecastGoalsDates");
   wrap.innerHTML = "";
-  if (goalValue > 0 && (assets.length > 0 || liabilities.length > 0)) {
+  if (goalValue > 0 && hasForecastInputs()) {
     const getHit = (arr) => {
       for (let i = 1; i < arr.length; i++) {
         if (arr[i].y >= goalValue) return arr[i].x;
@@ -5244,7 +5500,7 @@ function updateInflationImpactCard() {
   const rateInput = $("inflationRate");
   const container = $("inflationImpactCard");
   if (!lowEl || !expEl || !highEl || !container) return;
-  const hasPrereq = goalValue > 0 && (assets.length > 0 || liabilities.length > 0);
+  const hasPrereq = goalValue > 0 && hasForecastInputs();
   const rate = Math.max(0, parseFloat(rateInput?.value ?? inflationRate) || 0) / 100;
   const hits = getGoalHitsFromChart();
   const now = new Date();
@@ -6512,6 +6768,33 @@ function handleFormSubmit(e) {
       form.reset();
       break;
     }
+    case "cashFlowForm": {
+      const parsedIncome = toNonNegativeNumber(
+        form.cashFlowIncome?.value,
+        cashFlowIncome,
+      );
+      const parsedExpenses = toNonNegativeNumber(
+        form.cashFlowExpenses?.value,
+        cashFlowExpenses,
+      );
+      const incomeLabel = normalizeCashFlowLabel(
+        form.cashFlowIncomeLabel?.value,
+        DEFAULT_INCOME_LABEL,
+      );
+      const expenseLabel = normalizeCashFlowLabel(
+        form.cashFlowExpenseLabel?.value,
+        DEFAULT_EXPENSE_LABEL,
+      );
+      cashFlowIncome = parsedIncome;
+      cashFlowExpenses = parsedExpenses;
+      cashFlowIncomeLabel = incomeLabel;
+      cashFlowExpenseLabel = expenseLabel;
+      updateCashFlowInputs();
+      persist();
+      updateWealthChart();
+      updateEmptyStates();
+      break;
+    }
     case "eventForm": {
       const direction = form.eventDirection?.value === "loss" ? "loss" : "gain";
       const rawAmount = parseFloat(form.eventAmount.value);
@@ -7188,7 +7471,7 @@ window.addEventListener("load", () => {
   if (startBtn)
     startBtn.classList.toggle(
       "hidden",
-      assets.length > 0 || liabilities.length > 0,
+      hasForecastInputs(),
     );
   updatePassiveIncome();
 
@@ -7478,6 +7761,7 @@ window.addEventListener("load", () => {
               (p) =>
                 (p.assets?.length || 0) > 0 ||
                 (p.liabilities?.length || 0) > 0 ||
+                (p.cashFlowIncome > 0 || p.cashFlowExpenses > 0) ||
                 (p.snapshots?.length || 0) > 0 ||
                 (p.simEvents?.length || 0) > 0,
             );
@@ -7855,6 +8139,15 @@ window.addEventListener("load", () => {
   document
     .querySelectorAll("form")
     .forEach((f) => on(f, "submit", handleFormSubmit));
+  [
+    "cashFlowIncome",
+    "cashFlowExpenses",
+    "cashFlowIncomeLabel",
+    "cashFlowExpenseLabel",
+  ].forEach((id) => {
+    const el = $(id);
+    if (el) on(el, "input", updateCashFlowSummary);
+  });
   const stressToggle = $("stressAssetsToggle");
   const stressMenu = $("stressAssetsMenu");
   if (stressToggle && stressMenu) {
