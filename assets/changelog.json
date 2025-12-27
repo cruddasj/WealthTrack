@@ -1,5 +1,13 @@
 [ 
   {
+    "version": "1.1.41",
+    "date": "2025-12-27",
+    "changes": [
+      "Track recurring net income with a new Income card that lets you add, edit, and remove sources.",
+      "See Financial Inputs reordered to highlight Income ahead of Liabilities and Assets, with guidance on when to use each section."
+    ]
+  },
+  {
     "version": "1.1.40",
     "date": "2025-10-24",
     "changes": [

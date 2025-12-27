@@ -3,6 +3,7 @@
 let profiles = [];
 let activeProfile = null;
 let assets = [];
+let incomes = [];
 let liabilities = [];
 let snapshots = [];
 let simEvents = [];
@@ -55,6 +56,7 @@ const LS_PREFIX = "wealthtrack:";
 const storageKey = (key) => `${LS_PREFIX}${key}`;
 const LEGACY_LS_KEYS = {
   assets: "assets",
+  incomes: "incomes",
   liabs: "liabilities",
   snaps: "snapshots",
   events: "simEvents",
@@ -1071,6 +1073,7 @@ function normalizeImportedProfile(profile, index = 0) {
         depositDay: DEFAULT_DEPOSIT_DAY,
       };
     }),
+    incomes: ensureArray(profile?.incomes),
     liabilities: ensureArray(profile?.liabilities),
     snapshots: ensureArray(profile?.snapshots),
     simEvents: ensureArray(profile?.simEvents),
@@ -1133,6 +1136,7 @@ function prepareImportedProfiles(data) {
       id: data?.id ?? Date.now(),
       name: data?.name || data?.profileName || "Imported",
       assets: data?.assets,
+      incomes: data?.incomes,
       liabilities: data?.liabilities,
       snapshots: data?.snapshots,
       simEvents: data?.simEvents,
@@ -1201,6 +1205,7 @@ function attemptImportPreview() {
 function saveCurrentProfile() {
   if (!activeProfile) return;
   activeProfile.assets = assets;
+  activeProfile.incomes = incomes;
   activeProfile.liabilities = liabilities;
   activeProfile.snapshots = snapshots;
   activeProfile.simEvents = simEvents;
@@ -1450,6 +1455,27 @@ function loadDemoData() {
         depositDay: DEFAULT_DEPOSIT_DAY,
       },
     ];
+    incomes = [
+      {
+        name: "Salary",
+        amount: 3200,
+        frequency: "monthly",
+        dateAdded: now - 1000 * 60 * 60 * 24 * 50,
+        startDate: now - 1000 * 60 * 60 * 24 * 50,
+        explicitStartDate: now - 1000 * 60 * 60 * 24 * 50,
+        monthlyAmount: monthlyFrom("monthly", 3200),
+      },
+      {
+        name: "Side gig",
+        amount: 400,
+        frequency: "monthly",
+        dateAdded: now - 1000 * 60 * 60 * 24 * 25,
+        startDate: now - 1000 * 60 * 60 * 24 * 25,
+        explicitStartDate: now - 1000 * 60 * 60 * 24 * 25,
+        monthlyAmount: monthlyFrom("monthly", 400),
+      },
+    ];
+    if (activeProfile) activeProfile.incomes = incomes;
     passiveAssetSelection = null;
     if (activeProfile) activeProfile.passiveIncomeAssetSelection = null;
 
@@ -1512,6 +1538,7 @@ function loadDemoData() {
     // Push to UI and storage
     $("goalValue").value = goalValue || "";
     $("goalYear").value = targetYr;
+    renderIncomes();
     renderAssets();
     renderLiabilities();
     renderEvents();
@@ -1569,6 +1596,24 @@ function normalizeData() {
     if (a.includeInPassive === undefined) a.includeInPassive = true;
     a.taxTreatment = normalizeTaxTreatment(a.taxTreatment);
   });
+  incomes.forEach((inc) => {
+    if (!inc || typeof inc !== "object") return;
+    const added = toTimestamp(inc.dateAdded) ?? Date.now();
+    inc.dateAdded = added;
+    const existingExplicit = toTimestamp(inc.explicitStartDate);
+    const start = toTimestamp(inc.startDate);
+    const inferredExplicit =
+      existingExplicit != null
+        ? existingExplicit
+        : start != null && start !== added
+          ? start
+          : null;
+    inc.explicitStartDate = inferredExplicit;
+    inc.startDate = start ?? added;
+    inc.amount = parseFloat(inc.amount) || 0;
+    if (!inc.frequency) inc.frequency = "monthly";
+    inc.monthlyAmount = monthlyFrom(inc.frequency, inc.amount);
+  });
   liabilities.forEach((l) => {
     if (!l || typeof l !== "object") return;
     const added = toTimestamp(l.dateAdded) ?? Date.now();
@@ -1611,6 +1656,7 @@ function initProfiles() {
       id: Date.now(),
       name: "Default",
       assets: load(LS.assets, []),
+      incomes: load(LS.incomes, []),
       liabilities: load(LS.liabs, []),
       snapshots: load(LS.snaps, []),
       simEvents: load(LS.events, []),
@@ -1722,6 +1768,10 @@ function initProfiles() {
           profilesUpdated = true;
         }
       }
+      if (!Array.isArray(p.incomes)) {
+        p.incomes = [];
+        profilesUpdated = true;
+      }
       const normalizedSelection = sanitizePassiveSelection(
         p.passiveIncomeAssetSelection ?? p.passiveIncomeSelection,
       );
@@ -1744,6 +1794,7 @@ function initProfiles() {
   }
   activeProfile = profiles.find((p) => p.id == id) || profiles[0];
   assets = activeProfile.assets || [];
+  incomes = activeProfile.incomes || [];
   liabilities = activeProfile.liabilities || [];
   snapshots = activeProfile.snapshots || [];
   simEvents = activeProfile.simEvents || [];
@@ -1799,6 +1850,7 @@ function initProfiles() {
   activeProfile.fireForecastFrequency = fireForecastFrequency;
   activeProfile.fireForecastInflation = fireForecastInflation;
   activeProfile.fireForecastRetireDate = fireForecastRetireDate;
+  activeProfile.incomes = incomes;
   normalizeData();
   loadPassiveAssetSelection(activeProfile);
   taxSettings = normalizeTaxSettings(activeProfile.taxSettings);
@@ -2448,6 +2500,39 @@ function showEditAsset(index) {
     closeModal();
     renderAssets();
     renderEvents();
+  };
+  openModalNode(tpl);
+}
+
+function showEditIncome(index) {
+  const income = incomes[index];
+  if (!income) return;
+  const tpl = document.importNode($("tpl-edit-income").content, true);
+  tpl.querySelector("#editIncomeIndex").value = index;
+  tpl.querySelector("#editIncomeName").value = income.name;
+  tpl.querySelector("#editIncomeAmount").value = income.amount;
+  const freqSelect = tpl.querySelector("#editIncomeFrequency");
+  if (freqSelect) freqSelect.value = income.frequency || "monthly";
+  const startInput = tpl.querySelector("#editIncomeStartDate");
+  if (startInput)
+    startInput.value = toDateInputValue(income.explicitStartDate);
+  tpl.querySelector("[data-close]").onclick = closeModal;
+  tpl.querySelector("#editIncomeForm").onsubmit = (e) => {
+    e.preventDefault();
+    const f = e.target;
+    const i = +f.querySelector("#editIncomeIndex").value;
+    const inc = incomes[i];
+    if (!inc) return;
+    inc.name = f.querySelector("#editIncomeName").value;
+    inc.amount = parseFloat(f.querySelector("#editIncomeAmount").value) || 0;
+    const freqField = f.querySelector("#editIncomeFrequency");
+    inc.frequency = freqField?.value || "monthly";
+    const explicitInput = f.querySelector("#editIncomeStartDate")?.value;
+    inc.explicitStartDate = toTimestamp(explicitInput);
+    inc.startDate = inc.explicitStartDate ?? getStartDate(inc);
+    inc.monthlyAmount = monthlyFrom(inc.frequency, inc.amount);
+    closeModal();
+    renderIncomes();
   };
   openModalNode(tpl);
 }
@@ -3493,6 +3578,7 @@ function switchProfile(id, { showFeedback = false } = {}) {
   activeProfile = profiles.find((p) => p.id == id);
   if (!activeProfile) return;
   assets = activeProfile.assets || [];
+  incomes = activeProfile.incomes || [];
   liabilities = activeProfile.liabilities || [];
   snapshots = activeProfile.snapshots || [];
   simEvents = activeProfile.simEvents || [];
@@ -3549,12 +3635,14 @@ function switchProfile(id, { showFeedback = false } = {}) {
   updateFireFormInputs();
   updateFireForecastInputs();
   updateGoalButton();
+  activeProfile.incomes = incomes;
   normalizeData();
   loadPassiveAssetSelection(activeProfile);
   taxSettings = normalizeTaxSettings(activeProfile.taxSettings);
   activeProfile.taxSettings = taxSettings;
   invalidateTaxCache();
   updateTaxSettingsUI();
+  renderIncomes();
   renderAssets();
   renderLiabilities();
   renderEvents();
@@ -3581,6 +3669,7 @@ function addProfile(name) {
     id,
     name: name || `Profile ${profiles.length + 1}`,
     assets: [],
+    incomes: [],
     liabilities: [],
     snapshots: [],
     simEvents: [],
@@ -3607,6 +3696,7 @@ function addProfile(name) {
     profiles.length === 2 &&
     profiles[0].name === "Default" &&
     !profiles[0].assets.length &&
+    !(profiles[0].incomes && profiles[0].incomes.length) &&
     !profiles[0].liabilities.length &&
     !profiles[0].snapshots.length &&
     !profiles[0].simEvents.length &&
@@ -3634,6 +3724,7 @@ function deleteActiveProfile() {
     switchProfile(profiles[0].id);
   } else {
     assets = [];
+    incomes = [];
     liabilities = [];
     snapshots = [];
     simEvents = [];
@@ -3657,6 +3748,7 @@ function deleteActiveProfile() {
     updateFireFormInputs();
     updateFireForecastInputs();
     updateGoalButton();
+    renderIncomes();
     renderAssets();
     renderLiabilities();
     renderEvents();
@@ -3682,6 +3774,7 @@ function canRunStressTest() {
 function updateEmptyStates() {
   const hasAssets = assets.length > 0;
   const hasLiabs = liabilities.length > 0;
+  const hasIncome = incomes.length > 0;
   const hasGoalData = goalValue > 0 || goalTargetDate;
   const hasGoal = goalValue > 0 && goalTargetDate;
   const canForecast = hasAssets || hasLiabs;
@@ -3689,6 +3782,7 @@ function updateEmptyStates() {
   const canStressTest = canRunStressTest();
   const hasAnyData =
     hasAssets ||
+    hasIncome ||
     hasLiabs ||
     snapshots.length > 0 ||
     simEvents.length > 0 ||
@@ -3971,6 +4065,73 @@ function renderStressAssetOptions() {
     )
     .join("");
   updateStressAssetsButtonLabel();
+}
+
+function formatIncomeFrequency(freq) {
+  switch (freq) {
+    case "monthly":
+      return "Monthly";
+    case "quarterly":
+      return "Quarterly";
+    case "yearly":
+      return "Yearly";
+    case "none":
+      return "Not recurring";
+    default:
+      return "Custom";
+  }
+}
+
+function renderIncomes() {
+  const tableBody = $("incomeTableBody");
+  if (!tableBody) return;
+  const tableContainer = tableBody.closest(".overflow-x-auto");
+  tableContainer.hidden = incomes.length === 0;
+
+  const sorted = [...incomes].sort((a, b) =>
+    (a.name || "").localeCompare(b.name || "", undefined, {
+      sensitivity: "base",
+    }),
+  );
+
+  tableBody.innerHTML = sorted
+    .map((income) => {
+      const originalIndex = incomes.findIndex((entry) => entry === income);
+      const explicitStart = toTimestamp(income.explicitStartDate);
+      let startCell = "-";
+      if (explicitStart != null) {
+        const startLabel = fmtDate(new Date(explicitStart));
+        const isUpcoming = explicitStart > Date.now();
+        startCell = isUpcoming
+          ? `${startLabel}<span class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100">Upcoming</span>`
+          : startLabel;
+      }
+      const monthlyAmount = monthlyFrom(
+        income.frequency,
+        parseFloat(income.amount) || 0,
+      );
+      const monthlyText =
+        monthlyAmount > 0 ? `${fmtCurrency(monthlyAmount)}/mo` : "-";
+      return `<tr class="text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
+    <td class="px-6 py-4 whitespace-nowrap">${income.name}</td>
+    <td class="px-6 py-4 whitespace-nowrap">${startCell}</td>
+    <td class="px-6 py-4 whitespace-nowrap font-semibold">${fmtCurrency(income.amount || 0)}</td>
+    <td class="px-6 py-4 whitespace-nowrap">${formatIncomeFrequency(income.frequency)}</td>
+    <td class="px-6 py-4 whitespace-nowrap">${monthlyText}</td>
+    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium flex items-center gap-2">
+      <button data-action="edit-income" data-index="${originalIndex}" class="btn-icon" title="Edit Income Source">
+        <svg class="h-5 w-5" fill="currentColor"><use href="#i-edit"/></svg>
+      </button>
+      <button data-action="delete-income" data-index="${originalIndex}" class="btn-icon text-red-600 hover:text-red-900 dark:text-red-500 dark:hover:text-red-400" title="Delete Income Source">
+        <svg class="h-5 w-5" fill="currentColor"><use href="#i-bin"/></svg>
+      </button>
+    </td>
+  </tr>`;
+    })
+    .join("");
+
+  persist();
+  updateEmptyStates();
 }
 
 function renderLiabilities() {
@@ -6454,6 +6615,27 @@ function handleFormSubmit(e) {
   }
   if (!form) return;
   switch (form.id) {
+    case "incomeForm": {
+      const newIncome = {
+        name: form.incomeName.value,
+        amount: parseFloat(form.incomeAmount.value) || 0,
+        frequency: form.incomeFrequency.value || "monthly",
+        dateAdded: Date.now(),
+      };
+      const explicitIncomeStart = toTimestamp(form.incomeStartDate?.value);
+      newIncome.explicitStartDate = explicitIncomeStart;
+      newIncome.startDate = explicitIncomeStart ?? startOfToday();
+      newIncome.monthlyAmount = monthlyFrom(
+        newIncome.frequency,
+        newIncome.amount,
+      );
+      incomes.push(newIncome);
+      renderIncomes();
+      updateEmptyStates();
+      form.reset();
+      if (form.incomeFrequency) form.incomeFrequency.value = "monthly";
+      break;
+    }
     case "assetForm": {
       const newAsset = {
         name: form.assetName.value,
@@ -7127,6 +7309,7 @@ window.addEventListener("load", () => {
     on(taxScenarioSelect, "change", () => clearTaxCalculatorResult());
 
   buildAssetHeader();
+  renderIncomes();
   renderAssets();
   renderLiabilities();
   renderEvents();
@@ -7334,8 +7517,11 @@ window.addEventListener("load", () => {
           {
             showPrompt("New profile name", "", (name) =>
               addProfile(name || `Profile ${profiles.length + 1}`),
-            );
+          );
           }
+          break;
+        case "edit-income":
+          showEditIncome(+index);
           break;
         case "edit-asset":
           showEditAsset(+index);
@@ -7352,6 +7538,16 @@ window.addEventListener("load", () => {
               renderAssets();
               renderEvents();
               updateWealthChart();
+              updateEmptyStates();
+            },
+          );
+          break;
+        case "delete-income":
+          showConfirm(
+            "Are you sure you want to delete this income source?",
+            () => {
+              incomes.splice(+index, 1);
+              renderIncomes();
               updateEmptyStates();
             },
           );
@@ -7477,6 +7673,7 @@ window.addEventListener("load", () => {
             const hasAny = selectedProfilesRaw.some(
               (p) =>
                 (p.assets?.length || 0) > 0 ||
+                (p.incomes?.length || 0) > 0 ||
                 (p.liabilities?.length || 0) > 0 ||
                 (p.snapshots?.length || 0) > 0 ||
                 (p.simEvents?.length || 0) > 0,
@@ -7508,6 +7705,7 @@ window.addEventListener("load", () => {
                   depositDay: DEFAULT_DEPOSIT_DAY,
                 };
               }),
+              incomes: ensureArray(profile.incomes),
             }));
             const dataToExport = {
               profiles: exportProfiles,

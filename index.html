@@ -230,7 +230,6 @@
         <h2 class="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-6">
           Welcome to WealthTrack
         </h2>
-        <div class="card">
           <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Welcome</h3>
           <p class="text-gray-700 dark:text-gray-300 mb-4">
             WealthTrack helps you project and protect your financial future by
@@ -305,10 +304,202 @@
         </div>
 
         <div class="card transition">
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Income</h3>
+          <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
+            Track recurring take-home income (net) that lands in your account each month. Assets & Contributions below are best for investments and other balances you expect to grow.
+          </p>
+
+          <form id="incomeForm" class="grid grid-cols-1 md:gap-4 gap-2">
+            <div class="md:col-span-full">
+              <label for="incomeName" class="form-label required-label"
+                >Income Source</label
+              >
+              <input
+                type="text"
+                id="incomeName"
+                placeholder="e.g. Salary"
+                class="input-field"
+                required
+              />
+            </div>
+            <div class="md:col-span-full">
+              <label for="incomeAmount" class="form-label required-label"
+                >Net Amount (<span data-currency-symbol>£</span>)</label
+              >
+              <input
+                type="number"
+                step="any"
+                id="incomeAmount"
+                placeholder="e.g. 3200"
+                class="input-field"
+                required
+              />
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                Use the amount that actually reaches your account. Gross pay that you invest belongs in Assets &amp; Contributions.
+              </p>
+            </div>
+            <div class="md:col-span-full">
+              <label for="incomeFrequency" class="form-label"
+                >Frequency</label
+              >
+              <select id="incomeFrequency" class="input-field">
+                <option value="monthly" selected>Monthly</option>
+                <option value="quarterly">Quarterly</option>
+                <option value="yearly">Yearly</option>
+              </select>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                Keep this card for recurring income. Irregular windfalls fit better in Scenario Modelling.
+              </p>
+            </div>
+            <div class="md:col-span-full">
+              <label for="incomeStartDate" class="form-label"
+                >Start Date</label
+              >
+              <input type="date" id="incomeStartDate" class="input-field" />
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                Leave blank to start immediately.
+              </p>
+            </div>
+
+            <div class="flex items-end md:col-span-full">
+              <button type="submit" class="btn btn-block btn-green">
+                Add Income Source
+              </button>
+            </div>
+          </form>
+
+          <div class="mt-4 w-full overflow-x-auto">
+            <table
+              class="min-w-full divide-y divide-gray-200 dark:divide-gray-700"
+            >
+              <thead class="bg-gray-200 dark:bg-gray-700">
+                <tr>
+                  <th class="table-header">Source</th>
+                  <th class="table-header">Start Date</th>
+                  <th class="table-header">Net Amount</th>
+                  <th class="table-header">Frequency</th>
+                  <th class="table-header">Monthly Equivalent</th>
+                  <th class="table-header">
+                    <span class="sr-only">Actions</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody
+                id="incomeTableBody"
+                class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700"
+              ></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card transition">
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Liabilities & Payments</h3>
+          <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
+            Track debts or recurring expenses that reduce your wealth.
+          </p>
+          <form id="liabilityForm" class="grid grid-cols-1 md:gap-4 gap-2">
+            <div class="md:col-span-full">
+              <label for="liabilityName" class="form-label required-label"
+                >Liability Name</label
+              >
+              <input
+                type="text"
+                id="liabilityName"
+                class="input-field"
+                required
+              />
+            </div>
+            <div class="md:col-span-full">
+              <label for="liabilityValue" class="form-label required-label"
+                >Amount Owed (<span data-currency-symbol>£</span>)</label
+              >
+              <input
+                type="number"
+                step="any"
+                id="liabilityValue"
+                value="0"
+                class="input-field"
+                required
+              />
+            </div>
+            <div class="md:col-span-full">
+              <label for="liabilityInterest" class="form-label"
+                >Annual Interest Rate (%)</label
+              >
+              <input
+                type="number"
+                step="any"
+                id="liabilityInterest"
+                value="0"
+                class="input-field"
+              />
+            </div>
+            <div class="md:col-span-full">
+              <label for="liabilityPaymentAmount" class="form-label"
+                >Recurring Payment (<span data-currency-symbol>£</span>)</label
+              >
+              <input
+                type="number"
+                step="any"
+                id="liabilityPaymentAmount"
+                value="0"
+                class="input-field"
+              />
+            </div>
+            <div class="md:col-span-full">
+              <label for="liabilityPaymentFrequency" class="form-label"
+                >Payment Frequency</label
+              >
+              <select id="liabilityPaymentFrequency" class="input-field">
+                <option value="none">None</option>
+                <option value="monthly">Monthly</option>
+                <option value="quarterly">Quarterly</option>
+                <option value="yearly">Yearly</option>
+              </select>
+            </div>
+            <div class="md:col-span-full">
+              <label for="liabilityStartDate" class="form-label"
+                >Start Date</label
+              >
+              <input type="date" id="liabilityStartDate" class="input-field" />
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                Leave blank to treat this liability as active immediately.
+                Balances and payments begin on the selected date.
+              </p>
+            </div>
+            <div class="flex items-end md:col-span-full">
+              <button type="submit" class="btn btn-block btn-red">
+                Add Liability
+              </button>
+            </div>
+          </form>
+          <div class="mt-4 w-full overflow-x-auto">
+            <table
+              class="min-w-full divide-y divide-gray-200 dark:divide-gray-700"
+            >
+              <thead class="bg-gray-200 dark:bg-gray-700">
+                  <tr>
+                    <th class="table-header">Name</th>
+                    <th class="table-header">Start Date</th>
+                    <th class="table-header">Current (<span data-currency-symbol>£</span>)</th>
+                    <th class="table-header">Payment</th>
+                    <th class="table-header">
+                      <span class="sr-only">Actions</span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody
+                  id="liabilityTableBody"
+                  class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700"
+                ></tbody>
+              </table>
+            </div>
+        </div>
+
+        <div class="card transition">
           <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Assets & Contributions</h3>
           <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
-            Add assets and recurring deposits, then set growth assumptions to
-            project your future wealth.
+            Add investments, savings, and recurring deposits you expect to grow. Use the Income card above for take-home pay and other regular cash inflows.
           </p>
 
           <form id="assetForm" class="grid grid-cols-1 md:gap-4 gap-2">
@@ -502,110 +693,6 @@
               ></thead>
               <tbody
                 id="assetTableBody"
-                class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700"
-              ></tbody>
-            </table>
-          </div>
-        </div>
-
-        <div class="card transition">
-          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Liabilities & Payments</h3>
-          <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
-            Track debts or recurring expenses that reduce your wealth.
-          </p>
-          <form id="liabilityForm" class="grid grid-cols-1 md:gap-4 gap-2">
-            <div class="md:col-span-full">
-              <label for="liabilityName" class="form-label required-label"
-                >Liability Name</label
-              >
-              <input
-                type="text"
-                id="liabilityName"
-                class="input-field"
-                required
-              />
-            </div>
-            <div class="md:col-span-full">
-              <label for="liabilityValue" class="form-label required-label"
-                >Amount Owed (<span data-currency-symbol>£</span>)</label
-              >
-              <input
-                type="number"
-                step="any"
-                id="liabilityValue"
-                value="0"
-                class="input-field"
-                required
-              />
-            </div>
-            <div class="md:col-span-full">
-              <label for="liabilityInterest" class="form-label"
-                >Annual Interest Rate (%)</label
-              >
-              <input
-                type="number"
-                step="any"
-                id="liabilityInterest"
-                value="0"
-                class="input-field"
-              />
-            </div>
-            <div class="md:col-span-full">
-              <label for="liabilityPaymentAmount" class="form-label"
-                >Recurring Payment (<span data-currency-symbol>£</span>)</label
-              >
-              <input
-                type="number"
-                step="any"
-                id="liabilityPaymentAmount"
-                value="0"
-                class="input-field"
-              />
-            </div>
-            <div class="md:col-span-full">
-              <label for="liabilityPaymentFrequency" class="form-label"
-                >Payment Frequency</label
-              >
-              <select id="liabilityPaymentFrequency" class="input-field">
-                <option value="none">None</option>
-                <option value="monthly">Monthly</option>
-                <option value="quarterly">Quarterly</option>
-                <option value="yearly">Yearly</option>
-              </select>
-            </div>
-            <div class="md:col-span-full">
-              <label for="liabilityStartDate" class="form-label"
-                >Start Date</label
-              >
-              <input type="date" id="liabilityStartDate" class="input-field" />
-              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                Leave blank to treat this liability as active immediately.
-                Balances and payments begin on the selected date.
-              </p>
-            </div>
-            <div class="flex items-end md:col-span-full">
-              <button type="submit" class="btn btn-block btn-red">
-                Add Liability
-              </button>
-            </div>
-          </form>
-        <div class="mt-4 w-full overflow-x-auto">
-          <table
-            class="min-w-full divide-y divide-gray-200 dark:divide-gray-700"
-          >
-            <thead class="bg-gray-200 dark:bg-gray-700">
-                <tr>
-                  <th class="table-header">Name</th>
-                  <th class="table-header">Start Date</th>
-                  <th class="table-header">Current (<span data-currency-symbol>£</span>)</th>
-                  <th class="table-header">Payment</th>
-                  <th class="table-header">
-                    <span class="sr-only">Actions</span>
-                  </th>
-                </tr>
-              </thead>
-              <tbody
-                id="liabilityTableBody"
                 class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700"
               ></tbody>
             </table>
@@ -2497,6 +2584,63 @@
           </div>
 
           <div class="sm:col-span-2 mt-4 flex justify-end gap-3">
+            <button type="button" class="btn btn-gray" data-close>
+              Cancel
+            </button>
+            <button type="submit" class="btn btn-green">Save Changes</button>
+          </div>
+        </form>
+      </div>
+    </template>
+
+    <template id="tpl-edit-income">
+      <div>
+        <h4 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">Edit Income</h4>
+        <form
+          id="editIncomeForm"
+          class="grid grid-cols-1 md:gap-4 gap-2"
+        >
+          <input type="hidden" id="editIncomeIndex" />
+          <div class="md:col-span-full">
+            <label for="editIncomeName" class="form-label required-label"
+              >Income Source</label
+            >
+            <input
+              type="text"
+              id="editIncomeName"
+              class="input-field"
+              required
+            />
+          </div>
+          <div class="md:col-span-full">
+            <label for="editIncomeAmount" class="form-label required-label"
+              >Net Amount (<span data-currency-symbol>£</span>)</label
+            >
+            <input
+              type="number"
+              step="any"
+              id="editIncomeAmount"
+              class="input-field"
+              required
+            />
+          </div>
+          <div class="md:col-span-full">
+            <label for="editIncomeFrequency" class="form-label"
+              >Frequency</label
+            >
+            <select id="editIncomeFrequency" class="input-field">
+              <option value="monthly">Monthly</option>
+              <option value="quarterly">Quarterly</option>
+              <option value="yearly">Yearly</option>
+            </select>
+          </div>
+          <div class="md:col-span-full">
+            <label for="editIncomeStartDate" class="form-label"
+              >Start Date</label
+            >
+            <input type="date" id="editIncomeStartDate" class="input-field" />
+          </div>
+          <div class="md:col-span-full mt-4 flex justify-end gap-3">
             <button type="button" class="btn btn-gray" data-close>
               Cancel
             </button>

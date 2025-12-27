@@ -2,6 +2,10 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
+## [1.1.41] - 2025-12-27
+- Add an Income card to capture recurring net income with edit and delete controls alongside your other financial inputs.
+- Reorder Financial Inputs to show Income, Liabilities & Payments, then Assets & Contributions, with clearer guidance on when to use each card.
+
 ## [1.1.40] - 2025-10-24
 - Store WealthTrack settings and data under app-specific browser storage keys so clearing another template app no longer erases your information.
 
@@ -47,4 +51,3 @@ tions aligned with that logic.
 
 ## [1.0.25] - 2024-05-15
 - Baseline WealthTrack release.
-
