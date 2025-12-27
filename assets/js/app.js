@@ -3,6 +3,7 @@
 let profiles = [];
 let activeProfile = null;
 let assets = [];
+let incomes = [];
 let liabilities = [];
 let snapshots = [];
 let simEvents = [];
@@ -1071,6 +1072,7 @@ function normalizeImportedProfile(profile, index = 0) {
         depositDay: DEFAULT_DEPOSIT_DAY,
       };
     }),
+    incomes: ensureArray(profile?.incomes),
     liabilities: ensureArray(profile?.liabilities),
     snapshots: ensureArray(profile?.snapshots),
     simEvents: ensureArray(profile?.simEvents),
@@ -1201,6 +1203,7 @@ function attemptImportPreview() {
 function saveCurrentProfile() {
   if (!activeProfile) return;
   activeProfile.assets = assets;
+  activeProfile.incomes = incomes;
   activeProfile.liabilities = liabilities;
   activeProfile.snapshots = snapshots;
   activeProfile.simEvents = simEvents;
@@ -1450,6 +1453,16 @@ function loadDemoData() {
         depositDay: DEFAULT_DEPOSIT_DAY,
       },
     ];
+    incomes = [
+      {
+        name: "Monthly Salary",
+        amount: 4000,
+        frequency: "monthly",
+        dateAdded: now - 1000 * 60 * 60 * 24 * 50,
+        startDate: now - 1000 * 60 * 60 * 24 * 50,
+        monthlyAmount: monthlyFrom("monthly", 4000),
+      },
+    ];
     passiveAssetSelection = null;
     if (activeProfile) activeProfile.passiveIncomeAssetSelection = null;
 
@@ -1513,6 +1526,7 @@ function loadDemoData() {
     $("goalValue").value = goalValue || "";
     $("goalYear").value = targetYr;
     renderAssets();
+    renderIncomes();
     renderLiabilities();
     renderEvents();
     updateTaxSettingsUI();
@@ -1568,6 +1582,25 @@ function normalizeData() {
     if (a.highGrowth == null) a.highGrowth = ret;
     if (a.includeInPassive === undefined) a.includeInPassive = true;
     a.taxTreatment = normalizeTaxTreatment(a.taxTreatment);
+  });
+  incomes.forEach((inc) => {
+    if (!inc || typeof inc !== "object") return;
+    const added = toTimestamp(inc.dateAdded) ?? Date.now();
+    inc.dateAdded = added;
+    const existingExplicit = toTimestamp(inc.explicitStartDate);
+    const start = toTimestamp(inc.startDate);
+    const inferredExplicit =
+      existingExplicit != null
+        ? existingExplicit
+        : start != null && start !== added
+          ? start
+          : null;
+    inc.explicitStartDate = inferredExplicit;
+    inc.startDate = start ?? added;
+    if (!inc.frequency) inc.frequency = "monthly";
+    if (inc.amount == null) inc.amount = 0;
+    if (inc.monthlyAmount == null)
+      inc.monthlyAmount = monthlyFrom(inc.frequency, inc.amount);
   });
   liabilities.forEach((l) => {
     if (!l || typeof l !== "object") return;
@@ -2020,6 +2053,9 @@ function buildForecastScenarios(yearsOverride = null, opts = {}) {
   const liabilityTotalsHigh = includeBreakdown
     ? Array(labels.length).fill(0)
     : null;
+  const incomeTotalsBase = Array(labels.length).fill(0);
+  const incomeTotalsLow = Array(labels.length).fill(0);
+  const incomeTotalsHigh = Array(labels.length).fill(0);
 
   const nextAssetForecasts = new Map();
   const assetDetails = includeBreakdown ? [] : null;
@@ -2232,6 +2268,59 @@ function buildForecastScenarios(yearsOverride = null, opts = {}) {
     });
   }
 
+  if (!passiveOnly) {
+    incomes.forEach((income) => {
+      if (!income) return;
+      const startTimestamp = getStartDate(income);
+      const startDateObj = new Date(startTimestamp);
+      const iterator = createDepositIterator(
+        {
+          frequency: income.frequency,
+          originalDeposit: income.amount,
+          dateAdded: income.dateAdded,
+          startDate: startTimestamp,
+          depositDay: DEFAULT_DEPOSIT_DAY,
+        },
+        nowTs,
+      );
+      let running = 0;
+      for (let i = 0; i <= totalMonths; i++) {
+        const currentDate = labels[i];
+        if (iterator) {
+          const addition = iterator.consumeBefore(currentDate.getTime());
+          if (addition) running += addition;
+        }
+        const active = currentDate >= startDateObj;
+        const contribution = active ? running : 0;
+        incomeTotalsBase[i] += contribution;
+        incomeTotalsLow[i] += contribution;
+        incomeTotalsHigh[i] += contribution;
+      }
+    });
+
+    for (let i = 0; i < labels.length; i++) {
+      const incBase = incomeTotalsBase[i] || 0;
+      const incLow = incomeTotalsLow[i] || 0;
+      const incHigh = incomeTotalsHigh[i] || 0;
+      base[i] += incBase;
+      low[i] += incLow;
+      high[i] += incHigh;
+    }
+
+    if (includeBreakdown && incomes.length) {
+      assetDetails.push({
+        id: "__incomes__",
+        name: "Income contributions",
+        base: incomeTotalsBase,
+        low: incomeTotalsLow,
+        high: incomeTotalsHigh,
+        isIncome: true,
+        annualRates: { base: 0, low: 0, high: 0 },
+        grossRates: { base: 0, low: 0, high: 0 },
+      });
+    }
+  }
+
   if (includeBreakdown) {
     const diffTolerance = 0.005;
     const diffBase = Array(labels.length).fill(0);
@@ -2245,9 +2334,12 @@ function buildForecastScenarios(yearsOverride = null, opts = {}) {
       const baseLiabs = liabilityTotalsBase ? liabilityTotalsBase[i] || 0 : 0;
       const lowLiabs = liabilityTotalsLow ? liabilityTotalsLow[i] || 0 : 0;
       const highLiabs = liabilityTotalsHigh ? liabilityTotalsHigh[i] || 0 : 0;
-      const baseDiff = (base[i] || 0) - baseAssets - baseLiabs;
-      const lowDiff = (low[i] || 0) - lowAssets - lowLiabs;
-      const highDiff = (high[i] || 0) - highAssets - highLiabs;
+      const baseIncome = incomeTotalsBase[i] || 0;
+      const lowIncome = incomeTotalsLow[i] || 0;
+      const highIncome = incomeTotalsHigh[i] || 0;
+      const baseDiff = (base[i] || 0) - baseAssets - baseLiabs - baseIncome;
+      const lowDiff = (low[i] || 0) - lowAssets - lowLiabs - lowIncome;
+      const highDiff = (high[i] || 0) - highAssets - highLiabs - highIncome;
       diffBase[i] = baseDiff;
       diffLow[i] = lowDiff;
       diffHigh[i] = highDiff;
@@ -2448,6 +2540,40 @@ function showEditAsset(index) {
     closeModal();
     renderAssets();
     renderEvents();
+  };
+  openModalNode(tpl);
+}
+
+function showEditIncome(index) {
+  const income = incomes[index];
+  if (!income) return;
+  const tpl = document.importNode($("tpl-edit-income").content, true);
+  tpl.querySelector("#editIncomeIndex").value = index;
+  tpl.querySelector("#editIncomeName").value = income.name;
+  tpl.querySelector("#editIncomeAmount").value = income.amount;
+  const freqSel = tpl.querySelector("#editIncomeFrequency");
+  if (freqSel) freqSel.value = income.frequency || "monthly";
+  const editIncomeStart = tpl.querySelector("#editIncomeStartDate");
+  if (editIncomeStart)
+    editIncomeStart.value = toDateInputValue(income.explicitStartDate);
+  tpl.querySelector("[data-close]").onclick = closeModal;
+  tpl.querySelector("#editIncomeFormModal").onsubmit = (e) => {
+    e.preventDefault();
+    const f = e.target;
+    const i = +f.querySelector("#editIncomeIndex").value;
+    const inc = incomes[i];
+    if (!inc) return;
+    inc.name = f.querySelector("#editIncomeName").value;
+    inc.amount = parseFloat(f.querySelector("#editIncomeAmount").value) || 0;
+    inc.frequency = f.querySelector("#editIncomeFrequency").value;
+    const explicitInput = f.querySelector("#editIncomeStartDate")?.value;
+    inc.explicitStartDate = toTimestamp(explicitInput);
+    inc.startDate = inc.explicitStartDate ?? getStartDate(inc);
+    inc.monthlyAmount = monthlyFrom(inc.frequency, inc.amount);
+    closeModal();
+    renderIncomes();
+    updateWealthChart();
+    updateEmptyStates();
   };
   openModalNode(tpl);
 }
@@ -3493,6 +3619,7 @@ function switchProfile(id, { showFeedback = false } = {}) {
   activeProfile = profiles.find((p) => p.id == id);
   if (!activeProfile) return;
   assets = activeProfile.assets || [];
+  incomes = activeProfile.incomes || [];
   liabilities = activeProfile.liabilities || [];
   snapshots = activeProfile.snapshots || [];
   simEvents = activeProfile.simEvents || [];
@@ -3556,6 +3683,7 @@ function switchProfile(id, { showFeedback = false } = {}) {
   invalidateTaxCache();
   updateTaxSettingsUI();
   renderAssets();
+  renderIncomes();
   renderLiabilities();
   renderEvents();
   renderSnapshots();
@@ -3581,6 +3709,7 @@ function addProfile(name) {
     id,
     name: name || `Profile ${profiles.length + 1}`,
     assets: [],
+    incomes: [],
     liabilities: [],
     snapshots: [],
     simEvents: [],
@@ -3634,6 +3763,7 @@ function deleteActiveProfile() {
     switchProfile(profiles[0].id);
   } else {
     assets = [];
+    incomes = [];
     liabilities = [];
     snapshots = [];
     simEvents = [];
@@ -3658,6 +3788,7 @@ function deleteActiveProfile() {
     updateFireForecastInputs();
     updateGoalButton();
     renderAssets();
+    renderIncomes();
     renderLiabilities();
     renderEvents();
     renderSnapshots();
@@ -3681,14 +3812,16 @@ function canRunStressTest() {
 
 function updateEmptyStates() {
   const hasAssets = assets.length > 0;
+  const hasIncome = incomes.length > 0;
   const hasLiabs = liabilities.length > 0;
   const hasGoalData = goalValue > 0 || goalTargetDate;
   const hasGoal = goalValue > 0 && goalTargetDate;
-  const canForecast = hasAssets || hasLiabs;
+  const canForecast = hasAssets || hasLiabs || hasIncome;
   const goalInsightsAvailable = canForecast && hasGoal;
   const canStressTest = canRunStressTest();
   const hasAnyData =
     hasAssets ||
+    hasIncome ||
     hasLiabs ||
     snapshots.length > 0 ||
     simEvents.length > 0 ||
@@ -3870,6 +4003,54 @@ function renderAssets() {
   renderAssetBreakdownChart();
   updatePassiveIncome();
   updateSnapshotComparisonCard();
+}
+
+function renderIncomes() {
+  const tableBody = $("incomeTableBody");
+  if (!tableBody) return;
+  const tableContainer = tableBody.closest(".overflow-x-auto");
+  if (tableContainer) tableContainer.hidden = incomes.length === 0;
+
+  const sorted = [...incomes].sort((a, b) =>
+    (a?.name || "").localeCompare(b?.name || "", undefined, {
+      sensitivity: "base",
+    }),
+  );
+
+  tableBody.innerHTML = sorted
+    .map((inc) => {
+      const idx = incomes.findIndex((i) => i === inc);
+      const explicitStart = toTimestamp(inc.explicitStartDate);
+      let startCell = "-";
+      if (explicitStart != null) {
+        const startLabel = fmtDate(new Date(explicitStart));
+        const isUpcoming = explicitStart > Date.now();
+        startCell = isUpcoming
+          ? `${startLabel}<span class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100">Upcoming</span>`
+          : startLabel;
+      }
+      const hasAmount = inc.amount > 0 && inc.frequency !== "none";
+      const amountLabel = hasAmount
+        ? `${fmtCurrency(inc.amount)} (${inc.frequency})`
+        : fmtCurrency(inc.amount || 0);
+      return `<tr class="text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
+    <td class="px-6 py-3 whitespace-nowrap align-middle">${inc.name}</td>
+    <td class="px-6 py-3 whitespace-nowrap align-middle">${startCell}</td>
+    <td class="px-6 py-3 whitespace-nowrap align-middle font-semibold">${amountLabel}</td>
+    <td class="px-6 py-3 whitespace-nowrap text-right text-sm font-medium flex items-center gap-2">
+      <button data-action="edit-income" data-index="${idx}" class="btn-icon" title="Edit Income">
+        <svg class="h-5 w-5" fill="currentColor"><use href="#i-edit"/></svg>
+      </button>
+      <button data-action="delete-income" data-index="${idx}" class="btn-icon text-red-600 hover:text-red-900 dark:text-red-500 dark:hover:text-red-400" title="Delete Income">
+        <svg class="h-5 w-5" fill="currentColor"><use href="#i-bin"/></svg>
+      </button>
+    </td>
+  </tr>`;
+    })
+    .join("");
+  persist();
+  updateWealthChart();
+  updateEmptyStates();
 }
 
 function renderEventAssetOptions(sel = $("eventAsset")) {
@@ -4718,7 +4899,7 @@ function renderSnapshotComparisonResult() {
 }
 
 function updateWealthChart() {
-  const hasData = assets.length > 0 || liabilities.length > 0;
+  const hasData = assets.length > 0 || liabilities.length > 0 || incomes.length > 0;
   $("wealthChart").hidden = !hasData;
   $("wealthChartMessage").hidden = hasData;
   if (!hasData) {
@@ -6488,6 +6669,28 @@ function handleFormSubmit(e) {
       form.reset();
       break;
     }
+    case "incomeForm": {
+      const newIncome = {
+        name: form.incomeName.value,
+        amount: parseFloat(form.incomeAmount.value) || 0,
+        frequency: form.incomeFrequency.value,
+        dateAdded: Date.now(),
+      };
+      const explicitIncomeStart = toTimestamp(form.incomeStartDate?.value);
+      newIncome.explicitStartDate = explicitIncomeStart;
+      newIncome.startDate = explicitIncomeStart ?? startOfToday();
+      newIncome.monthlyAmount = monthlyFrom(
+        newIncome.frequency,
+        newIncome.amount,
+      );
+      incomes.push(newIncome);
+      renderIncomes();
+      updateWealthChart();
+      updateEmptyStates();
+      form.reset();
+      if (form.incomeFrequency) form.incomeFrequency.value = "monthly";
+      break;
+    }
     case "liabilityForm": {
       const newLiab = {
         name: form.liabilityName.value,
@@ -7340,6 +7543,9 @@ window.addEventListener("load", () => {
         case "edit-asset":
           showEditAsset(+index);
           break;
+        case "edit-income":
+          showEditIncome(+index);
+          break;
         case "edit-liability":
           showEditLiability(+index);
           break;
@@ -7351,6 +7557,17 @@ window.addEventListener("load", () => {
               invalidateTaxCache();
               renderAssets();
               renderEvents();
+              updateWealthChart();
+              updateEmptyStates();
+            },
+          );
+          break;
+        case "delete-income":
+          showConfirm(
+            "Are you sure you want to delete this income source?",
+            () => {
+              incomes.splice(+index, 1);
+              renderIncomes();
               updateWealthChart();
               updateEmptyStates();
             },
@@ -7508,6 +7725,7 @@ window.addEventListener("load", () => {
                   depositDay: DEFAULT_DEPOSIT_DAY,
                 };
               }),
+              incomes: ensureArray(profile.incomes),
             }));
             const dataToExport = {
               profiles: exportProfiles,
