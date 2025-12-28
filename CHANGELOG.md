@@ -2,13 +2,15 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
+## [1.1.44] - 2025-12-28
+- Split the Liabilities & Expenses card into dedicated Expenses and Liabilities cards so you can enter recurring outgoings with names, frequencies, and start dates while keeping debts separate.
+- Base net cash flow forecasts and chart tooltips on income minus expenses (excluding liabilities) and simplify the tooltip label to “Net cash flow.”
+- Update the Goals heading to read “Goal” for consistency across the dashboard.
+
 ## [1.1.43] - 2025-12-27
 - Allow the take home pay calculator to pick tax years through 2029/30 and choose salary sacrifice or relief-at-source pension methods with % or fixed amounts.
 - Reflect relief-at-source tax relief and pre-tax salary sacrifice correctly in the pay breakdown while keeping student loan, tax, and NI estimates aligned to the selected year.
 - Show net cash flow (income minus liabilities) in forecast tooltips and move goal achievement stats inside the Future Wealth card for quicker reference.
-
-## [1.1.44] - 2025-12-27
-- Rename Financial Inputs cards to Income, Liabilities & Expenses, and Assets, and refresh welcome guidance to match the new labels.
 
 ## [1.1.42] - 2025-12-27
 - Add a UK take home pay calculator with tax code input, salary sacrifice handling, and student loan plans so you can estimate pay packets quickly.

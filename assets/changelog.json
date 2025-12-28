@@ -1,18 +1,20 @@
 [
   {
+    "version": "1.1.44",
+    "date": "2025-12-28",
+    "changes": [
+      "Split the Liabilities & Expenses card into separate Expenses and Liabilities cards so you can enter recurring outgoings with names, frequencies, and start dates while keeping debts distinct.",
+      "Calculate net cash flow from income minus expenses (excluding liabilities) in forecasts and shorten the tooltip label to simply “Net cash flow.”",
+      "Rename the Goals heading to “Goal” for consistent copy across the dashboard."
+    ]
+  },
+  {
     "version": "1.1.43",
     "date": "2025-12-27",
     "changes": [
       "Add future tax year selection through 2029/30 to the take home pay calculator and let you choose salary sacrifice or relief-at-source pension methods with percentage or fixed contributions.",
       "Include relief-at-source tax relief and pre-tax salary sacrifice handling in the pay breakdown while keeping student loan, tax, and NI estimates aligned to the selected year.",
       "Show net cash flow in forecast tooltips and relocate goal achievement stats inside the Future Wealth card for quicker review."
-    ]
-  },
-  {
-    "version": "1.1.44",
-    "date": "2025-12-27",
-    "changes": [
-      "Rename the Financial Inputs cards to Income, Liabilities & Expenses, and Assets, and refresh the welcome guidance to reflect the new labels."
     ]
   },
   {
