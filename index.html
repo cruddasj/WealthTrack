@@ -1504,6 +1504,20 @@
                 </p>
               </div>
               <div>
+                <label for="take-home-tax-code" class="form-label"
+                  >Tax code</label
+                >
+                <input
+                  type="text"
+                  id="take-home-tax-code"
+                  class="input-field"
+                  value="1257L"
+                />
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Defaults to the standard UK code. Adjust if your code differs.
+                </p>
+              </div>
+              <div>
                 <label for="take-home-income" class="form-label required-label"
                   >Income amount (<span data-currency-symbol>£</span>)</label
                 >
@@ -1525,29 +1539,6 @@
                 </select>
               </div>
               <div>
-                <label for="take-home-pension-method" class="form-label"
-                  >Pension contribution method</label
-                >
-                <select id="take-home-pension-method" class="input-field">
-                  <option value="sacrifice" selected>Salary sacrifice (pre-tax)</option>
-                  <option value="relief">Relief at source (from take-home)</option>
-                </select>
-              </div>
-              <div>
-                <label for="take-home-tax-code" class="form-label"
-                  >Tax code</label
-                >
-                <input
-                  type="text"
-                  id="take-home-tax-code"
-                  class="input-field"
-                  value="1257L"
-                />
-                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  Defaults to the standard UK code. Adjust if your code differs.
-                </p>
-              </div>
-              <div>
                 <label for="take-home-student-loan" class="form-label"
                   >Student loan plan</label
                 >
@@ -1558,6 +1549,15 @@
                   <option value="plan4">Plan 4</option>
                   <option value="plan5">Plan 5</option>
                   <option value="postgrad">Postgraduate</option>
+                </select>
+              </div>
+              <div>
+                <label for="take-home-pension-method" class="form-label"
+                  >Pension contribution method</label
+                >
+                <select id="take-home-pension-method" class="input-field">
+                  <option value="sacrifice" selected>Salary sacrifice (pre-tax)</option>
+                  <option value="relief">Relief at source (from take-home)</option>
                 </select>
               </div>
               <div class="md:col-span-2">
