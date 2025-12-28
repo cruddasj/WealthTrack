@@ -4250,6 +4250,95 @@ function updateEmptyStates() {
   }
 }
 
+function updateNetCashFlowCard() {
+  const card = $("netCashFlowCard");
+  if (!card) return;
+  const valueEl = $("netCashFlowValue");
+  const emptyEl = $("netCashFlowEmpty");
+  const tableContainer = $("netCashFlowTableContainer");
+  const tableBody = $("netCashFlowTableBody");
+  const incomeTotalEl = $("netCashFlowIncomeTotal");
+  const expenseTotalEl = $("netCashFlowExpenseTotal");
+  const netTotalEl = $("netCashFlowNetTotal");
+  const today = startOfToday();
+  const isActive = (item) => getStartDate(item) <= today;
+
+  const incomeRows = incomes
+    .filter(isActive)
+    .map((inc) => ({
+      name: inc.name || "Income",
+      amount: monthlyFrom(inc.frequency, inc.amount || 0),
+      type: "Income",
+      isOutflow: false,
+    }))
+    .filter((row) => row.amount > 0);
+
+  const expenseRows = expenses
+    .filter(isActive)
+    .map((exp) => ({
+      name: exp.name || "Expense",
+      amount: monthlyFrom(exp.frequency, exp.amount || 0),
+      type: "Expense",
+      isOutflow: true,
+    }))
+    .filter((row) => row.amount > 0);
+
+  const contributionRows = assets
+    .filter((asset) => asset && asset.excludeNetCashflow !== true)
+    .filter(isActive)
+    .map((asset) => ({
+      name: asset.name || "Contribution",
+      amount: monthlyFrom(asset.frequency, asset.originalDeposit || 0),
+      type: "Contribution",
+      isOutflow: true,
+    }))
+    .filter((row) => row.amount > 0);
+
+  const rows = [...incomeRows, ...expenseRows, ...contributionRows].sort(
+    (a, b) =>
+      (a.name || "").localeCompare(b.name || "", undefined, {
+        sensitivity: "base",
+      }),
+  );
+
+  const incomeTotal = incomeRows.reduce((sum, row) => sum + row.amount, 0);
+  const expenseTotal = [...expenseRows, ...contributionRows].reduce(
+    (sum, row) => sum + row.amount,
+    0,
+  );
+  const net = incomeTotal - expenseTotal;
+
+  const setText = (el, value) => {
+    if (el) el.textContent = fmtCurrency(value);
+  };
+  setText(valueEl, net);
+  setText(incomeTotalEl, incomeTotal);
+  setText(expenseTotalEl, -expenseTotal);
+  setText(netTotalEl, net);
+
+  if (!tableContainer || !tableBody || !emptyEl) return;
+  const hasRows = rows.length > 0;
+  emptyEl.classList.toggle("hidden", hasRows);
+  tableContainer.classList.toggle("hidden", !hasRows);
+  if (!hasRows) {
+    tableBody.innerHTML = "";
+    return;
+  }
+  tableBody.innerHTML = rows
+    .map((row) => {
+      const amountClass = row.isOutflow
+        ? "text-red-600 dark:text-red-400"
+        : "text-green-600 dark:text-green-400";
+      const amountLabel = fmtCurrency(row.isOutflow ? -row.amount : row.amount);
+      return `<tr class="text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
+  <td class="px-6 py-3 whitespace-nowrap">${row.name}</td>
+  <td class="px-6 py-3 whitespace-nowrap">${row.type}</td>
+  <td class="px-6 py-3 whitespace-nowrap text-right font-semibold ${amountClass}">${amountLabel}</td>
+</tr>`;
+    })
+    .join("");
+}
+
 // Rendering
 function renderAssets() {
   const tableBody = $("assetTableBody");
@@ -4332,6 +4421,7 @@ function renderAssets() {
   updateWealthChart();
   renderAssetBreakdownChart();
   updatePassiveIncome();
+  updateNetCashFlowCard();
   updateSnapshotComparisonCard();
 }
 
@@ -4381,6 +4471,7 @@ function renderIncomes() {
   persist();
   updateWealthChart();
   updateEmptyStates();
+  updateNetCashFlowCard();
 }
 
 function renderExpenses() {
@@ -4429,6 +4520,7 @@ function renderExpenses() {
   persist();
   updateWealthChart();
   updateEmptyStates();
+  updateNetCashFlowCard();
 }
 
 function renderEventAssetOptions(sel = $("eventAsset")) {
