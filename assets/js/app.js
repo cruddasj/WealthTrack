@@ -1667,6 +1667,7 @@ function normalizeData() {
     if (a.lowGrowth == null) a.lowGrowth = ret;
     if (a.highGrowth == null) a.highGrowth = ret;
     if (a.includeInPassive === undefined) a.includeInPassive = true;
+    if (a.excludeNetCashflow === undefined) a.excludeNetCashflow = false;
     a.taxTreatment = normalizeTaxTreatment(a.taxTreatment);
   });
   incomes.forEach((inc) => {
@@ -2287,7 +2288,7 @@ function buildForecastScenarios(yearsOverride = null, opts = {}) {
       base[i] += baseVal;
       low[i] += lowVal;
       high[i] += highVal;
-      assetDepositTotals[i] += depositRunning;
+      if (!asset.excludeNetCashflow) assetDepositTotals[i] += depositRunning;
       if (includeBreakdown) {
         assetTotalsBase[i] += baseVal;
         assetTotalsLow[i] += lowVal;
@@ -2787,6 +2788,8 @@ function showEditAsset(index) {
   const inc = asset.includeInPassive !== false;
   const incEl = tpl.querySelector("#editIncludePassive");
   if (incEl) incEl.checked = inc;
+  const excludeCbx = tpl.querySelector("#editExcludeNetCashflow");
+  if (excludeCbx) excludeCbx.checked = !!asset.excludeNetCashflow;
 
   tpl.querySelector("[data-close]").onclick = closeModal;
   tpl.querySelector("#editAssetFormModal").onsubmit = (e) => {
@@ -2813,6 +2816,8 @@ function showEditAsset(index) {
     a.monthlyDeposit = monthlyFrom(a.frequency, a.originalDeposit);
     const incCbx = f.querySelector("#editIncludePassive");
     a.includeInPassive = incCbx ? !!incCbx.checked : true;
+    const excludeCbx = f.querySelector("#editExcludeNetCashflow");
+    a.excludeNetCashflow = excludeCbx ? !!excludeCbx.checked : false;
     const taxSelect = f.querySelector("#editAssetTaxTreatment");
     if (taxSelect) a.taxTreatment = normalizeTaxTreatment(taxSelect.value);
     invalidateTaxCache();
@@ -7032,6 +7037,9 @@ function handleFormSubmit(e) {
       newAsset.includeInPassive = form.includePassive
         ? !!form.includePassive.checked
         : true;
+      newAsset.excludeNetCashflow = form.excludeNetCashflow
+        ? !!form.excludeNetCashflow.checked
+        : false;
       newAsset.taxTreatment = normalizeTaxTreatment(
         form.assetTaxTreatment?.value,
       );

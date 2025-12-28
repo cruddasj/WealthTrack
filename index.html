@@ -622,6 +622,21 @@
               </p>
             </div>
 
+            <div class="md:col-span-full">
+              <label class="form-label"
+                >Exclude contributions from Net Cash Flow</label
+              >
+              <label class="dark-mode-toggle">
+                <input type="checkbox" id="excludeNetCashflow" />
+                <span class="toggle-track"
+                  ><span class="toggle-thumb"></span
+                ></span>
+              </label>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                Turn on to keep this asset's deposits out of net cash flow tooltips while still including them in growth projections.
+              </p>
+            </div>
+
             <!-- Include in Passive Income toggle (moved below deposit frequency) -->
             <div class="md:col-span-full">
               <label class="form-label"
@@ -2704,6 +2719,20 @@
                 ><span class="toggle-thumb"></span
               ></span>
             </label>
+          </div>
+          <div class="sm:col-span-2">
+            <label class="form-label"
+              >Exclude contributions from Net Cash Flow</label
+            >
+            <label class="dark-mode-toggle">
+              <input type="checkbox" id="editExcludeNetCashflow" />
+              <span class="toggle-track"
+                ><span class="toggle-thumb"></span
+              ></span>
+            </label>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              Keep deposits for this asset from reducing the net cash flow values shown in forecast tooltips.
+            </p>
           </div>
           <div class="sm:col-span-2">
             <label for="editAssetTaxTreatment" class="form-label">
