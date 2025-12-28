@@ -1,5 +1,29 @@
 [
   {
+    "version": "1.1.43",
+    "date": "2025-12-27",
+    "changes": [
+      "Add future tax year selection through 2029/30 to the take home pay calculator and let you choose salary sacrifice or relief-at-source pension methods with percentage or fixed contributions.",
+      "Include relief-at-source tax relief and pre-tax salary sacrifice handling in the pay breakdown while keeping student loan, tax, and NI estimates aligned to the selected year.",
+      "Show net cash flow in forecast tooltips and relocate goal achievement stats inside the Future Wealth card for quicker review."
+    ]
+  },
+  {
+    "version": "1.1.44",
+    "date": "2025-12-27",
+    "changes": [
+      "Rename the Financial Inputs cards to Income, Liabilities & Expenses, and Assets, and refresh the welcome guidance to reflect the new labels."
+    ]
+  },
+  {
+    "version": "1.1.42",
+    "date": "2025-12-27",
+    "changes": [
+      "Add a UK take home pay calculator with tax code entry, salary sacrifice support, and student loan plan options.",
+      "Show surplus income left after liabilities inside forecast breakdowns and charts so you can see how cash flow contributes."
+    ]
+  },
+  {
     "version": "1.1.41",
     "date": "2025-12-27",
     "changes": [
