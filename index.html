@@ -448,110 +448,6 @@
         </div>
 
         <div class="card transition">
-          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Liabilities</h3>
-          <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
-            Track debts and repayments to see how balances and scheduled payments affect your wealth.
-          </p>
-          <form id="liabilityForm" class="grid grid-cols-1 md:gap-4 gap-2">
-            <div class="md:col-span-full">
-              <label for="liabilityName" class="form-label required-label"
-                >Liability Name</label
-              >
-              <input
-                type="text"
-                id="liabilityName"
-                class="input-field"
-                required
-              />
-            </div>
-            <div class="md:col-span-full">
-              <label for="liabilityValue" class="form-label required-label"
-                >Amount Owed (<span data-currency-symbol>£</span>)</label
-              >
-              <input
-                type="number"
-                step="any"
-                id="liabilityValue"
-                value="0"
-                class="input-field"
-                required
-              />
-            </div>
-            <div class="md:col-span-full">
-              <label for="liabilityInterest" class="form-label"
-                >Annual Interest Rate (%)</label
-              >
-              <input
-                type="number"
-                step="any"
-                id="liabilityInterest"
-                value="0"
-                class="input-field"
-              />
-            </div>
-            <div class="md:col-span-full">
-              <label for="liabilityPaymentAmount" class="form-label"
-                >Recurring Payment (<span data-currency-symbol>£</span>)</label
-              >
-              <input
-                type="number"
-                step="any"
-                id="liabilityPaymentAmount"
-                value="0"
-                class="input-field"
-              />
-            </div>
-            <div class="md:col-span-full">
-              <label for="liabilityPaymentFrequency" class="form-label"
-                >Payment Frequency</label
-              >
-              <select id="liabilityPaymentFrequency" class="input-field">
-                <option value="none">None</option>
-                <option value="monthly">Monthly</option>
-                <option value="quarterly">Quarterly</option>
-                <option value="yearly">Yearly</option>
-              </select>
-            </div>
-            <div class="md:col-span-full">
-              <label for="liabilityStartDate" class="form-label"
-                >Start Date</label
-              >
-              <input type="date" id="liabilityStartDate" class="input-field" />
-              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                Leave blank to treat this liability as active immediately.
-                Balances and payments begin on the selected date.
-              </p>
-            </div>
-            <div class="flex items-end md:col-span-full">
-              <button type="submit" class="btn btn-block btn-red">
-                Add Liability
-              </button>
-            </div>
-          </form>
-        <div class="mt-4 w-full overflow-x-auto">
-          <table
-            class="min-w-full divide-y divide-gray-200 dark:divide-gray-700"
-          >
-            <thead class="bg-gray-200 dark:bg-gray-700">
-                <tr>
-                  <th class="table-header">Name</th>
-                  <th class="table-header">Start Date</th>
-                  <th class="table-header">Current (<span data-currency-symbol>£</span>)</th>
-                  <th class="table-header">Payment</th>
-                  <th class="table-header">
-                    <span class="sr-only">Actions</span>
-                  </th>
-                </tr>
-              </thead>
-              <tbody
-                id="liabilityTableBody"
-                class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700"
-              ></tbody>
-            </table>
-          </div>
-        </div>
-
-        <div class="card transition">
           <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Assets</h3>
           <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
             Add investment balances and recurring deposits, then set growth assumptions to project your future wealth. Use Income for net pay; use this card for savings and investments.
@@ -763,6 +659,110 @@
               ></thead>
               <tbody
                 id="assetTableBody"
+                class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700"
+              ></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card transition">
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Liabilities</h3>
+          <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
+            Track debts and repayments to see how balances and scheduled payments affect your wealth.
+          </p>
+          <form id="liabilityForm" class="grid grid-cols-1 md:gap-4 gap-2">
+            <div class="md:col-span-full">
+              <label for="liabilityName" class="form-label required-label"
+                >Liability Name</label
+              >
+              <input
+                type="text"
+                id="liabilityName"
+                class="input-field"
+                required
+              />
+            </div>
+            <div class="md:col-span-full">
+              <label for="liabilityValue" class="form-label required-label"
+                >Amount Owed (<span data-currency-symbol>£</span>)</label
+              >
+              <input
+                type="number"
+                step="any"
+                id="liabilityValue"
+                value="0"
+                class="input-field"
+                required
+              />
+            </div>
+            <div class="md:col-span-full">
+              <label for="liabilityInterest" class="form-label"
+                >Annual Interest Rate (%)</label
+              >
+              <input
+                type="number"
+                step="any"
+                id="liabilityInterest"
+                value="0"
+                class="input-field"
+              />
+            </div>
+            <div class="md:col-span-full">
+              <label for="liabilityPaymentAmount" class="form-label"
+                >Recurring Payment (<span data-currency-symbol>£</span>)</label
+              >
+              <input
+                type="number"
+                step="any"
+                id="liabilityPaymentAmount"
+                value="0"
+                class="input-field"
+              />
+            </div>
+            <div class="md:col-span-full">
+              <label for="liabilityPaymentFrequency" class="form-label"
+                >Payment Frequency</label
+              >
+              <select id="liabilityPaymentFrequency" class="input-field">
+                <option value="none">None</option>
+                <option value="monthly">Monthly</option>
+                <option value="quarterly">Quarterly</option>
+                <option value="yearly">Yearly</option>
+              </select>
+            </div>
+            <div class="md:col-span-full">
+              <label for="liabilityStartDate" class="form-label"
+                >Start Date</label
+              >
+              <input type="date" id="liabilityStartDate" class="input-field" />
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                Leave blank to treat this liability as active immediately.
+                Balances and payments begin on the selected date.
+              </p>
+            </div>
+            <div class="flex items-end md:col-span-full">
+              <button type="submit" class="btn btn-block btn-red">
+                Add Liability
+              </button>
+            </div>
+          </form>
+        <div class="mt-4 w-full overflow-x-auto">
+          <table
+            class="min-w-full divide-y divide-gray-200 dark:divide-gray-700"
+          >
+            <thead class="bg-gray-200 dark:bg-gray-700">
+                <tr>
+                  <th class="table-header">Name</th>
+                  <th class="table-header">Start Date</th>
+                  <th class="table-header">Current (<span data-currency-symbol>£</span>)</th>
+                  <th class="table-header">Payment</th>
+                  <th class="table-header">
+                    <span class="sr-only">Actions</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody
+                id="liabilityTableBody"
                 class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700"
               ></tbody>
             </table>
