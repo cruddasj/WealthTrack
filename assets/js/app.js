@@ -3590,6 +3590,168 @@ function updatePassiveIncome() {
   updateFireForecastCard();
 }
 
+function updateNetCashFlowCard() {
+  const card = $("netCashFlowCard");
+  if (!card) return;
+  const netEl = $("netCashFlowValue");
+  const summaryEl = $("netCashFlowSummary");
+  const emptyEl = $("netCashFlowEmpty");
+  const tableContainer = $("netCashFlowTableContainer");
+  const tableBody = $("netCashFlowTableBody");
+  const today = startOfToday();
+
+  const formatDetail = (freq, raw, monthly) => {
+    const amount = Number.isFinite(raw) ? raw : Number.parseFloat(raw) || 0;
+    const monthlyAbs = Math.abs(monthly);
+    const label = (freq || "monthly").replace(/^\w/, (c) => c.toUpperCase());
+    if (freq === "none") return "One-time entry (not counted in monthly net)";
+    if (freq === "monthly") return "Monthly amount";
+    return `${label}: ${fmtCurrency(amount)} (${fmtCurrency(monthlyAbs)} per month)`;
+  };
+
+  const entries = [];
+  const addEntry = (type, name, amount, rawAmount, frequency, source) => {
+    entries.push({
+      type,
+      name: name || type,
+      signed: amount,
+      rawAmount,
+      frequency: frequency || "monthly",
+      source,
+    });
+  };
+
+  incomes.forEach((income) => {
+    if (!income) return;
+    const start = getStartDate(income);
+    if (start > today) return;
+    const monthly = monthlyFrom(income.frequency, income.amount || 0);
+    if (!(monthly > 0)) return;
+    addEntry(
+      "Income",
+      income.name,
+      monthly,
+      income.amount || 0,
+      income.frequency,
+      "income",
+    );
+  });
+
+  expenses.forEach((expense) => {
+    if (!expense) return;
+    const start = getStartDate(expense);
+    if (start > today) return;
+    const monthly = monthlyFrom(expense.frequency, expense.amount || 0);
+    if (!(monthly > 0)) return;
+    addEntry(
+      "Expense",
+      expense.name,
+      -monthly,
+      expense.amount || 0,
+      expense.frequency,
+      "expense",
+    );
+  });
+
+  assets.forEach((asset) => {
+    if (!asset || asset.excludeNetCashflow) return;
+    const start = getStartDate(asset);
+    if (start > today) return;
+    const monthly = monthlyFrom(asset.frequency, asset.originalDeposit || 0);
+    if (!(monthly > 0)) return;
+    addEntry(
+      "Expense",
+      `${asset.name || "Asset"} contribution`,
+      -monthly,
+      asset.originalDeposit || 0,
+      asset.frequency,
+      "contribution",
+    );
+  });
+
+  entries.sort((a, b) =>
+    (a.name || "").localeCompare(b.name || "", undefined, {
+      sensitivity: "base",
+    }),
+  );
+
+  const net = entries.reduce((sum, entry) => sum + (entry.signed || 0), 0);
+  const incomeTotal = entries
+    .filter((entry) => entry.type === "Income")
+    .reduce((sum, entry) => sum + (entry.signed || 0), 0);
+  const expenseTotal = entries
+    .filter((entry) => entry.type === "Expense")
+    .reduce((sum, entry) => sum + Math.abs(entry.signed || 0), 0);
+  const contributionTotal = entries
+    .filter((entry) => entry.source === "contribution")
+    .reduce((sum, entry) => sum + Math.abs(entry.signed || 0), 0);
+
+  if (netEl) {
+    netEl.textContent = fmtCurrency(net);
+    netEl.classList.remove(
+      "text-green-600",
+      "dark:text-green-400",
+      "text-red-600",
+      "dark:text-red-400",
+    );
+    if (net > 0) {
+      netEl.classList.add("text-green-600", "dark:text-green-400");
+    } else if (net < 0) {
+      netEl.classList.add("text-red-600", "dark:text-red-400");
+    }
+  }
+
+  if (summaryEl) {
+    const parts = [
+      `Income: ${fmtCurrency(incomeTotal)}`,
+      `Expenses: ${fmtCurrency(expenseTotal)}`,
+    ];
+    if (contributionTotal > 0) {
+      parts.push(`Includes ${fmtCurrency(contributionTotal)} in asset contributions`);
+    }
+    summaryEl.textContent = entries.length
+      ? parts.join(" • ")
+      : "Add income or expenses to see your monthly net cash flow.";
+  }
+
+  if (!entries.length) {
+    if (emptyEl) emptyEl.classList.remove("hidden");
+    if (tableContainer) tableContainer.classList.add("hidden");
+    if (tableBody) tableBody.innerHTML = "";
+    return;
+  }
+
+  if (emptyEl) emptyEl.classList.add("hidden");
+  if (tableContainer) tableContainer.classList.remove("hidden");
+  if (tableBody) {
+    tableBody.innerHTML = entries
+      .map((entry) => {
+        const amountClass =
+          entry.signed >= 0
+            ? "text-green-600 dark:text-green-400"
+            : "text-red-600 dark:text-red-400";
+        const detail = formatDetail(
+          entry.frequency,
+          entry.rawAmount,
+          entry.signed,
+        );
+        const label =
+          entry.source === "contribution"
+            ? "Asset contribution"
+            : entry.type;
+        return `<tr class="text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
+      <td class="px-6 py-3 whitespace-nowrap align-middle">${label}</td>
+      <td class="px-6 py-3 whitespace-nowrap align-middle">${entry.name}</td>
+      <td class="px-6 py-3 whitespace-nowrap align-middle text-right font-semibold ${amountClass}">
+        ${fmtCurrency(entry.signed)}
+        <div class="text-xs text-gray-500 dark:text-gray-400">${detail}</div>
+      </td>
+    </tr>`;
+      })
+      .join("");
+  }
+}
+
 function updateFireFormInputs() {
   const amountInput = $("fireLivingExpenses");
   const freqSelect = $("fireExpensesFrequency");
@@ -4332,6 +4494,7 @@ function renderAssets() {
   updateWealthChart();
   renderAssetBreakdownChart();
   updatePassiveIncome();
+  updateNetCashFlowCard();
   updateSnapshotComparisonCard();
 }
 
@@ -4377,9 +4540,10 @@ function renderIncomes() {
     </td>
   </tr>`;
     })
-    .join("");
+  .join("");
   persist();
   updateWealthChart();
+  updateNetCashFlowCard();
   updateEmptyStates();
 }
 
@@ -4425,9 +4589,10 @@ function renderExpenses() {
     </td>
   </tr>`;
     })
-    .join("");
+  .join("");
   persist();
   updateWealthChart();
+  updateNetCashFlowCard();
   updateEmptyStates();
 }
 
