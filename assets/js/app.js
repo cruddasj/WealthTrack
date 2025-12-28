@@ -4,6 +4,7 @@ let profiles = [];
 let activeProfile = null;
 let assets = [];
 let incomes = [];
+let expenses = [];
 let liabilities = [];
 let snapshots = [];
 let simEvents = [];
@@ -1153,6 +1154,7 @@ function normalizeImportedProfile(profile, index = 0) {
       };
     }),
     incomes: ensureArray(profile?.incomes),
+    expenses: ensureArray(profile?.expenses),
     liabilities: ensureArray(profile?.liabilities),
     snapshots: ensureArray(profile?.snapshots),
     simEvents: ensureArray(profile?.simEvents),
@@ -1215,6 +1217,7 @@ function prepareImportedProfiles(data) {
       id: data?.id ?? Date.now(),
       name: data?.name || data?.profileName || "Imported",
       assets: data?.assets,
+      expenses: data?.expenses,
       liabilities: data?.liabilities,
       snapshots: data?.snapshots,
       simEvents: data?.simEvents,
@@ -1284,6 +1287,7 @@ function saveCurrentProfile() {
   if (!activeProfile) return;
   activeProfile.assets = assets;
   activeProfile.incomes = incomes;
+  activeProfile.expenses = expenses;
   activeProfile.liabilities = liabilities;
   activeProfile.snapshots = snapshots;
   activeProfile.simEvents = simEvents;
@@ -1543,6 +1547,7 @@ function loadDemoData() {
         monthlyAmount: monthlyFrom("monthly", 4000),
       },
     ];
+    expenses = [];
     passiveAssetSelection = null;
     if (activeProfile) activeProfile.passiveIncomeAssetSelection = null;
 
@@ -1607,6 +1612,7 @@ function loadDemoData() {
     $("goalYear").value = targetYr;
     renderAssets();
     renderIncomes();
+    renderExpenses();
     renderLiabilities();
     renderEvents();
     updateTaxSettingsUI();
@@ -1682,6 +1688,25 @@ function normalizeData() {
     if (inc.monthlyAmount == null)
       inc.monthlyAmount = monthlyFrom(inc.frequency, inc.amount);
   });
+  expenses.forEach((exp) => {
+    if (!exp || typeof exp !== "object") return;
+    const added = toTimestamp(exp.dateAdded) ?? Date.now();
+    exp.dateAdded = added;
+    const existingExplicit = toTimestamp(exp.explicitStartDate);
+    const start = toTimestamp(exp.startDate);
+    const inferredExplicit =
+      existingExplicit != null
+        ? existingExplicit
+        : start != null && start !== added
+          ? start
+          : null;
+    exp.explicitStartDate = inferredExplicit;
+    exp.startDate = start ?? added;
+    if (!exp.frequency) exp.frequency = "monthly";
+    if (exp.amount == null) exp.amount = 0;
+    if (exp.monthlyAmount == null)
+      exp.monthlyAmount = monthlyFrom(exp.frequency, exp.amount);
+  });
   liabilities.forEach((l) => {
     if (!l || typeof l !== "object") return;
     const added = toTimestamp(l.dateAdded) ?? Date.now();
@@ -1725,6 +1750,7 @@ function initProfiles() {
       name: "Default",
       assets: load(LS.assets, []),
       liabilities: load(LS.liabs, []),
+      expenses: [],
       snapshots: load(LS.snaps, []),
       simEvents: load(LS.events, []),
       goalValue: +localStorage.getItem(LS.goal) || 0,
@@ -1852,12 +1878,17 @@ function initProfiles() {
       }
       p.passiveIncomeAssetSelection = normalizedSelection;
       if (p.passiveIncomeSelection != null) delete p.passiveIncomeSelection;
+      if (!Array.isArray(p.expenses)) {
+        p.expenses = [];
+        profilesUpdated = true;
+      }
     });
     if (profilesUpdated) save(LS.profiles, profiles);
   }
   activeProfile = profiles.find((p) => p.id == id) || profiles[0];
   assets = activeProfile.assets || [];
   liabilities = activeProfile.liabilities || [];
+  expenses = activeProfile.expenses || [];
   snapshots = activeProfile.snapshots || [];
   simEvents = activeProfile.simEvents || [];
   scenarioEventsEnabled =
@@ -2136,6 +2167,9 @@ function buildForecastScenarios(yearsOverride = null, opts = {}) {
   const incomeTotalsBase = Array(labels.length).fill(0);
   const incomeTotalsLow = Array(labels.length).fill(0);
   const incomeTotalsHigh = Array(labels.length).fill(0);
+  const expenseTotalsBase = Array(labels.length).fill(0);
+  const expenseTotalsLow = Array(labels.length).fill(0);
+  const expenseTotalsHigh = Array(labels.length).fill(0);
   const liabilityPaymentTotals = includeBreakdown
     ? Array(labels.length).fill(0)
     : null;
@@ -2147,6 +2181,7 @@ function buildForecastScenarios(yearsOverride = null, opts = {}) {
   const nextAssetForecasts = new Map();
   const assetDetails = includeBreakdown ? [] : null;
   let incomeDetail = null;
+  let expenseDetail = null;
   const globalEvents = [];
   const eventsByAsset = new Map();
   const activeEvents = scenarioEventsEnabled ? simEvents : [];
@@ -2408,13 +2443,6 @@ function buildForecastScenarios(yearsOverride = null, opts = {}) {
       base[i] += incBase;
       low[i] += incLow;
       high[i] += incHigh;
-      const payments =
-        cumulativeLiabilityPayments && i < cumulativeLiabilityPayments.length
-          ? cumulativeLiabilityPayments[i]
-          : 0;
-      netCashFlowBase[i] = incBase - payments;
-      netCashFlowLow[i] = incLow - payments;
-      netCashFlowHigh[i] = incHigh - payments;
     }
 
     if (includeBreakdown && incomes.length) {
@@ -2430,6 +2458,79 @@ function buildForecastScenarios(yearsOverride = null, opts = {}) {
       };
       assetDetails.push(incomeDetail);
     }
+  }
+
+  if (!passiveOnly) {
+    expenses.forEach((expense) => {
+      if (!expense) return;
+      const startTimestamp = getStartDate(expense);
+      const startDateObj = new Date(startTimestamp);
+      const iterator = createDepositIterator(
+        {
+          frequency: expense.frequency,
+          originalDeposit: expense.amount,
+          dateAdded: expense.dateAdded,
+          startDate: startTimestamp,
+          depositDay: DEFAULT_DEPOSIT_DAY,
+        },
+        nowTs,
+      );
+      let running = 0;
+      const arrBase = [];
+      const arrLow = [];
+      const arrHigh = [];
+      for (let i = 0; i <= totalMonths; i++) {
+        const currentDate = labels[i];
+        if (iterator) {
+          const addition = iterator.consumeBefore(currentDate.getTime());
+          if (addition) running += addition;
+        }
+        const active = currentDate >= startDateObj;
+        const contribution = active ? running : 0;
+        const expenseVal = -contribution;
+        expenseTotalsBase[i] += contribution;
+        expenseTotalsLow[i] += contribution;
+        expenseTotalsHigh[i] += contribution;
+        arrBase[i] = expenseVal;
+        arrLow[i] = expenseVal;
+        arrHigh[i] = expenseVal;
+        base[i] += expenseVal;
+        low[i] += expenseVal;
+        high[i] += expenseVal;
+      }
+      if (includeBreakdown && expenses.length) {
+        if (!expenseDetail) {
+          expenseDetail = {
+            id: "__expenses__",
+            name: "Expenses",
+            base: Array(labels.length).fill(0),
+            low: Array(labels.length).fill(0),
+            high: Array(labels.length).fill(0),
+            isExpense: true,
+            annualRates: { base: 0, low: 0, high: 0 },
+            grossRates: { base: 0, low: 0, high: 0 },
+          };
+          assetDetails.push(expenseDetail);
+        }
+        for (let i = 0; i < labels.length; i++) {
+          expenseDetail.base[i] += arrBase[i] || 0;
+          expenseDetail.low[i] += arrLow[i] || 0;
+          expenseDetail.high[i] += arrHigh[i] || 0;
+        }
+      }
+    });
+  }
+
+  for (let i = 0; i < labels.length; i++) {
+    const incBase = incomeTotalsBase[i] || 0;
+    const incLow = incomeTotalsLow[i] || 0;
+    const incHigh = incomeTotalsHigh[i] || 0;
+    const expBase = expenseTotalsBase[i] || 0;
+    const expLow = expenseTotalsLow[i] || 0;
+    const expHigh = expenseTotalsHigh[i] || 0;
+    netCashFlowBase[i] = incBase - expBase;
+    netCashFlowLow[i] = incLow - expLow;
+    netCashFlowHigh[i] = incHigh - expHigh;
   }
 
   if (includeBreakdown) {
@@ -2450,12 +2551,18 @@ function buildForecastScenarios(yearsOverride = null, opts = {}) {
       const incomePortionHigh = Array(labels.length).fill(0);
       for (let i = 0; i < labels.length; i++) {
         const payments = liabilityPaymentTotals ? liabilityPaymentTotals[i] || 0 : 0;
+        const expBase = expenseTotalsBase[i] || 0;
+        const expLow = expenseTotalsLow[i] || 0;
+        const expHigh = expenseTotalsHigh[i] || 0;
         const incBase = incomeTotalsBase[i] || 0;
         const incLow = incomeTotalsLow[i] || 0;
         const incHigh = incomeTotalsHigh[i] || 0;
-        const surplusValBase = Math.max(0, incBase - payments);
-        const surplusValLow = Math.max(0, incLow - payments);
-        const surplusValHigh = Math.max(0, incHigh - payments);
+        const totalOutflowBase = payments + expBase;
+        const totalOutflowLow = payments + expLow;
+        const totalOutflowHigh = payments + expHigh;
+        const surplusValBase = Math.max(0, incBase - totalOutflowBase);
+        const surplusValLow = Math.max(0, incLow - totalOutflowLow);
+        const surplusValHigh = Math.max(0, incHigh - totalOutflowHigh);
         surplusBase[i] = surplusValBase;
         surplusLow[i] = surplusValLow;
         surplusHigh[i] = surplusValHigh;
@@ -2470,7 +2577,7 @@ function buildForecastScenarios(yearsOverride = null, opts = {}) {
       if (hasSurplus) {
         assetDetails.push({
           id: "__cashflow_surplus__",
-          name: "Income left after liabilities",
+          name: "Income left after expenses & liabilities",
           base: surplusBase,
           low: surplusLow,
           high: surplusHigh,
@@ -2492,9 +2599,15 @@ function buildForecastScenarios(yearsOverride = null, opts = {}) {
       const baseIncome = incomeTotalsBase[i] || 0;
       const lowIncome = incomeTotalsLow[i] || 0;
       const highIncome = incomeTotalsHigh[i] || 0;
-      const baseDiff = (base[i] || 0) - baseAssets - baseLiabs - baseIncome;
-      const lowDiff = (low[i] || 0) - lowAssets - lowLiabs - lowIncome;
-      const highDiff = (high[i] || 0) - highAssets - highLiabs - highIncome;
+      const baseExpenses = expenseTotalsBase[i] || 0;
+      const lowExpenses = expenseTotalsLow[i] || 0;
+      const highExpenses = expenseTotalsHigh[i] || 0;
+      const baseDiff =
+        (base[i] || 0) - baseAssets - baseLiabs - baseIncome + baseExpenses;
+      const lowDiff =
+        (low[i] || 0) - lowAssets - lowLiabs - lowIncome + lowExpenses;
+      const highDiff =
+        (high[i] || 0) - highAssets - highLiabs - highIncome + highExpenses;
       diffBase[i] = baseDiff;
       diffLow[i] = lowDiff;
       diffHigh[i] = highDiff;
@@ -2732,6 +2845,40 @@ function showEditIncome(index) {
     inc.monthlyAmount = monthlyFrom(inc.frequency, inc.amount);
     closeModal();
     renderIncomes();
+    updateWealthChart();
+    updateEmptyStates();
+  };
+  openModalNode(tpl);
+}
+
+function showEditExpense(index) {
+  const expense = expenses[index];
+  if (!expense) return;
+  const tpl = document.importNode($("tpl-edit-expense").content, true);
+  tpl.querySelector("#editExpenseIndex").value = index;
+  tpl.querySelector("#editExpenseName").value = expense.name;
+  tpl.querySelector("#editExpenseAmount").value = expense.amount;
+  const freqSel = tpl.querySelector("#editExpenseFrequency");
+  if (freqSel) freqSel.value = expense.frequency || "monthly";
+  const editExpenseStart = tpl.querySelector("#editExpenseStartDate");
+  if (editExpenseStart)
+    editExpenseStart.value = toDateInputValue(expense.explicitStartDate);
+  tpl.querySelector("[data-close]").onclick = closeModal;
+  tpl.querySelector("#editExpenseFormModal").onsubmit = (e) => {
+    e.preventDefault();
+    const f = e.target;
+    const i = +f.querySelector("#editExpenseIndex").value;
+    const exp = expenses[i];
+    if (!exp) return;
+    exp.name = f.querySelector("#editExpenseName").value;
+    exp.amount = parseFloat(f.querySelector("#editExpenseAmount").value) || 0;
+    exp.frequency = f.querySelector("#editExpenseFrequency").value;
+    const explicitInput = f.querySelector("#editExpenseStartDate")?.value;
+    exp.explicitStartDate = toTimestamp(explicitInput);
+    exp.startDate = exp.explicitStartDate ?? getStartDate(exp);
+    exp.monthlyAmount = monthlyFrom(exp.frequency, exp.amount);
+    closeModal();
+    renderExpenses();
     updateWealthChart();
     updateEmptyStates();
   };
@@ -3780,6 +3927,7 @@ function switchProfile(id, { showFeedback = false } = {}) {
   if (!activeProfile) return;
   assets = activeProfile.assets || [];
   incomes = activeProfile.incomes || [];
+  expenses = activeProfile.expenses || [];
   liabilities = activeProfile.liabilities || [];
   snapshots = activeProfile.snapshots || [];
   simEvents = activeProfile.simEvents || [];
@@ -3844,6 +3992,7 @@ function switchProfile(id, { showFeedback = false } = {}) {
   updateTaxSettingsUI();
   renderAssets();
   renderIncomes();
+  renderExpenses();
   renderLiabilities();
   renderEvents();
   renderSnapshots();
@@ -3870,6 +4019,7 @@ function addProfile(name) {
     name: name || `Profile ${profiles.length + 1}`,
     assets: [],
     incomes: [],
+    expenses: [],
     liabilities: [],
     snapshots: [],
     simEvents: [],
@@ -3924,6 +4074,7 @@ function deleteActiveProfile() {
   } else {
     assets = [];
     incomes = [];
+    expenses = [];
     liabilities = [];
     snapshots = [];
     simEvents = [];
@@ -3949,6 +4100,7 @@ function deleteActiveProfile() {
     updateGoalButton();
     renderAssets();
     renderIncomes();
+    renderExpenses();
     renderLiabilities();
     renderEvents();
     renderSnapshots();
@@ -3973,15 +4125,17 @@ function canRunStressTest() {
 function updateEmptyStates() {
   const hasAssets = assets.length > 0;
   const hasIncome = incomes.length > 0;
+  const hasExpenses = expenses.length > 0;
   const hasLiabs = liabilities.length > 0;
   const hasGoalData = goalValue > 0 || goalTargetDate;
   const hasGoal = goalValue > 0 && goalTargetDate;
-  const canForecast = hasAssets || hasLiabs || hasIncome;
+  const canForecast = hasAssets || hasLiabs || hasIncome || hasExpenses;
   const goalInsightsAvailable = canForecast && hasGoal;
   const canStressTest = canRunStressTest();
   const hasAnyData =
     hasAssets ||
     hasIncome ||
+    hasExpenses ||
     hasLiabs ||
     snapshots.length > 0 ||
     simEvents.length > 0 ||
@@ -4202,6 +4356,54 @@ function renderIncomes() {
         <svg class="h-5 w-5" fill="currentColor"><use href="#i-edit"/></svg>
       </button>
       <button data-action="delete-income" data-index="${idx}" class="btn-icon text-red-600 hover:text-red-900 dark:text-red-500 dark:hover:text-red-400" title="Delete Income">
+        <svg class="h-5 w-5" fill="currentColor"><use href="#i-bin"/></svg>
+      </button>
+    </td>
+  </tr>`;
+    })
+    .join("");
+  persist();
+  updateWealthChart();
+  updateEmptyStates();
+}
+
+function renderExpenses() {
+  const tableBody = $("expenseTableBody");
+  if (!tableBody) return;
+  const tableContainer = tableBody.closest(".overflow-x-auto");
+  if (tableContainer) tableContainer.hidden = expenses.length === 0;
+
+  const sorted = [...expenses].sort((a, b) =>
+    (a?.name || "").localeCompare(b?.name || "", undefined, {
+      sensitivity: "base",
+    }),
+  );
+
+  tableBody.innerHTML = sorted
+    .map((exp) => {
+      const idx = expenses.findIndex((e) => e === exp);
+      const explicitStart = toTimestamp(exp.explicitStartDate);
+      let startCell = "-";
+      if (explicitStart != null) {
+        const startLabel = fmtDate(new Date(explicitStart));
+        const isUpcoming = explicitStart > Date.now();
+        startCell = isUpcoming
+          ? `${startLabel}<span class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100">Upcoming</span>`
+          : startLabel;
+      }
+      const hasAmount = exp.amount > 0 && exp.frequency !== "none";
+      const amountLabel = hasAmount
+        ? `${fmtCurrency(exp.amount)} (${exp.frequency})`
+        : fmtCurrency(exp.amount || 0);
+      return `<tr class="text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
+    <td class="px-6 py-3 whitespace-nowrap align-middle">${exp.name}</td>
+    <td class="px-6 py-3 whitespace-nowrap align-middle">${startCell}</td>
+    <td class="px-6 py-3 whitespace-nowrap align-middle font-semibold">${amountLabel}</td>
+    <td class="px-6 py-3 whitespace-nowrap text-right text-sm font-medium flex items-center gap-2">
+      <button data-action="edit-expense" data-index="${idx}" class="btn-icon" title="Edit Expense">
+        <svg class="h-5 w-5" fill="currentColor"><use href="#i-edit"/></svg>
+      </button>
+      <button data-action="delete-expense" data-index="${idx}" class="btn-icon text-red-600 hover:text-red-900 dark:text-red-500 dark:hover:text-red-400" title="Delete Expense">
         <svg class="h-5 w-5" fill="currentColor"><use href="#i-bin"/></svg>
       </button>
     </td>
@@ -5272,7 +5474,7 @@ function updateWealthChart() {
                 netCashFlowForecasts?.[scenario]?.[dataIndex] ?? null;
               const netLine =
                 netCashFlow !== null && Number.isFinite(netCashFlow)
-                  ? [`  Net cash flow (income – liabilities): ${fmtCurrency(netCashFlow)}`]
+                  ? [`  Net cash flow: ${fmtCurrency(netCashFlow)}`]
                   : [];
               const lines = [...assetLines, ...liabLines, ...netLine];
               return lines.length
@@ -6857,6 +7059,28 @@ function handleFormSubmit(e) {
       if (form.incomeFrequency) form.incomeFrequency.value = "monthly";
       break;
     }
+    case "expenseForm": {
+      const newExpense = {
+        name: form.expenseName.value,
+        amount: parseFloat(form.expenseAmount.value) || 0,
+        frequency: form.expenseFrequency.value,
+        dateAdded: Date.now(),
+      };
+      const explicitExpenseStart = toTimestamp(form.expenseStartDate?.value);
+      newExpense.explicitStartDate = explicitExpenseStart;
+      newExpense.startDate = explicitExpenseStart ?? startOfToday();
+      newExpense.monthlyAmount = monthlyFrom(
+        newExpense.frequency,
+        newExpense.amount,
+      );
+      expenses.push(newExpense);
+      renderExpenses();
+      updateWealthChart();
+      updateEmptyStates();
+      form.reset();
+      if (form.expenseFrequency) form.expenseFrequency.value = "monthly";
+      break;
+    }
     case "liabilityForm": {
       const newLiab = {
         name: form.liabilityName.value,
@@ -7614,6 +7838,8 @@ window.addEventListener("load", () => {
 
   buildAssetHeader();
   renderAssets();
+  renderIncomes();
+  renderExpenses();
   renderLiabilities();
   renderEvents();
   renderSnapshots();
@@ -7829,6 +8055,9 @@ window.addEventListener("load", () => {
         case "edit-income":
           showEditIncome(+index);
           break;
+        case "edit-expense":
+          showEditExpense(+index);
+          break;
         case "edit-liability":
           showEditLiability(+index);
           break;
@@ -7851,6 +8080,17 @@ window.addEventListener("load", () => {
             () => {
               incomes.splice(+index, 1);
               renderIncomes();
+              updateWealthChart();
+              updateEmptyStates();
+            },
+          );
+          break;
+        case "delete-expense":
+          showConfirm(
+            "Are you sure you want to delete this expense?",
+            () => {
+              expenses.splice(+index, 1);
+              renderExpenses();
               updateWealthChart();
               updateEmptyStates();
             },
@@ -7977,6 +8217,8 @@ window.addEventListener("load", () => {
             const hasAny = selectedProfilesRaw.some(
               (p) =>
                 (p.assets?.length || 0) > 0 ||
+                (p.incomes?.length || 0) > 0 ||
+                (p.expenses?.length || 0) > 0 ||
                 (p.liabilities?.length || 0) > 0 ||
                 (p.snapshots?.length || 0) > 0 ||
                 (p.simEvents?.length || 0) > 0,
@@ -8009,6 +8251,7 @@ window.addEventListener("load", () => {
                 };
               }),
               incomes: ensureArray(profile.incomes),
+              expenses: ensureArray(profile.expenses),
             }));
             const dataToExport = {
               profiles: exportProfiles,

@@ -7,8 +7,10 @@ All notable changes to WealthTrack will be documented in this file. This project
 - Reflect relief-at-source tax relief and pre-tax salary sacrifice correctly in the pay breakdown while keeping student loan, tax, and NI estimates aligned to the selected year.
 - Show net cash flow (income minus liabilities) in forecast tooltips and move goal achievement stats inside the Future Wealth card for quicker reference.
 
-## [1.1.44] - 2025-12-27
-- Rename Financial Inputs cards to Income, Liabilities & Expenses, and Assets, and refresh welcome guidance to match the new labels.
+## [1.1.44] - 2025-12-28
+- Split Financial Inputs to show separate Expenses and Liabilities cards, adding recurring expense tracking with frequency and start dates beneath the Income card.
+- Base net cash flow on income minus expenses, shorten the tooltip label, and keep liabilities modelled independently.
+- Rename the Goals heading to Goal for clarity.
 
 ## [1.1.42] - 2025-12-27
 - Add a UK take home pay calculator with tax code input, salary sacrifice handling, and student loan plans so you can estimate pay packets quickly.
