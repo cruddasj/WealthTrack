@@ -1484,6 +1484,123 @@
         </h2>
         <div class="card">
           <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100">
+            UK Take Home Pay
+          </h3>
+          <div class="card-body">
+            <p class="text-sm text-gray-700 dark:text-gray-300 mb-4">
+              Estimate your annual and monthly take home pay using a UK tax code, salary sacrifice for pension, and optional student loan repayments.
+            </p>
+            <form
+              id="takeHomePayForm"
+              class="grid grid-cols-1 md:grid-cols-2 gap-4"
+            >
+              <div>
+                <label for="take-home-tax-year" class="form-label">Tax year</label>
+                <select id="take-home-tax-year" class="input-field">
+                  <option value="2025">2025/26</option>
+                  <option value="2026">2026/27</option>
+                  <option value="2027">2027/28</option>
+                  <option value="2028">2028/29</option>
+                  <option value="2029">2029/30</option>
+                </select>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  UK thresholds are frozen through 2029/30; pick a future year to explore scenarios.
+                </p>
+              </div>
+              <div>
+                <label for="take-home-income" class="form-label required-label"
+                  >Income amount (<span data-currency-symbol>£</span>)</label
+                >
+                <input
+                  type="number"
+                  step="any"
+                  id="take-home-income"
+                  class="input-field"
+                  required
+                />
+              </div>
+              <div>
+                <label for="take-home-frequency" class="form-label"
+                  >Income frequency</label
+                >
+                <select id="take-home-frequency" class="input-field">
+                  <option value="annual" selected>Yearly</option>
+                  <option value="monthly">Monthly</option>
+                </select>
+              </div>
+              <div>
+                <label for="take-home-pension-method" class="form-label"
+                  >Pension contribution method</label
+                >
+                <select id="take-home-pension-method" class="input-field">
+                  <option value="sacrifice" selected>Salary sacrifice (pre-tax)</option>
+                  <option value="relief">Relief at source (from take-home)</option>
+                </select>
+              </div>
+              <div>
+                <label for="take-home-tax-code" class="form-label"
+                  >Tax code</label
+                >
+                <input
+                  type="text"
+                  id="take-home-tax-code"
+                  class="input-field"
+                  value="1257L"
+                />
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Defaults to the standard UK code. Adjust if your code differs.
+                </p>
+              </div>
+              <div>
+                <label for="take-home-student-loan" class="form-label"
+                  >Student loan plan</label
+                >
+                <select id="take-home-student-loan" class="input-field">
+                  <option value="none" selected>None</option>
+                  <option value="plan1">Plan 1</option>
+                  <option value="plan2">Plan 2</option>
+                  <option value="plan4">Plan 4</option>
+                  <option value="plan5">Plan 5</option>
+                  <option value="postgrad">Postgraduate</option>
+                </select>
+              </div>
+              <div class="md:col-span-2">
+                <label for="take-home-sacrifice" class="form-label"
+                  >Pension contribution amount</label
+                >
+                <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+                  <input
+                    type="number"
+                    step="any"
+                    min="0"
+                    id="take-home-sacrifice"
+                    class="input-field sm:flex-1"
+                    placeholder="e.g. 5000"
+                  />
+                  <select
+                    id="take-home-sacrifice-type"
+                    class="input-field sm:w-48"
+                  >
+                    <option value="amount" selected>Per year</option>
+                    <option value="percent">Percentage of income</option>
+                  </select>
+                </div>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Salary sacrifice reduces taxable pay and NI. Relief at source takes the contribution from take-home; we assume 20% basic-rate tax relief is added to the pot.
+                </p>
+              </div>
+              <div class="md:col-span-2 flex items-end">
+                <button type="submit" class="btn btn-block btn-green">
+                  Calculate
+                </button>
+              </div>
+            </form>
+            <div id="takeHomeResult" class="mt-4 text-sm"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100">
             Share Target Profit (%)
           </h3>
           <div class="card-body">
