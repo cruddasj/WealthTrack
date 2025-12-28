@@ -792,6 +792,14 @@ function normalizeTaxSettings(settings = null) {
 
 let taxSettings = normalizeTaxSettings();
 let taxComputationCache = null;
+const STUDENT_LOAN_PLANS = {
+  none: { threshold: Infinity, rate: 0 },
+  plan1: { threshold: 24990, rate: 0.09 },
+  plan2: { threshold: 27295, rate: 0.09 },
+  plan4: { threshold: 31295, rate: 0.09 },
+  plan5: { threshold: 25000, rate: 0.09 },
+  postgrad: { threshold: 21000, rate: 0.06 },
+};
 
 function invalidateTaxCache() {
   taxComputationCache = null;
@@ -803,6 +811,51 @@ function formatPercent(value) {
   const fixed = Math.abs(num) < 1 ? num.toFixed(2) : num.toFixed(1);
   const display = Number(fixed);
   return `${display}%`;
+}
+
+function getAllowanceFromTaxCode(code) {
+  const match = (code || "").toUpperCase().match(/(\d{1,5})/);
+  const allowance = match ? Number.parseInt(match[1], 10) * 10 : 0;
+  return Number.isFinite(allowance) && allowance > 0 ? allowance : 12570;
+}
+
+function calculatePersonalAllowance(code, grossAfterPension) {
+  const allowance = getAllowanceFromTaxCode(code);
+  const taperStart = 100000;
+  const excess = Math.max(0, grossAfterPension - taperStart);
+  const taperReduction = excess / 2;
+  return Math.max(0, allowance - taperReduction);
+}
+
+function calculateUkIncomeTax(grossAfterPension, personalAllowance) {
+  const allowanceUsed = Math.min(personalAllowance, grossAfterPension);
+  const allowanceAdjustedIncome = grossAfterPension - allowanceUsed;
+  if (!(allowanceAdjustedIncome > 0)) return 0;
+  const basicLimit = 50270;
+  const higherLimit = 125140;
+  const basicCap = Math.max(0, basicLimit - allowanceUsed);
+  const basicBand = Math.min(allowanceAdjustedIncome, basicCap);
+  const higherBand = Math.min(
+    Math.max(0, grossAfterPension - Math.max(allowanceUsed, basicLimit)),
+    Math.max(0, higherLimit - basicLimit),
+  );
+  const additionalBand = Math.max(0, grossAfterPension - higherLimit);
+  return basicBand * 0.2 + higherBand * 0.4 + additionalBand * 0.45;
+}
+
+function calculateUkNi(grossAfterPension) {
+  const primaryThreshold = 12570;
+  const upperThreshold = 50270;
+  if (!(grossAfterPension > primaryThreshold)) return 0;
+  const mainBand = Math.min(grossAfterPension, upperThreshold) - primaryThreshold;
+  const upperBand = Math.max(0, grossAfterPension - upperThreshold);
+  return mainBand * 0.08 + upperBand * 0.02;
+}
+
+function calculateStudentLoanRepayment(income, planKey) {
+  const cfg = STUDENT_LOAN_PLANS[planKey] || STUDENT_LOAN_PLANS.none;
+  if (!(cfg.rate > 0) || !(income > cfg.threshold)) return 0;
+  return (income - cfg.threshold) * cfg.rate;
 }
 
 function formatGrossNetRate(gross, net) {
@@ -2056,9 +2109,13 @@ function buildForecastScenarios(yearsOverride = null, opts = {}) {
   const incomeTotalsBase = Array(labels.length).fill(0);
   const incomeTotalsLow = Array(labels.length).fill(0);
   const incomeTotalsHigh = Array(labels.length).fill(0);
+  const liabilityPaymentTotals = includeBreakdown
+    ? Array(labels.length).fill(0)
+    : null;
 
   const nextAssetForecasts = new Map();
   const assetDetails = includeBreakdown ? [] : null;
+  let incomeDetail = null;
   const globalEvents = [];
   const eventsByAsset = new Map();
   const activeEvents = scenarioEventsEnabled ? simEvents : [];
@@ -2256,12 +2313,14 @@ function buildForecastScenarios(yearsOverride = null, opts = {}) {
           liabilityTotalsLow[i] += arr[i];
           liabilityTotalsHigh[i] += arr[i];
         }
+        let paymentApplied = 0;
         if (active && outstanding > 0) {
           outstanding = outstanding * (1 + rate);
-          outstanding = Math.max(
-            0,
-            outstanding - Math.min(outstanding, payment),
-          );
+          paymentApplied = Math.min(outstanding, payment);
+          outstanding = Math.max(0, outstanding - paymentApplied);
+        }
+        if (includeBreakdown && paymentApplied > 0 && liabilityPaymentTotals) {
+          liabilityPaymentTotals[i] += paymentApplied;
         }
       }
       nextLiabilityForecasts.set(liability.dateAdded, arr);
@@ -2308,21 +2367,66 @@ function buildForecastScenarios(yearsOverride = null, opts = {}) {
     }
 
     if (includeBreakdown && incomes.length) {
-      assetDetails.push({
+      incomeDetail = {
         id: "__incomes__",
         name: "Income contributions",
-        base: incomeTotalsBase,
-        low: incomeTotalsLow,
-        high: incomeTotalsHigh,
+        base: [...incomeTotalsBase],
+        low: [...incomeTotalsLow],
+        high: [...incomeTotalsHigh],
         isIncome: true,
         annualRates: { base: 0, low: 0, high: 0 },
         grossRates: { base: 0, low: 0, high: 0 },
-      });
+      };
+      assetDetails.push(incomeDetail);
     }
   }
 
   if (includeBreakdown) {
     const diffTolerance = 0.005;
+    if (liabilityPaymentTotals) {
+      let paymentRunning = 0;
+      for (let i = 0; i < liabilityPaymentTotals.length; i++) {
+        paymentRunning += liabilityPaymentTotals[i] || 0;
+        liabilityPaymentTotals[i] = paymentRunning;
+      }
+    }
+    if (incomeDetail) {
+      const surplusBase = Array(labels.length).fill(0);
+      const surplusLow = Array(labels.length).fill(0);
+      const surplusHigh = Array(labels.length).fill(0);
+      const incomePortionBase = Array(labels.length).fill(0);
+      const incomePortionLow = Array(labels.length).fill(0);
+      const incomePortionHigh = Array(labels.length).fill(0);
+      for (let i = 0; i < labels.length; i++) {
+        const payments = liabilityPaymentTotals ? liabilityPaymentTotals[i] || 0 : 0;
+        const incBase = incomeTotalsBase[i] || 0;
+        const incLow = incomeTotalsLow[i] || 0;
+        const incHigh = incomeTotalsHigh[i] || 0;
+        const surplusValBase = Math.max(0, incBase - payments);
+        const surplusValLow = Math.max(0, incLow - payments);
+        const surplusValHigh = Math.max(0, incHigh - payments);
+        surplusBase[i] = surplusValBase;
+        surplusLow[i] = surplusValLow;
+        surplusHigh[i] = surplusValHigh;
+        incomePortionBase[i] = incBase - surplusValBase;
+        incomePortionLow[i] = incLow - surplusValLow;
+        incomePortionHigh[i] = incHigh - surplusValHigh;
+      }
+      incomeDetail.base = incomePortionBase;
+      incomeDetail.low = incomePortionLow;
+      incomeDetail.high = incomePortionHigh;
+      const hasSurplus = surplusBase.some((v) => Math.abs(v) > diffTolerance);
+      if (hasSurplus) {
+        assetDetails.push({
+          id: "__cashflow_surplus__",
+          name: "Income left after liabilities",
+          base: surplusBase,
+          low: surplusLow,
+          high: surplusHigh,
+          isIncomeSurplus: true,
+        });
+      }
+    }
     const diffBase = Array(labels.length).fill(0);
     const diffLow = Array(labels.length).fill(0);
     const diffHigh = Array(labels.length).fill(0);
@@ -7020,6 +7124,89 @@ function handleFormSubmit(e) {
             </table>
           </div>
           <p class="text-xs text-gray-500 dark:text-gray-400 mt-3">${manualNote}</p>
+        </div>`;
+      break;
+    }
+    case "takeHomePayForm": {
+      const resultEl = $("takeHomeResult");
+      if (!resultEl) break;
+      const incomeInput = form["take-home-income"];
+      const freqInput = form["take-home-frequency"];
+      const taxCodeInput = form["take-home-tax-code"];
+      const sacrificeInput = form["take-home-sacrifice"];
+      const sacrificeTypeInput = form["take-home-sacrifice-type"];
+      const studentLoanInput = form["take-home-student-loan"];
+      const incomeValue = parseFloat(incomeInput?.value);
+      if (!(incomeValue > 0)) {
+        resultEl.innerHTML =
+          '<p class="text-sm text-red-600">Enter your income to estimate take home pay.</p>';
+        break;
+      }
+      const frequency =
+        freqInput?.value === "monthly" || freqInput?.value === "annual"
+          ? freqInput.value
+          : "annual";
+      const annualIncome = frequency === "monthly" ? incomeValue * 12 : incomeValue;
+      const sacrificeRaw = Number.parseFloat(sacrificeInput?.value);
+      const sacrificeType = sacrificeTypeInput?.value === "percent" ? "percent" : "amount";
+      const pensionDeduction = (() => {
+        const normalized = Number.isFinite(sacrificeRaw) && sacrificeRaw > 0 ? sacrificeRaw : 0;
+        if (!normalized) return 0;
+        if (sacrificeType === "percent") return (annualIncome * normalized) / 100;
+        return Math.min(annualIncome, normalized);
+      })();
+      const grossAfterPension = Math.max(0, annualIncome - pensionDeduction);
+      const taxCode = (taxCodeInput?.value || "1257L").trim();
+      const personalAllowance = calculatePersonalAllowance(taxCode, grossAfterPension);
+      const taxableIncome = Math.max(0, grossAfterPension - personalAllowance);
+      const incomeTax = calculateUkIncomeTax(grossAfterPension, personalAllowance);
+      const nationalInsurance = calculateUkNi(grossAfterPension);
+      const studentLoan = calculateStudentLoanRepayment(
+        grossAfterPension,
+        studentLoanInput?.value || "none",
+      );
+      const takeHomeAnnual = grossAfterPension - incomeTax - nationalInsurance - studentLoan;
+      const fmtRow = (label, annual) => {
+        const monthly = annual / 12;
+        return `<tr>
+          <th class="px-4 py-2 font-medium text-left">${label}</th>
+          <td class="px-4 py-2 font-semibold text-right">${fmtCurrency(annual)}</td>
+          <td class="px-4 py-2 text-right">${fmtCurrency(monthly)}</td>
+        </tr>`;
+      };
+      resultEl.innerHTML = `
+        <div class="rounded-lg bg-gray-100 dark:bg-gray-700 p-4 text-gray-700 dark:text-gray-200">
+          <div class="flex flex-col gap-1 mb-3">
+            <h4 class="text-lg font-semibold">Estimated take home: ${fmtCurrency(
+              takeHomeAnnual,
+            )} per year</h4>
+            <p class="text-sm text-gray-600 dark:text-gray-300">Using tax code ${
+              taxCode || "1257L"
+            } with salary sacrifice applied before tax and National Insurance.</p>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-sm text-left">
+              <thead class="bg-gray-200 dark:bg-gray-700">
+                <tr>
+                  <th class="px-4 py-2">Line item</th>
+                  <th class="px-4 py-2 text-right">Yearly</th>
+                  <th class="px-4 py-2 text-right">Monthly</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                ${fmtRow("Gross income", annualIncome)}
+                ${fmtRow("Pension deductions", pensionDeduction)}
+                ${fmtRow("Taxable income", taxableIncome)}
+                ${fmtRow("Income tax", incomeTax)}
+                ${fmtRow("National Insurance", nationalInsurance)}
+                ${fmtRow("Student loan", studentLoan)}
+                ${fmtRow("Take home", takeHomeAnnual)}
+              </tbody>
+            </table>
+          </div>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-3">
+            Figures use standard UK 2025/26 thresholds. Student loan repayments use the plan threshold you selected.
+          </p>
         </div>`;
       break;
     }

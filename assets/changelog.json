@@ -1,5 +1,13 @@
 [
   {
+    "version": "1.1.42",
+    "date": "2025-12-27",
+    "changes": [
+      "Add a UK take home pay calculator with tax code entry, salary sacrifice support, and student loan plan options.",
+      "Show surplus income left after liabilities inside forecast breakdowns and charts so you can see how cash flow contributes."
+    ]
+  },
+  {
     "version": "1.1.41",
     "date": "2025-12-27",
     "changes": [
