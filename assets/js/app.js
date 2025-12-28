@@ -1893,6 +1893,7 @@ function initProfiles() {
   }
   activeProfile = profiles.find((p) => p.id == id) || profiles[0];
   assets = activeProfile.assets || [];
+  incomes = activeProfile.incomes || [];
   liabilities = activeProfile.liabilities || [];
   expenses = activeProfile.expenses || [];
   snapshots = activeProfile.snapshots || [];
@@ -4157,6 +4158,7 @@ function updateEmptyStates() {
     simEvents.length > 0 ||
     hasGoalData;
   const isFresh = !hasAnyData;
+  const hasPortfolioInsights = hasAssets || hasIncome || hasExpenses || hasLiabs;
 
   // Save Snapshot gating
   const snapBtn = $("snapshotBtn");
@@ -4225,13 +4227,13 @@ function updateEmptyStates() {
   const portfolioBtn = document.querySelector('nav button[data-target="portfolio-analysis"]');
   if (portfolioBtn) {
     const wasHidden = portfolioBtn.classList.contains("hidden");
-    portfolioBtn.classList.toggle("hidden", !hasAssets);
-    if (hasAssets && wasHidden) {
+    portfolioBtn.classList.toggle("hidden", !hasPortfolioInsights);
+    if (hasPortfolioInsights && wasHidden) {
       portfolioBtn.classList.add("fade-in");
       setTimeout(() => portfolioBtn.classList.remove("fade-in"), 500);
     }
   }
-  if (!hasAssets && $("portfolio-analysis").classList.contains("active")) {
+  if (!hasPortfolioInsights && $("portfolio-analysis").classList.contains("active")) {
     navigateTo("data-entry");
   }
 

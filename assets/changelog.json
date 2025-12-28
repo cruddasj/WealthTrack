@@ -1,5 +1,13 @@
 [
   {
+    "version": "1.1.51",
+    "date": "2025-12-28",
+    "changes": [
+      "Restore saved income entries when reopening the app so they stay available after closing WealthTrack.",
+      "Show Portfolio Insights whenever you have income, expenses, liabilities, or assets so the net cash flow card is accessible without adding an asset first."
+    ]
+  },
+  {
     "version": "1.1.49",
     "date": "2025-12-28",
     "changes": [

@@ -2,6 +2,10 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
+## [1.1.51] - 2025-12-28
+- Load saved income entries when reopening the app so they no longer disappear after closing WealthTrack.
+- Show the Portfolio Insights navigation whenever you have income, expenses, liabilities, or assets so the net cash flow card is available without adding an asset first.
+
 ## [1.1.49] - 2025-12-28
 - Add a Portfolio Insights net cash flow card with a monthly income versus expenses breakdown so you can see how the total is calculated.
 
