@@ -2,6 +2,9 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
+## [1.1.53] - 2025-12-28
+- Show green text for positive net cash flow and red for negative, rename asset contributions in the breakdown, and keep the expenses minus sign aligned on mobile.
+
 ## [1.1.52] - 2025-12-28
 - Align the Net Cash Flow card with other collapsible cards so its header, padding, and collapse toggle work consistently.
 

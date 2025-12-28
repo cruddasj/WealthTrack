@@ -4264,6 +4264,24 @@ function updateNetCashFlowCard() {
   const netTotalEl = $("netCashFlowNetTotal");
   const today = startOfToday();
   const isActive = (item) => getStartDate(item) <= today;
+  const applyNetCashFlowColor = (value) => {
+    if (!valueEl) return;
+    valueEl.classList.remove(
+      "text-green-600",
+      "dark:text-green-400",
+      "text-red-600",
+      "dark:text-red-400",
+      "text-gray-900",
+      "dark:text-gray-100",
+    );
+    if (value > 0) {
+      valueEl.classList.add("text-green-600", "dark:text-green-400");
+    } else if (value < 0) {
+      valueEl.classList.add("text-red-600", "dark:text-red-400");
+    } else {
+      valueEl.classList.add("text-gray-900", "dark:text-gray-100");
+    }
+  };
 
   const incomeRows = incomes
     .filter(isActive)
@@ -4291,7 +4309,7 @@ function updateNetCashFlowCard() {
     .map((asset) => ({
       name: asset.name || "Contribution",
       amount: monthlyFrom(asset.frequency, asset.originalDeposit || 0),
-      type: "Contribution",
+      type: "Asset contribution",
       isOutflow: true,
     }))
     .filter((row) => row.amount > 0);
@@ -4314,6 +4332,7 @@ function updateNetCashFlowCard() {
     if (el) el.textContent = fmtCurrency(value);
   };
   setText(valueEl, net);
+  applyNetCashFlowColor(net);
   setText(incomeTotalEl, incomeTotal);
   setText(expenseTotalEl, -expenseTotal);
   setText(netTotalEl, net);

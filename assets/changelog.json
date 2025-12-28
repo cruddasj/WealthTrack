@@ -1,5 +1,12 @@
 [
   {
+    "version": "1.1.53",
+    "date": "2025-12-28",
+    "changes": [
+      "Color the net cash flow total green for a surplus and red for a shortfall, rename asset contributions in the breakdown, and keep the expenses minus sign aligned on mobile."
+    ]
+  },
+  {
     "version": "1.1.52",
     "date": "2025-12-28",
     "changes": [
