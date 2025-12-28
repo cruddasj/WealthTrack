@@ -1286,6 +1286,73 @@
           </p>
         </div>
 
+        <div class="card" id="netCashFlowCard">
+          <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+            <div>
+              <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100">Net Cash Flow</h3>
+              <p class="text-sm text-gray-700 dark:text-gray-300 mt-1">
+                Monthly income minus expenses and any included recurring contributions that are active today.
+              </p>
+            </div>
+            <div class="p-4 rounded-lg bg-gray-100 dark:bg-gray-700 text-center stat-box w-full md:w-auto">
+              <p class="text-sm text-gray-600 dark:text-gray-300">Monthly net</p>
+              <p id="netCashFlowValue" class="text-3xl font-bold text-gray-900 dark:text-gray-100">£0</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                Income - expenses - contributions
+              </p>
+            </div>
+          </div>
+
+          <div id="netCashFlowEmpty" class="text-sm text-gray-500 dark:text-gray-400">
+            Add an income or expense to see how your monthly net cash flow is calculated.
+          </div>
+
+          <div id="netCashFlowTableContainer" class="mt-4 overflow-x-auto hidden">
+            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-left">
+              <thead class="bg-gray-200 dark:bg-gray-700">
+                <tr>
+                  <th class="table-header">Source</th>
+                  <th class="table-header">Type</th>
+                  <th class="table-header text-right">Monthly amount</th>
+                </tr>
+              </thead>
+              <tbody
+                id="netCashFlowTableBody"
+                class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700 text-sm text-gray-700 dark:text-gray-300"
+              ></tbody>
+              <tfoot class="bg-gray-50 dark:bg-gray-900 text-sm text-gray-700 dark:text-gray-300">
+                <tr>
+                  <td class="px-6 py-3 font-medium" colspan="2">Total income</td>
+                  <td
+                    id="netCashFlowIncomeTotal"
+                    class="px-6 py-3 text-right font-semibold text-green-600 dark:text-green-400"
+                  >
+                    £0
+                  </td>
+                </tr>
+                <tr>
+                  <td class="px-6 py-3 font-medium" colspan="2">Total expenses</td>
+                  <td
+                    id="netCashFlowExpenseTotal"
+                    class="px-6 py-3 text-right font-semibold text-red-600 dark:text-red-400"
+                  >
+                    £0
+                  </td>
+                </tr>
+                <tr>
+                  <td class="px-6 py-3 font-medium" colspan="2">Net cash flow</td>
+                  <td
+                    id="netCashFlowNetTotal"
+                    class="px-6 py-3 text-right font-semibold text-gray-900 dark:text-gray-100"
+                  >
+                    £0
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+
         <div class="card">
           <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Portfolio Allocation</h3>
           <div
