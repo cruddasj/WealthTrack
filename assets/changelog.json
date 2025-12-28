@@ -1,11 +1,9 @@
 [
   {
-    "version": "1.1.43",
-    "date": "2025-12-27",
+    "version": "1.1.45",
+    "date": "2025-12-28",
     "changes": [
-      "Add future tax year selection through 2029/30 to the take home pay calculator and let you choose salary sacrifice or relief-at-source pension methods with percentage or fixed contributions.",
-      "Include relief-at-source tax relief and pre-tax salary sacrifice handling in the pay breakdown while keeping student loan, tax, and NI estimates aligned to the selected year.",
-      "Show net cash flow in forecast tooltips and relocate goal achievement stats inside the Future Wealth card for quicker review."
+      "Subtract asset deposits from forecast net cash flow so invested contributions reduce the available surplus in tooltips."
     ]
   },
   {
@@ -15,6 +13,15 @@
       "Split Financial Inputs into separate Expenses and Liabilities cards so you can track recurring expenses with frequency and start dates underneath Income.",
       "Calculate net cash flow from income minus expenses with a shorter tooltip label, while keeping liabilities managed separately.",
       "Retitle the Goals heading to Goal for consistency."
+    ]
+  },
+  {
+    "version": "1.1.43",
+    "date": "2025-12-27",
+    "changes": [
+      "Add future tax year selection through 2029/30 to the take home pay calculator and let you choose salary sacrifice or relief-at-source pension methods with percentage or fixed contributions.",
+      "Include relief-at-source tax relief and pre-tax salary sacrifice handling in the pay breakdown while keeping student loan, tax, and NI estimates aligned to the selected year.",
+      "Show net cash flow in forecast tooltips and relocate goal achievement stats inside the Future Wealth card for quicker review."
     ]
   },
   {

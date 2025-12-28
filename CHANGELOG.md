@@ -2,15 +2,18 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
-## [1.1.43] - 2025-12-27
-- Allow the take home pay calculator to pick tax years through 2029/30 and choose salary sacrifice or relief-at-source pension methods with % or fixed amounts.
-- Reflect relief-at-source tax relief and pre-tax salary sacrifice correctly in the pay breakdown while keeping student loan, tax, and NI estimates aligned to the selected year.
-- Show net cash flow (income minus liabilities) in forecast tooltips and move goal achievement stats inside the Future Wealth card for quicker reference.
+## [1.1.45] - 2025-12-28
+- Subtract asset deposits from forecast net cash flow so invested contributions reduce the available surplus in tooltips.
 
 ## [1.1.44] - 2025-12-28
 - Split Financial Inputs to show separate Expenses and Liabilities cards, adding recurring expense tracking with frequency and start dates beneath the Income card.
 - Base net cash flow on income minus expenses, shorten the tooltip label, and keep liabilities modelled independently.
 - Rename the Goals heading to Goal for clarity.
+
+## [1.1.43] - 2025-12-27
+- Allow the take home pay calculator to pick tax years through 2029/30 and choose salary sacrifice or relief-at-source pension methods with % or fixed amounts.
+- Reflect relief-at-source tax relief and pre-tax salary sacrifice correctly in the pay breakdown while keeping student loan, tax, and NI estimates aligned to the selected year.
+- Show net cash flow (income minus liabilities) in forecast tooltips and move goal achievement stats inside the Future Wealth card for quicker reference.
 
 ## [1.1.42] - 2025-12-27
 - Add a UK take home pay calculator with tax code input, salary sacrifice handling, and student loan plans so you can estimate pay packets quickly.
