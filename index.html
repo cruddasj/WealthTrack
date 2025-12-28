@@ -372,9 +372,85 @@
         </div>
 
         <div class="card transition">
-          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Liabilities & Expenses</h3>
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Expenses</h3>
           <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
-            Track debts or recurring expenses (e.g. rent, bills, subscriptions) that reduce your wealth.
+            Track recurring costs such as rent, bills, and subscriptions so forecasts can reflect cash leaving your budget.
+          </p>
+          <form id="expenseForm" class="grid grid-cols-1 md:gap-4 gap-2">
+            <div class="md:col-span-full">
+              <label for="expenseName" class="form-label required-label"
+                >Expense Name</label
+              >
+              <input
+                type="text"
+                id="expenseName"
+                class="input-field"
+                required
+              />
+            </div>
+            <div class="md:col-span-full">
+              <label for="expenseAmount" class="form-label required-label"
+                >Amount (<span data-currency-symbol>£</span>)</label
+              >
+              <input
+                type="number"
+                step="any"
+                id="expenseAmount"
+                value="0"
+                class="input-field"
+                required
+              />
+            </div>
+            <div class="md:col-span-full">
+              <label for="expenseFrequency" class="form-label">Frequency</label>
+              <select id="expenseFrequency" class="input-field">
+                <option value="monthly" selected>Monthly</option>
+                <option value="quarterly">Quarterly</option>
+                <option value="yearly">Yearly</option>
+                <option value="none">One-time</option>
+              </select>
+            </div>
+            <div class="md:col-span-full">
+              <label for="expenseStartDate" class="form-label"
+                >Start Date</label
+              >
+              <input type="date" id="expenseStartDate" class="input-field" />
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                Leave blank to start immediately. Forecasts begin on the selected date.
+              </p>
+            </div>
+            <div class="flex items-end md:col-span-full">
+              <button type="submit" class="btn btn-block btn-red">
+                Add Expense
+              </button>
+            </div>
+          </form>
+        <div class="mt-4 w-full overflow-x-auto">
+          <table
+            class="min-w-full divide-y divide-gray-200 dark:divide-gray-700"
+          >
+            <thead class="bg-gray-200 dark:bg-gray-700">
+                <tr>
+                  <th class="table-header">Name</th>
+                  <th class="table-header">Start Date</th>
+                  <th class="table-header">Amount</th>
+                  <th class="table-header">
+                    <span class="sr-only">Actions</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody
+                id="expenseTableBody"
+                class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700"
+              ></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card transition">
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Liabilities</h3>
+          <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
+            Track debts and repayments to see how balances and scheduled payments affect your wealth.
           </p>
           <form id="liabilityForm" class="grid grid-cols-1 md:gap-4 gap-2">
             <div class="md:col-span-full">
@@ -679,7 +755,7 @@
         </div>
 
         <div class="card">
-          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Goals</h3>
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Goal</h3>
           <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
             Set a wealth goal and target year to guide your forecasting and progress tracking.
           </p>
@@ -2710,6 +2786,40 @@
           <div class="sm:col-span-2">
             <label for="editIncomeStartDate" class="form-label">Start Date</label>
             <input type="date" id="editIncomeStartDate" class="input-field" />
+          </div>
+          <div class="sm:col-span-2 mt-4 flex justify-end gap-3">
+            <button type="button" class="btn btn-gray" data-close>Cancel</button>
+            <button type="submit" class="btn btn-green">Save Changes</button>
+          </div>
+        </form>
+      </div>
+    </template>
+
+    <template id="tpl-edit-expense">
+      <div>
+        <h4 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">Edit Expense</h4>
+        <form id="editExpenseFormModal" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <input type="hidden" id="editExpenseIndex" />
+          <div class="sm:col-span-2">
+            <label for="editExpenseName" class="form-label required-label">Expense Name</label>
+            <input type="text" id="editExpenseName" class="input-field" required />
+          </div>
+          <div>
+            <label for="editExpenseAmount" class="form-label required-label">Amount (<span data-currency-symbol>£</span>)</label>
+            <input type="number" step="any" id="editExpenseAmount" class="input-field" required />
+          </div>
+          <div>
+            <label for="editExpenseFrequency" class="form-label">Frequency</label>
+            <select id="editExpenseFrequency" class="input-field">
+              <option value="monthly">Monthly</option>
+              <option value="quarterly">Quarterly</option>
+              <option value="yearly">Yearly</option>
+              <option value="none">One-time</option>
+            </select>
+          </div>
+          <div class="sm:col-span-2">
+            <label for="editExpenseStartDate" class="form-label">Start Date</label>
+            <input type="date" id="editExpenseStartDate" class="input-field" />
           </div>
           <div class="sm:col-span-2 mt-4 flex justify-end gap-3">
             <button type="button" class="btn btn-gray" data-close>Cancel</button>

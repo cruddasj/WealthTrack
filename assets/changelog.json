@@ -10,9 +10,11 @@
   },
   {
     "version": "1.1.44",
-    "date": "2025-12-27",
+    "date": "2025-12-28",
     "changes": [
-      "Rename the Financial Inputs cards to Income, Liabilities & Expenses, and Assets, and refresh the welcome guidance to reflect the new labels."
+      "Split Financial Inputs into separate Expenses and Liabilities cards so you can track recurring expenses with frequency and start dates underneath Income.",
+      "Calculate net cash flow from income minus expenses with a shorter tooltip label, while keeping liabilities managed separately.",
+      "Retitle the Goals heading to Goal for consistency."
     ]
   },
   {
