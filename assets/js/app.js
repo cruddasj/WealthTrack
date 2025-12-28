@@ -1751,6 +1751,7 @@ function initProfiles() {
       name: "Default",
       assets: load(LS.assets, []),
       liabilities: load(LS.liabs, []),
+      incomes: [],
       expenses: [],
       snapshots: load(LS.snaps, []),
       simEvents: load(LS.events, []),
@@ -1879,6 +1880,10 @@ function initProfiles() {
       }
       p.passiveIncomeAssetSelection = normalizedSelection;
       if (p.passiveIncomeSelection != null) delete p.passiveIncomeSelection;
+      if (!Array.isArray(p.incomes)) {
+        p.incomes = [];
+        profilesUpdated = true;
+      }
       if (!Array.isArray(p.expenses)) {
         p.expenses = [];
         profilesUpdated = true;
