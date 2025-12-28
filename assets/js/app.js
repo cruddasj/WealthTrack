@@ -2173,6 +2173,7 @@ function buildForecastScenarios(yearsOverride = null, opts = {}) {
   const liabilityPaymentTotals = includeBreakdown
     ? Array(labels.length).fill(0)
     : null;
+  const assetDepositTotals = Array(labels.length).fill(0);
   const netCashFlowBase = Array(labels.length).fill(0);
   const netCashFlowLow = Array(labels.length).fill(0);
   const netCashFlowHigh = Array(labels.length).fill(0);
@@ -2214,6 +2215,7 @@ function buildForecastScenarios(yearsOverride = null, opts = {}) {
     );
     let eventIndex = 0;
     let active = nowTs >= startTimestamp;
+    let depositRunning = 0;
     let valueBase = active ? principal : initialValue;
     let valueLow = valueBase;
     let valueHigh = valueBase;
@@ -2247,6 +2249,7 @@ function buildForecastScenarios(yearsOverride = null, opts = {}) {
           valueBase += catchUp;
           valueLow += catchUp;
           valueHigh += catchUp;
+          depositRunning += catchUp;
         }
       }
       while (eventIndex < assetEvents.length) {
@@ -2284,6 +2287,7 @@ function buildForecastScenarios(yearsOverride = null, opts = {}) {
       base[i] += baseVal;
       low[i] += lowVal;
       high[i] += highVal;
+      assetDepositTotals[i] += depositRunning;
       if (includeBreakdown) {
         assetTotalsBase[i] += baseVal;
         assetTotalsLow[i] += lowVal;
@@ -2300,6 +2304,7 @@ function buildForecastScenarios(yearsOverride = null, opts = {}) {
             valueBase += addition;
             valueLow += addition;
             valueHigh += addition;
+            depositRunning += addition;
           }
         }
       }
@@ -2528,9 +2533,10 @@ function buildForecastScenarios(yearsOverride = null, opts = {}) {
     const expBase = expenseTotalsBase[i] || 0;
     const expLow = expenseTotalsLow[i] || 0;
     const expHigh = expenseTotalsHigh[i] || 0;
-    netCashFlowBase[i] = incBase - expBase;
-    netCashFlowLow[i] = incLow - expLow;
-    netCashFlowHigh[i] = incHigh - expHigh;
+    const assetDeposits = assetDepositTotals[i] || 0;
+    netCashFlowBase[i] = incBase - expBase - assetDeposits;
+    netCashFlowLow[i] = incLow - expLow - assetDeposits;
+    netCashFlowHigh[i] = incHigh - expHigh - assetDeposits;
   }
 
   if (includeBreakdown) {
