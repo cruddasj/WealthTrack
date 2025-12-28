@@ -1,5 +1,13 @@
 [
   {
+    "version": "1.1.42",
+    "date": "2025-12-27",
+    "changes": [
+      "Add a UK take-home pay calculator that applies your tax code, salary sacrifice, and student loan plan while showing yearly and monthly results.",
+      "Highlight how much of each forecast comes from leftover cash after monthly income and liability flows so breakdowns and charts reflect that contribution."
+    ]
+  },
+  {
     "version": "1.1.41",
     "date": "2025-12-27",
     "changes": [

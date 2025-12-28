@@ -2,6 +2,10 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
+## [1.1.42] - 2025-12-27
+- Add a UK take-home pay calculator that respects your tax code, salary sacrifice, and student loan plan while showing yearly and monthly breakdowns.
+- Show how much of each forecast comes from leftover cash after monthly income and liability flows so charts and breakdowns highlight that contribution.
+
 ## [1.1.41] - 2025-12-27
 - Add an Income card so you can capture recurring net pay, edit entries, and keep future forecasts in sync with your monthly cash flow.
 - Reorder Financial Inputs to show Income, Liabilities & Payments, then Assets & Contributions, with clearer guidance on when to use each section.

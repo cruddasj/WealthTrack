@@ -1484,6 +1484,88 @@
         </h2>
         <div class="card">
           <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100">
+            UK Take-Home Pay
+          </h3>
+          <p class="text-gray-700 dark:text-gray-300 text-sm mt-1 mb-3">
+            Estimate your net pay using your tax code, salary sacrifice, and student loan plan. Defaults to the standard
+            1257L code and 2024/25 England &amp; NI rates.
+          </p>
+          <div class="card-body">
+            <form
+              id="takeHomeForm"
+              class="grid grid-cols-1 md:grid-cols-3 gap-4"
+            >
+              <div>
+                <label for="takeHomeAmount" class="form-label required-label"
+                  >Pay amount (<span data-currency-symbol>£</span>)</label
+                >
+                <input
+                  type="number"
+                  step="any"
+                  id="takeHomeAmount"
+                  class="input-field"
+                  required
+                />
+              </div>
+              <div>
+                <label for="takeHomeFrequency" class="form-label"
+                  >Frequency</label
+                >
+                <select id="takeHomeFrequency" class="input-field">
+                  <option value="annual">Annual</option>
+                  <option value="monthly">Monthly</option>
+                </select>
+              </div>
+              <div>
+                <label for="takeHomeTaxCode" class="form-label">Tax code</label>
+                <input
+                  type="text"
+                  id="takeHomeTaxCode"
+                  value="1257L"
+                  class="input-field"
+                  aria-describedby="takeHomeTaxCodeNote"
+                />
+                <p id="takeHomeTaxCodeNote" class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Adjust if your code differs (e.g., K codes or W1/M1 emergency).
+                </p>
+              </div>
+              <div>
+                <label for="takeHomeSacrifice" class="form-label"
+                  >Salary sacrifice (<span data-currency-symbol>£</span> per period)</label
+                >
+                <input
+                  type="number"
+                  step="any"
+                  id="takeHomeSacrifice"
+                  value="0"
+                  class="input-field"
+                />
+              </div>
+              <div>
+                <label for="studentLoanPlan" class="form-label"
+                  >Student loan</label
+                >
+                <select id="studentLoanPlan" class="input-field">
+                  <option value="none">None</option>
+                  <option value="plan1">Plan 1</option>
+                  <option value="plan2">Plan 2</option>
+                  <option value="plan4">Plan 4</option>
+                  <option value="plan5">Plan 5</option>
+                  <option value="postgraduate">Postgraduate</option>
+                </select>
+              </div>
+              <div class="md:col-span-3 flex items-end">
+                <button type="submit" class="btn btn-green btn-block">
+                  Calculate
+                </button>
+              </div>
+            </form>
+            <div id="takeHomeResult" class="mt-4 text-sm"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100">
             Share Target Profit (%)
           </h3>
           <div class="card-body">

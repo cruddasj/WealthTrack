@@ -15,6 +15,7 @@ let inflationRate = 2.5;
 let wealthChart, snapshotChart, assetBreakdownChart, futurePortfolioChart;
 let assetForecasts = new Map();
 let liabilityForecasts = new Map();
+let cashflowForecasts = null;
 let lastForecastScenarios = null;
 let progressCheckSelection = null;
 let snapshotComparisonState = {
@@ -2007,6 +2008,93 @@ function calculateFutureValueFreq(
   );
 }
 
+function parseUkTaxCodeAllowance(code) {
+  const fallback = 12570;
+  if (code == null) return fallback;
+  const normalized = String(code).trim().toUpperCase();
+  if (!normalized) return fallback;
+  const match = normalized.match(/(\d{1,5})/);
+  const numeric = match ? Number.parseInt(match[1], 10) : fallback / 10;
+  const allowance = Number.isFinite(numeric) ? numeric * 10 : fallback;
+  return normalized.startsWith("K") ? -allowance : allowance;
+}
+
+function applyAllowanceTaper(allowance, adjustedIncome) {
+  if (!(adjustedIncome > 100000)) return allowance;
+  const reduction = (adjustedIncome - 100000) / 2;
+  return Math.max(0, allowance - reduction);
+}
+
+function calculateUkTakeHome({
+  grossAnnual,
+  taxCode,
+  salarySacrificeAnnual = 0,
+  studentLoanPlan = "none",
+}) {
+  const taxAllowance = applyAllowanceTaper(
+    parseUkTaxCodeAllowance(taxCode),
+    grossAnnual,
+  );
+  const pension = Math.min(Math.max(0, salarySacrificeAnnual), grossAnnual);
+  const adjustedGross = Math.max(0, grossAnnual - pension);
+
+  // Income tax bands (England, Wales, NI 2024/25)
+  const basicThreshold = 50270;
+  const additionalThreshold = 125140;
+  const basicBandWidth = Math.max(0, basicThreshold - taxAllowance);
+  const taxableIncome = Math.max(0, adjustedGross - taxAllowance);
+  const basicTaxable = Math.min(taxableIncome, basicBandWidth);
+  const higherTaxable = Math.min(
+    Math.max(0, taxableIncome - basicTaxable),
+    Math.max(0, additionalThreshold - basicThreshold),
+  );
+  const additionalTaxable = Math.max(
+    0,
+    taxableIncome - basicTaxable - higherTaxable,
+  );
+  const incomeTax =
+    basicTaxable * 0.2 + higherTaxable * 0.4 + additionalTaxable * 0.45;
+
+  // NI (Class 1 employee) thresholds for 2024/25
+  const niLower = 12570;
+  const niUpper = 50270;
+  const niMainRate = 0.08;
+  const niUpperRate = 0.02;
+  const niEligible = Math.max(0, adjustedGross - niLower);
+  const niAtMain = Math.min(Math.max(0, niUpper - niLower), niEligible);
+  const niAbove = Math.max(0, adjustedGross - niUpper);
+  const nationalInsurance = niAtMain * niMainRate + niAbove * niUpperRate;
+
+  const planMeta = {
+    none: { threshold: Infinity, rate: 0 },
+    plan1: { threshold: 24990, rate: 0.09 },
+    plan2: { threshold: 27295, rate: 0.09 },
+    plan4: { threshold: 31395, rate: 0.09 },
+    plan5: { threshold: 25000, rate: 0.09 },
+    postgraduate: { threshold: 21000, rate: 0.06 },
+  };
+  const selectedPlan = planMeta[studentLoanPlan] || planMeta.none;
+  const studentLoan =
+    adjustedGross > selectedPlan.threshold
+      ? (adjustedGross - selectedPlan.threshold) * selectedPlan.rate
+      : 0;
+
+  const takeHomeAnnual =
+    adjustedGross - incomeTax - nationalInsurance - studentLoan;
+
+  return {
+    grossAnnual,
+    pension,
+    adjustedGross,
+    taxAllowance,
+    taxableIncome,
+    incomeTax,
+    nationalInsurance,
+    studentLoan,
+    takeHomeAnnual,
+  };
+}
+
 // Forecast labels memo
 const getForecastLabels = (() => {
   const memo = new Map();
@@ -2056,6 +2144,11 @@ function buildForecastScenarios(yearsOverride = null, opts = {}) {
   const incomeTotalsBase = Array(labels.length).fill(0);
   const incomeTotalsLow = Array(labels.length).fill(0);
   const incomeTotalsHigh = Array(labels.length).fill(0);
+  const incomeFlows = Array(labels.length).fill(0);
+  const liabilityPaymentFlows = Array(labels.length).fill(0);
+  const cashflowTotalsBase = Array(labels.length).fill(0);
+  const cashflowTotalsLow = Array(labels.length).fill(0);
+  const cashflowTotalsHigh = Array(labels.length).fill(0);
 
   const nextAssetForecasts = new Map();
   const assetDetails = includeBreakdown ? [] : null;
@@ -2256,13 +2349,14 @@ function buildForecastScenarios(yearsOverride = null, opts = {}) {
           liabilityTotalsLow[i] += arr[i];
           liabilityTotalsHigh[i] += arr[i];
         }
+        let paymentThisPeriod = 0;
         if (active && outstanding > 0) {
           outstanding = outstanding * (1 + rate);
-          outstanding = Math.max(
-            0,
-            outstanding - Math.min(outstanding, payment),
-          );
+          const scheduled = Math.min(outstanding, payment);
+          paymentThisPeriod = scheduled;
+          outstanding = Math.max(0, outstanding - scheduled);
         }
+        liabilityPaymentFlows[i] += paymentThisPeriod;
       }
       nextLiabilityForecasts.set(liability.dateAdded, arr);
     });
@@ -2284,6 +2378,7 @@ function buildForecastScenarios(yearsOverride = null, opts = {}) {
         nowTs,
       );
       let running = 0;
+      let previous = 0;
       for (let i = 0; i <= totalMonths; i++) {
         const currentDate = labels[i];
         if (iterator) {
@@ -2292,28 +2387,42 @@ function buildForecastScenarios(yearsOverride = null, opts = {}) {
         }
         const active = currentDate >= startDateObj;
         const contribution = active ? running : 0;
+        const periodAddition = active ? running - previous : 0;
         incomeTotalsBase[i] += contribution;
         incomeTotalsLow[i] += contribution;
         incomeTotalsHigh[i] += contribution;
+        incomeFlows[i] += periodAddition;
+        previous = running;
       }
     });
+  }
 
+  if (!passiveOnly) {
+    let cashBase = 0;
+    let cashLow = 0;
+    let cashHigh = 0;
     for (let i = 0; i < labels.length; i++) {
-      const incBase = incomeTotalsBase[i] || 0;
-      const incLow = incomeTotalsLow[i] || 0;
-      const incHigh = incomeTotalsHigh[i] || 0;
-      base[i] += incBase;
-      low[i] += incLow;
-      high[i] += incHigh;
+      const incomeFlow = incomeFlows[i] || 0;
+      const liabilityOut = liabilityPaymentFlows[i] || 0;
+      const netFlow = incomeFlow - liabilityOut;
+      cashBase += netFlow;
+      cashLow += netFlow;
+      cashHigh += netFlow;
+      cashflowTotalsBase[i] = cashBase;
+      cashflowTotalsLow[i] = cashLow;
+      cashflowTotalsHigh[i] = cashHigh;
+      base[i] += netFlow;
+      low[i] += netFlow;
+      high[i] += netFlow;
     }
 
-    if (includeBreakdown && incomes.length) {
+    if (includeBreakdown && (incomes.length || liabilities.length)) {
       assetDetails.push({
-        id: "__incomes__",
-        name: "Income contributions",
-        base: incomeTotalsBase,
-        low: incomeTotalsLow,
-        high: incomeTotalsHigh,
+        id: "__cashflow__",
+        name: "Cash after income & liabilities",
+        base: cashflowTotalsBase,
+        low: cashflowTotalsLow,
+        high: cashflowTotalsHigh,
         isIncome: true,
         annualRates: { base: 0, low: 0, high: 0 },
         grossRates: { base: 0, low: 0, high: 0 },
@@ -2334,12 +2443,14 @@ function buildForecastScenarios(yearsOverride = null, opts = {}) {
       const baseLiabs = liabilityTotalsBase ? liabilityTotalsBase[i] || 0 : 0;
       const lowLiabs = liabilityTotalsLow ? liabilityTotalsLow[i] || 0 : 0;
       const highLiabs = liabilityTotalsHigh ? liabilityTotalsHigh[i] || 0 : 0;
-      const baseIncome = incomeTotalsBase[i] || 0;
-      const lowIncome = incomeTotalsLow[i] || 0;
-      const highIncome = incomeTotalsHigh[i] || 0;
-      const baseDiff = (base[i] || 0) - baseAssets - baseLiabs - baseIncome;
+      const baseIncome = cashflowTotalsBase[i] || 0;
+      const lowIncome = cashflowTotalsLow[i] || 0;
+      const highIncome = cashflowTotalsHigh[i] || 0;
+      const baseDiff =
+        (base[i] || 0) - baseAssets - baseLiabs - baseIncome;
       const lowDiff = (low[i] || 0) - lowAssets - lowLiabs - lowIncome;
-      const highDiff = (high[i] || 0) - highAssets - highLiabs - highIncome;
+      const highDiff =
+        (high[i] || 0) - highAssets - highLiabs - highIncome;
       diffBase[i] = baseDiff;
       diffLow[i] = lowDiff;
       diffHigh[i] = highDiff;
@@ -2366,6 +2477,13 @@ function buildForecastScenarios(yearsOverride = null, opts = {}) {
   if (!passiveOnly) {
     assetForecasts = nextAssetForecasts;
     liabilityForecasts = nextLiabilityForecasts;
+    cashflowForecasts = {
+      base: cashflowTotalsBase,
+      low: cashflowTotalsLow,
+      high: cashflowTotalsHigh,
+    };
+  } else {
+    cashflowForecasts = null;
   }
 
   const scenarios = {
@@ -4908,6 +5026,7 @@ function updateWealthChart() {
     lastForecastScenarios = null;
     assetForecasts = new Map();
     liabilityForecasts = new Map();
+    cashflowForecasts = null;
     updateForecastRecommendationsCard();
     refreshFireProjection();
     return;
@@ -5108,7 +5227,13 @@ function updateWealthChart() {
                     liabilityForecasts.get(l.dateAdded)?.[dataIndex] ?? 0;
                   return `  ${l.name}: ${fmtCurrency(forecast)}`;
                 });
-              const lines = [...assetLines, ...liabLines];
+              const cashFlowLines = (() => {
+                const flow = cashflowForecasts?.[scenario]?.[dataIndex];
+                if (flow == null) return [];
+                if (Math.abs(flow) < 0.005) return [];
+                return [`  Cash after income/liabilities: ${fmtCurrency(flow)}`];
+              })();
+              const lines = [...assetLines, ...liabLines, ...cashFlowLines];
               return lines.length
                 ? ["\nForecast breakdown:", ...lines]
                 : [];
@@ -7020,6 +7145,78 @@ function handleFormSubmit(e) {
             </table>
           </div>
           <p class="text-xs text-gray-500 dark:text-gray-400 mt-3">${manualNote}</p>
+        </div>`;
+      break;
+    }
+    case "takeHomeForm": {
+      const resultEl = $("takeHomeResult");
+      if (!resultEl) break;
+      const amount = parseFloat(form.takeHomeAmount?.value);
+      if (!(amount > 0)) {
+        resultEl.innerHTML =
+          '<p class="text-sm text-red-600">Enter a salary amount to estimate your take-home pay.</p>';
+        break;
+      }
+      const frequency =
+        form.takeHomeFrequency?.value === "monthly" ? "monthly" : "annual";
+      const taxCode = form.takeHomeTaxCode?.value?.trim() || "1257L";
+      const sacrificeRaw = parseFloat(form.takeHomeSacrifice?.value) || 0;
+      const salarySacrificeAnnual =
+        frequency === "monthly" ? sacrificeRaw * 12 : sacrificeRaw;
+      const studentLoan = form.studentLoanPlan?.value || "none";
+      const grossAnnual = frequency === "monthly" ? amount * 12 : amount;
+      const breakdown = calculateUkTakeHome({
+        grossAnnual,
+        taxCode,
+        salarySacrificeAnnual,
+        studentLoanPlan: studentLoan,
+      });
+      const fmtRow = (label, annualVal) => {
+        const monthlyVal = annualVal / 12;
+        return `
+          <tr>
+            <th class="px-6 py-3 font-medium text-left">${label}</th>
+            <td class="px-6 py-3 font-semibold">${fmtCurrency(annualVal)}</td>
+            <td class="px-6 py-3">${fmtCurrency(monthlyVal)}</td>
+          </tr>
+        `;
+      };
+      const allowanceNote =
+        breakdown.taxAllowance >= 0
+          ? `${fmtCurrency(breakdown.taxAllowance)} personal allowance`
+          : `K-code adjustment of ${fmtCurrency(Math.abs(breakdown.taxAllowance))}`;
+      resultEl.innerHTML = `
+        <div class="rounded-lg bg-gray-100 dark:bg-gray-700 p-4 text-gray-800 dark:text-gray-200">
+          <div class="flex flex-col gap-1 md:flex-row md:items-center md:justify-between">
+            <div>
+              <h4 class="text-lg font-semibold">Estimated take-home pay</h4>
+              <p class="text-sm text-gray-600 dark:text-gray-300">${allowanceNote} using tax code ${taxCode.toUpperCase()}.</p>
+            </div>
+            <div class="text-right">
+              <p class="text-sm text-gray-600 dark:text-gray-300">Tax year basis: 2024/25</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400">NI main rate 8%, upper rate 2%. Salary sacrifice reduces taxable pay.</p>
+            </div>
+          </div>
+          <div class="overflow-x-auto mt-3">
+            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-left">
+              <thead class="bg-gray-200 dark:bg-gray-700">
+                <tr>
+                  <th class="table-header">Line item</th>
+                  <th class="table-header">Yearly</th>
+                  <th class="table-header">Monthly (approx)</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700 text-sm">
+                ${fmtRow("Gross income", breakdown.grossAnnual)}
+                ${fmtRow("Pension deductions (salary sacrifice)", breakdown.pension)}
+                ${fmtRow("Taxable income", breakdown.taxableIncome)}
+                ${fmtRow("Income tax", breakdown.incomeTax)}
+                ${fmtRow("National Insurance", breakdown.nationalInsurance)}
+                ${fmtRow("Student loan", breakdown.studentLoan)}
+                ${fmtRow("Take home", breakdown.takeHomeAnnual)}
+              </tbody>
+            </table>
+          </div>
         </div>`;
       break;
     }
