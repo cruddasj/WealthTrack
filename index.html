@@ -1639,7 +1639,7 @@
           </h3>
           <div class="card-body">
             <p class="text-sm text-gray-700 dark:text-gray-300 mb-4">
-              Estimate your annual and monthly take home pay using a UK tax code, salary sacrifice for pension, and optional student loan repayments.
+              Estimate your annual and monthly take home pay using a UK tax code, salary sacrifice for pension, optional student loan repayments, and a one-off bonus.
             </p>
             <form
               id="takeHomePayForm"
@@ -1692,6 +1692,22 @@
                   <option value="annual" selected>Yearly</option>
                   <option value="monthly">Monthly</option>
                 </select>
+              </div>
+              <div>
+                <label for="take-home-bonus" class="form-label"
+                  >Optional bonus (<span data-currency-symbol>£</span>)</label
+                >
+                <input
+                  type="number"
+                  step="any"
+                  min="0"
+                  id="take-home-bonus"
+                  class="input-field"
+                  placeholder="e.g. 5000"
+                />
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Adds a one-off bonus to your gross pay and shows a bonus period column with PAYE smoothing details when the bonus is large enough.
+                </p>
               </div>
               <div>
                 <label for="take-home-student-loan" class="form-label"

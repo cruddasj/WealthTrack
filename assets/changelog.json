@@ -1,5 +1,13 @@
 [
   {
+    "version": "1.1.54",
+    "date": "2025-12-30",
+    "changes": [
+      "Add an optional bonus input to the UK take home pay calculator with a bonus-period column alongside the yearly and monthly breakdown.",
+      "Show PAYE smoothing guidance for large bonuses, including the difference between a standard bonus payslip and one with smoothing applied."
+    ]
+  },
+  {
     "version": "1.1.53",
     "date": "2025-12-28",
     "changes": [

@@ -2,6 +2,10 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
+## [1.1.54] - 2025-12-30
+- Add an optional bonus input to the UK take home pay calculator with a bonus-period column alongside the yearly and monthly breakdown.
+- Show PAYE smoothing guidance for large bonuses, including the difference between a standard bonus payslip and one with smoothing applied.
+
 ## [1.1.53] - 2025-12-28
 - Show green text for positive net cash flow and red for negative, rename asset contributions in the breakdown, and keep the expenses minus sign aligned on mobile.
 
