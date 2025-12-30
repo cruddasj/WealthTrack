@@ -2,6 +2,12 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
+## [1.1.55] - 2025-12-30
+- Add a PAYE month field to the UK take home calculator and rework bonus handling so cumulative tax and NI match real payslips more closely.
+
+## [1.1.54] - 2025-12-30
+- Add a one-off bonus field to the UK take home calculator with a bonus period column and PAYE smoothing comparison so you can see how much tax is held back and when it returns.
+
 ## [1.1.53] - 2025-12-28
 - Show green text for positive net cash flow and red for negative, rename asset contributions in the breakdown, and keep the expenses minus sign aligned on mobile.
 
