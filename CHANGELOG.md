@@ -2,6 +2,10 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
+## [1.1.56] - 2025-12-30
+- Add cumulative PAYE inputs (periods elapsed, taxable pay to date, and tax paid to date) to the UK take home calculator so the per-period results match your current payslip context.
+- Rework PAYE to annualise cumulative taxable pay before applying tax code allowances and per-period income tax, NI, and bonus-month outputs, ensuring salary sacrifice reduces both tax and NI bases.
+
 ## [1.1.55] - 2025-12-30
 - Center the Net Cash Flow stat box on desktop and let it span the card like other insights for clearer emphasis.
 - Move the UK Tax Impact Estimator to the top of the calculators list so it sits just below UK Take Home Pay.

@@ -1676,7 +1676,7 @@
               </div>
               <div>
                 <label for="take-home-income" class="form-label required-label"
-                  >Income amount (<span data-currency-symbol>£</span>)</label
+                  >Monthly gross pay (<span data-currency-symbol>£</span>)</label
                 >
                 <input
                   type="number"
@@ -1685,15 +1685,6 @@
                   class="input-field"
                   required
                 />
-              </div>
-              <div>
-                <label for="take-home-frequency" class="form-label"
-                  >Income frequency</label
-                >
-                <select id="take-home-frequency" class="input-field">
-                  <option value="annual" selected>Yearly</option>
-                  <option value="monthly">Monthly</option>
-                </select>
               </div>
               <div>
                 <label for="take-home-bonus" class="form-label"
@@ -1750,12 +1741,61 @@
                     id="take-home-sacrifice-type"
                     class="input-field sm:w-48"
                   >
-                    <option value="amount" selected>Per year</option>
-                    <option value="percent">Percentage of income</option>
+                    <option value="amount" selected>Per month</option>
+                    <option value="percent">Percentage of monthly pay</option>
                   </select>
                 </div>
                 <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
                   Salary sacrifice reduces taxable pay and NI. Relief at source takes the contribution from take-home; we assume 20% basic-rate tax relief is added to the pot.
+                </p>
+              </div>
+              <div>
+                <label for="take-home-periods-elapsed" class="form-label required-label"
+                  >Pay periods elapsed (including this payslip)</label
+                >
+                <input
+                  type="number"
+                  min="1"
+                  step="1"
+                  id="take-home-periods-elapsed"
+                  class="input-field"
+                  required
+                  value="1"
+                />
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Use the number of monthly payslips issued so far in the tax year, counting this one.
+                </p>
+              </div>
+              <div>
+                <label for="take-home-prior-taxable" class="form-label"
+                  >Taxable pay to date before this period (<span data-currency-symbol>£</span>)</label
+                >
+                <input
+                  type="number"
+                  step="any"
+                  min="0"
+                  id="take-home-prior-taxable"
+                  class="input-field"
+                  placeholder="e.g. 24000"
+                />
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Enter the cumulative taxable pay for the tax year so far, before this payslip and after any salary sacrifice.
+                </p>
+              </div>
+              <div>
+                <label for="take-home-tax-paid-to-date" class="form-label"
+                  >Income tax already paid this tax year (<span data-currency-symbol>£</span>)</label
+                >
+                <input
+                  type="number"
+                  step="any"
+                  min="0"
+                  id="take-home-tax-paid-to-date"
+                  class="input-field"
+                  placeholder="e.g. 3200"
+                />
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Include PAYE income tax only. The calculator will compare tax due to date against this figure to find this period's deduction or refund.
                 </p>
               </div>
               <div class="md:col-span-2 flex items-end">
