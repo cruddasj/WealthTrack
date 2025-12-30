@@ -1694,6 +1694,38 @@
                 </select>
               </div>
               <div>
+                <label for="take-home-paye-period" class="form-label"
+                  >PAYE month (1-12)</label
+                >
+                <input
+                  type="number"
+                  min="1"
+                  max="12"
+                  id="take-home-paye-period"
+                  class="input-field"
+                  placeholder="12"
+                />
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Use the tax month for this payslip (1-12) so PAYE smoothing matches the cumulative allowances used on your real payslip.
+                </p>
+              </div>
+              <div>
+                <label for="take-home-bonus" class="form-label"
+                  >One-off bonus (optional)</label
+                >
+                <input
+                  type="number"
+                  step="any"
+                  min="0"
+                  id="take-home-bonus"
+                  class="input-field"
+                  placeholder="e.g. 3500"
+                />
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Adds a single bonus to your next payslip so you can compare your regular month, bonus period, and yearly totals.
+                </p>
+              </div>
+              <div>
                 <label for="take-home-student-loan" class="form-label"
                   >Student loan plan</label
                 >
