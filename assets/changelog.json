@@ -1,5 +1,13 @@
 [
   {
+    "version": "1.1.55",
+    "date": "2025-12-30",
+    "changes": [
+      "Center the Net Cash Flow stat box on desktop so it spans the card like other insights.",
+      "Move the UK Tax Impact Estimator to appear just below UK Take Home Pay in the calculators list."
+    ]
+  },
+  {
     "version": "1.1.54",
     "date": "2025-12-30",
     "changes": [
