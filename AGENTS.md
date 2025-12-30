@@ -7,6 +7,7 @@ Overview
 - Icon PNG assets are generated during the CI/CD pipeline; do not commit regenerated binaries.
 
 Do
+- Check for any minor or patch updates to npm libraries and apply them if they are found before making any further changes.
 - Edit source styles in `src/styles.css` only. Rebuild CSS with:
   - `npm run build:css` (one-off) or `npm run watch:css` (during development).
 - Keep the generated file `assets/styles.css` up to date and committed when changing styles.
