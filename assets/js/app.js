@@ -7552,6 +7552,7 @@ function handleFormSubmit(e) {
       const freqInput = form["take-home-frequency"];
       const taxYearInput = form["take-home-tax-year"];
       const taxCodeInput = form["take-home-tax-code"];
+      const bonusInput = form["take-home-bonus"];
       const sacrificeInput = form["take-home-sacrifice"];
       const sacrificeTypeInput = form["take-home-sacrifice-type"];
       const pensionMethodInput = form["take-home-pension-method"];
@@ -7568,6 +7569,8 @@ function handleFormSubmit(e) {
           ? freqInput.value
           : "annual";
       const annualIncome = frequency === "monthly" ? incomeValue * 12 : incomeValue;
+      const bonusValue = Number.parseFloat(bonusInput?.value);
+      const bonus = Number.isFinite(bonusValue) && bonusValue > 0 ? bonusValue : 0;
       const sacrificeRaw = Number.parseFloat(sacrificeInput?.value);
       const sacrificeType = sacrificeTypeInput?.value === "percent" ? "percent" : "amount";
       const contributionMethod = pensionMethodInput?.value === "relief" ? "relief" : "sacrifice";
@@ -7602,25 +7605,108 @@ function handleFormSubmit(e) {
         contributionMethod === "relief"
           ? takeHomeBeforePension - netPensionOutflow
           : takeHomeBeforePension;
-      const fmtRow = (label, annual) => {
+      const fmtRow = (label, annual, bonusValue = null) => {
         const monthly = annual / 12;
+        const bonusCell =
+          bonus > 0
+            ? `<td class="px-4 py-2 text-right">${bonusValue != null ? fmtCurrency(bonusValue) : "—"}</td>`
+            : "";
         return `<tr>
           <th class="px-4 py-2 font-medium text-left">${label}</th>
           <td class="px-4 py-2 font-semibold text-right">${fmtCurrency(annual)}</td>
           <td class="px-4 py-2 text-right">${fmtCurrency(monthly)}</td>
+          ${bonusCell}
         </tr>`;
       };
+      const annualIncomeWithBonus = annualIncome + bonus;
+      const grossAfterPensionWithBonus =
+        contributionMethod === "sacrifice"
+          ? Math.max(0, annualIncomeWithBonus - pensionGrossContribution)
+          : annualIncomeWithBonus;
+      const personalAllowanceWithBonus = calculatePersonalAllowance(
+        taxCode,
+        grossAfterPensionWithBonus,
+      );
+      const taxableIncomeWithBonus = Math.max(0, grossAfterPensionWithBonus - personalAllowanceWithBonus);
+      const incomeTaxWithBonus = calculateUkIncomeTax(
+        grossAfterPensionWithBonus,
+        personalAllowanceWithBonus,
+        taxYearCfg,
+      );
+      const nationalInsuranceWithBonus = calculateUkNi(grossAfterPensionWithBonus, taxYearCfg);
+      const studentLoanWithBonus = calculateStudentLoanRepayment(
+        grossAfterPensionWithBonus,
+        studentLoanInput?.value || "none",
+      );
+      const takeHomeBeforePensionWithBonus =
+        grossAfterPensionWithBonus - incomeTaxWithBonus - nationalInsuranceWithBonus - studentLoanWithBonus;
+      const takeHomeAnnualWithBonus =
+        contributionMethod === "relief"
+          ? takeHomeBeforePensionWithBonus - netPensionOutflow
+          : takeHomeBeforePensionWithBonus;
+      const bonusTaxDelta = Math.max(0, incomeTaxWithBonus - incomeTax);
+      const bonusNiDelta = Math.max(0, nationalInsuranceWithBonus - nationalInsurance);
+      const bonusLoanDelta = Math.max(0, studentLoanWithBonus - studentLoan);
+      const bonusNet = bonus - (bonusTaxDelta + bonusNiDelta + bonusLoanDelta);
+      const baseMonthlyTakeHome = takeHomeAnnual / 12;
+      const bonusPeriodTakeHome = bonus > 0 ? baseMonthlyTakeHome + bonusNet : null;
+
+      const monthlyThresholds = {
+        basicLimit: (taxYearCfg?.basicLimit ?? 50270) / 12,
+        higherLimit: (taxYearCfg?.higherLimit ?? 125140) / 12,
+        primaryNiThreshold: (taxYearCfg?.primaryNiThreshold ?? 12570) / 12,
+        upperNiThreshold: (taxYearCfg?.upperNiThreshold ?? 50270) / 12,
+      };
+      const monthlyStudentLoanThreshold =
+        (STUDENT_LOAN_PLANS[studentLoanInput?.value || "none"]?.threshold || Infinity) / 12;
+      const smoothingGrossMonthly =
+        contributionMethod === "sacrifice"
+          ? Math.max(0, annualIncome / 12 + bonus - pensionGrossContribution / 12)
+          : annualIncome / 12 + bonus;
+      const smoothingPersonalAllowance = personalAllowanceWithBonus / 12;
+      const smoothingIncomeTax = bonus
+        ? calculateUkIncomeTax(smoothingGrossMonthly, smoothingPersonalAllowance, monthlyThresholds)
+        : 0;
+      const smoothingNi = bonus ? calculateUkNi(smoothingGrossMonthly, monthlyThresholds) : 0;
+      const smoothingStudentLoan =
+        bonus && smoothingGrossMonthly > monthlyStudentLoanThreshold
+          ? (smoothingGrossMonthly - monthlyStudentLoanThreshold) *
+            (STUDENT_LOAN_PLANS[studentLoanInput?.value || "none"]?.rate || 0)
+          : 0;
+      const smoothingPensionAdjustment =
+        contributionMethod === "relief" ? netPensionOutflow / 12 : 0;
+      const smoothingBonusPeriodTakeHome = bonus
+        ? smoothingGrossMonthly - smoothingIncomeTax - smoothingNi - smoothingStudentLoan - smoothingPensionAdjustment
+        : null;
+
       const rows = [
-        fmtRow("Gross income", annualIncome),
-        fmtRow("Pension contributions", pensionGrossContribution),
+        fmtRow("Gross income", annualIncome, bonus > 0 ? annualIncome / 12 + bonus : null),
+        fmtRow("Pension contributions", pensionGrossContribution, bonus > 0 ? pensionGrossContribution / 12 : null),
       ];
-      if (reliefTopUp > 0) rows.push(fmtRow("HMRC top-up (relief at source)", reliefTopUp));
+      if (reliefTopUp > 0)
+        rows.push(fmtRow("HMRC top-up (relief at source)", reliefTopUp, bonus > 0 ? reliefTopUp / 12 : null));
       rows.push(
-        fmtRow("Taxable income", taxableIncome),
-        fmtRow("Income tax", incomeTax),
-        fmtRow("National Insurance", nationalInsurance),
-        fmtRow("Student loan", studentLoan),
-        fmtRow("Take home", takeHomeAnnual),
+        fmtRow(
+          "Taxable income",
+          taxableIncome,
+          bonus > 0 ? Math.max(0, smoothingGrossMonthly - smoothingPersonalAllowance) : null,
+        ),
+        fmtRow(
+          "Income tax",
+          incomeTax,
+          bonus > 0 ? incomeTax / 12 + bonusTaxDelta : null,
+        ),
+        fmtRow(
+          "National Insurance",
+          nationalInsurance,
+          bonus > 0 ? nationalInsurance / 12 + bonusNiDelta : null,
+        ),
+        fmtRow("Student loan", studentLoan, bonus > 0 ? studentLoan / 12 + bonusLoanDelta : null),
+        fmtRow(
+          "Take home",
+          takeHomeAnnual,
+          bonusPeriodTakeHome,
+        ),
       );
       const pensionNote =
         contributionMethod === "relief"
@@ -7632,6 +7718,11 @@ function handleFormSubmit(e) {
               pensionGrossContribution,
             )}.`
           : "Salary sacrifice contributions are taken from gross pay before tax and National Insurance.";
+      const smoothingDelta =
+        bonus && smoothingBonusPeriodTakeHome != null && bonusPeriodTakeHome != null
+          ? bonusPeriodTakeHome - smoothingBonusPeriodTakeHome
+          : 0;
+      const showSmoothingNote = bonus > 2500 && smoothingDelta > 0;
       resultEl.innerHTML = `
         <div class="rounded-lg bg-gray-100 dark:bg-gray-700 p-4 text-gray-700 dark:text-gray-200">
           <div class="flex flex-col gap-1 mb-3">
@@ -7649,6 +7740,7 @@ function handleFormSubmit(e) {
                   <th class="px-4 py-2">Line item</th>
                   <th class="px-4 py-2 text-right">Yearly</th>
                   <th class="px-4 py-2 text-right">Monthly</th>
+                  ${bonus > 0 ? '<th class="px-4 py-2 text-right">Bonus period</th>' : ""}
                 </tr>
               </thead>
               <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
@@ -7656,6 +7748,29 @@ function handleFormSubmit(e) {
               </tbody>
             </table>
           </div>
+          ${
+            bonus > 0
+              ? `<div class="mt-4 space-y-2">
+                  <p class="text-sm">
+                    Bonus entered: ${fmtCurrency(bonus)}. Bonus period take home (no smoothing) is approximately ${fmtCurrency(
+                      bonusPeriodTakeHome || 0,
+                    )}.
+                  </p>
+                  <p class="text-sm">
+                    PAYE smoothing estimate: ${fmtCurrency(
+                      smoothingBonusPeriodTakeHome || 0,
+                    )} in the bonus month${smoothingDelta > 0 ? ` (about ${fmtCurrency(smoothingDelta)} lower, returned across later payslips)` : ""}.
+                  </p>
+                  ${
+                    showSmoothingNote
+                      ? `<div class="rounded-md bg-amber-100 text-amber-900 dark:bg-amber-900/30 dark:text-amber-100 p-3 text-xs">
+                          High one-off payments are often smoothed across the tax year. Your bonus month may be lower, with the extra tax and National Insurance refunded in later payslips once cumulative PAYE adjusts.
+                        </div>`
+                      : ""
+                  }
+                </div>`
+              : ""
+          }
           <p class="text-xs text-gray-500 dark:text-gray-400 mt-3">
             ${pensionNote} Figures use ${taxYearCfg.label || "2025/26"} thresholds. Student loan repayments use the plan threshold you selected.
           </p>
