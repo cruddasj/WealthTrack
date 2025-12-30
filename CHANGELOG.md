@@ -2,6 +2,9 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
+## [1.1.56] - 2025-12-30
+- Add a note to the UK Take Home Pay calculator explaining it uses simplified PAYE assumptions and that payslips may vary.
+
 ## [1.1.55] - 2025-12-30
 - Center the Net Cash Flow stat box on desktop and let it span the card like other insights for clearer emphasis.
 - Move the UK Tax Impact Estimator to the top of the calculators list so it sits just below UK Take Home Pay.
