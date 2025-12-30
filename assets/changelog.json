@@ -1,5 +1,12 @@
 [
   {
+    "version": "1.1.56",
+    "date": "2025-12-30",
+    "changes": [
+      "Add a note to the UK Take Home Pay calculator explaining it uses simplified PAYE assumptions and that payslips may vary."
+    ]
+  },
+  {
     "version": "1.1.55",
     "date": "2025-12-30",
     "changes": [
