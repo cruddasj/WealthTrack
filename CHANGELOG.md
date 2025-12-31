@@ -2,6 +2,9 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
+## [1.1.58] - 2025-12-31
+- Show imported income and expense entries right away so they appear without restarting after a data restore.
+
 ## [1.1.57] - 2025-12-31
 - Keep income and expense entries attached to each profile when exporting and re-importing data, even after resetting the app.
 - Include the welcome content visibility preference in exports so disabling the intro persists across restores.
