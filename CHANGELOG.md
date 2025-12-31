@@ -2,6 +2,10 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
+## [1.1.57] - 2025-12-31
+- Keep income and expense entries attached to each profile when exporting and re-importing data, even after resetting the app.
+- Include the welcome content visibility preference in exports so disabling the intro persists across restores.
+
 ## [1.1.56] - 2025-12-30
 - Add a note to the UK Take Home Pay calculator explaining it uses simplified PAYE assumptions and that payslips may vary.
 

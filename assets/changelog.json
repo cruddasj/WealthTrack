@@ -1,5 +1,13 @@
 [
   {
+    "version": "1.1.57",
+    "date": "2025-12-31",
+    "changes": [
+      "Keep income and expense entries tied to each profile when exporting and re-importing data, even after resetting the app.",
+      "Include the welcome content visibility preference in exports so disabling the intro persists across restores."
+    ]
+  },
+  {
     "version": "1.1.56",
     "date": "2025-12-30",
     "changes": [

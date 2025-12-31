@@ -1189,6 +1189,10 @@ function normalizeImportedProfile(profile, index = 0) {
     passiveIncomeAssetSelection: sanitizePassiveSelection(
       profile?.passiveIncomeAssetSelection ?? profile?.passiveIncomeSelection,
     ),
+    firstTimeContentHidden:
+      profile && Object.prototype.hasOwnProperty.call(profile, "firstTimeContentHidden")
+        ? !!profile.firstTimeContentHidden
+        : getStoredFirstTimeHidden(),
     mobileNavSticky: sanitizeMobileNavSticky(
       profile?.mobileNavSticky,
       readStoredMobileNavSticky(),
@@ -1217,6 +1221,7 @@ function prepareImportedProfiles(data) {
       id: data?.id ?? Date.now(),
       name: data?.name || data?.profileName || "Imported",
       assets: data?.assets,
+      incomes: data?.incomes,
       expenses: data?.expenses,
       liabilities: data?.liabilities,
       snapshots: data?.snapshots,
@@ -8490,6 +8495,7 @@ window.addEventListener("load", () => {
                   ? profile.mobileNavSticky
                   : readStoredMobileNavSticky(),
               ),
+              firstTimeContentHidden: isFirstTimeContentHidden(profile),
               assets: ensureArray(profile.assets).map((asset) => {
                 if (!asset || typeof asset !== "object") return asset;
                 return {
@@ -8596,6 +8602,8 @@ window.addEventListener("load", () => {
                 activeProfile =
                   profiles.find((p) => p.id == nextActiveId) || profiles[0];
                 assets = activeProfile.assets || [];
+                incomes = activeProfile.incomes || [];
+                expenses = activeProfile.expenses || [];
                 liabilities = activeProfile.liabilities || [];
                 snapshots = activeProfile.snapshots || [];
                 simEvents = activeProfile.simEvents || [];
