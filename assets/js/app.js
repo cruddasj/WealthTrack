@@ -8678,6 +8678,8 @@ window.addEventListener("load", () => {
                 updateGoalButton();
                 normalizeData();
                 renderAssets();
+                renderIncomes();
+                renderExpenses();
                 renderLiabilities();
                 renderEvents();
                 renderSnapshots();
