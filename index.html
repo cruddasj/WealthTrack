@@ -1991,7 +1991,7 @@
 
         <div class="card">
           <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100">
-            Compound Interest Calculator
+            Compound Interest
           </h3>
           <div class="card-body">
             <form
@@ -2069,7 +2069,7 @@
 
         <div class="card">
           <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100">
-            Simple Interest Calculator
+            Simple Interest
           </h3>
           <div class="card-body">
             <form
@@ -2119,6 +2119,69 @@
               </div>
             </form>
             <div id="simpleInterestResult" class="mt-4"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100">
+            Passive Income Target
+          </h3>
+          <div class="card-body">
+            <form
+              id="passiveIncomeTargetForm"
+              class="grid grid-cols-1 md:grid-cols-2 gap-4"
+            >
+              <div>
+                <label
+                  for="passive-income-amount"
+                  class="form-label required-label"
+                  >Target Passive Income (<span data-currency-symbol>£</span>)</label
+                >
+                <input
+                  type="number"
+                  step="any"
+                  min="0"
+                  id="passive-income-amount"
+                  class="input-field"
+                  required
+                />
+              </div>
+              <div>
+                <label for="passive-income-frequency" class="form-label"
+                  >Income Frequency</label
+                >
+                <select id="passive-income-frequency" class="input-field">
+                  <option value="monthly" selected>Per month</option>
+                  <option value="weekly">Per week</option>
+                  <option value="daily">Per day</option>
+                  <option value="yearly">Per year</option>
+                </select>
+              </div>
+              <div>
+                <label
+                  for="passive-income-return"
+                  class="form-label required-label"
+                  >Expected Annual Return (%)</label
+                >
+                <input
+                  type="number"
+                  step="any"
+                  min="0"
+                  id="passive-income-return"
+                  class="input-field"
+                  required
+                />
+              </div>
+              <div class="md:col-span-2 flex items-end">
+                <button type="submit" class="btn btn-block btn-green">
+                  Calculate
+                </button>
+              </div>
+            </form>
+            <div
+              id="passiveIncomeTargetResult"
+              class="mt-4 text-sm text-gray-700 dark:text-gray-300"
+            ></div>
           </div>
         </div>
 
