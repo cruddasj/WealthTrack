@@ -1,5 +1,12 @@
 [
   {
+    "version": "1.1.59",
+    "date": "2026-01-03",
+    "changes": [
+      "Rename the compound and simple interest calculator headings for consistency and add a passive income target calculator to show the investment needed for a chosen payout and return rate."
+    ]
+  },
+  {
     "version": "1.1.58",
     "date": "2025-12-31",
     "changes": [

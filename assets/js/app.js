@@ -7815,6 +7815,52 @@ function handleFormSubmit(e) {
       break;
     }
 
+    case "passiveIncomeTargetForm": {
+      const income = +$("passive-income-amount").value;
+      const frequency = ($("passive-income-frequency")?.value || "monthly").toLowerCase();
+      const returnRate = +$("passive-income-return").value;
+      const resultEl = $("passiveIncomeTargetResult");
+      const periodsPerYear = {
+        daily: 365.25,
+        weekly: 52,
+        monthly: 12,
+        yearly: 1,
+      };
+      const periodLabels = {
+        daily: "per day",
+        weekly: "per week",
+        monthly: "per month",
+        yearly: "per year",
+      };
+      if (!Number.isFinite(income) || income <= 0 || !Number.isFinite(returnRate) || returnRate <= 0) {
+        resultEl.innerHTML =
+          '<p class="text-sm text-gray-700 dark:text-gray-300">Enter a target income above zero and an annual return rate greater than 0%.</p>';
+        break;
+      }
+      const annualIncome = income * (periodsPerYear[frequency] || 12);
+      const requiredInvestment = annualIncome / (returnRate / 100);
+      const periodLabel = periodLabels[frequency] || "per period";
+      resultEl.innerHTML = `
+      <div class="rounded-lg bg-gray-100 dark:bg-gray-700 p-4 text-gray-700 dark:text-gray-200">
+        <h4 class="text-lg font-semibold mb-2">Investment needed</h4>
+        <p class="text-sm mb-3">
+          You'd need about <strong>${fmtCurrency(requiredInvestment)}</strong> invested to earn ${fmtCurrency(income)} ${periodLabel} at ${returnRate.toFixed(2)}% a year.
+        </p>
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-left">
+            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700 text-sm">
+              <tr><th class="px-4 py-2 font-medium">Target passive income</th><td class="px-4 py-2">${fmtCurrency(income)} ${periodLabel}</td></tr>
+              <tr><th class="px-4 py-2 font-medium">Annual income equivalent</th><td class="px-4 py-2">${fmtCurrency(annualIncome)}</td></tr>
+              <tr><th class="px-4 py-2 font-medium">Annual return rate</th><td class="px-4 py-2">${returnRate.toFixed(2)}%</td></tr>
+              <tr><th class="px-4 py-2 font-medium">Investment required</th><td class="px-4 py-2 font-semibold">${fmtCurrency(requiredInvestment)}</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="text-xs text-gray-500 dark:text-gray-400 mt-3">Assumes steady payouts at the chosen annual return; real-world performance may vary.</p>
+      </div>`;
+      break;
+    }
+
     case "interestRateDifferenceForm": {
       const amount = +$("interest-difference-amount").value;
       const rateA = +$("interest-rate-a").value;
