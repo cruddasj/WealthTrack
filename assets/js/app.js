@@ -5659,7 +5659,7 @@ function updateWealthChart() {
       <h5 class="font-bold text-gray-900 dark:text-gray-100 flex items-center justify-center gap-1">Low Growth
         <span class="relative group inline-block align-middle cursor-help">
           <span class="text-gray-400">?</span>
-          <span class="hidden group-hover:block absolute z-50 mt-2 w-64 p-3 rounded-lg shadow bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 text-xs">Estimated date your goal will be achieved using low growth.</span>
+          <span class="hidden group-hover:block absolute left-1/2 -translate-x-1/2 z-50 mt-2 w-64 max-w-[calc(100vw-2.5rem)] p-3 rounded-lg shadow bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 text-xs text-center whitespace-normal">Estimated date your goal will be achieved using low growth.</span>
         </span>
       </h5>
       <p class="${cls(lowHit)}">${fmt(lowHit)}</p>
@@ -5668,7 +5668,7 @@ function updateWealthChart() {
       <h5 class="font-bold text-gray-900 dark:text-gray-100 flex items-center justify-center gap-1">Expected Growth
         <span class="relative group inline-block align-middle cursor-help">
           <span class="text-gray-400">?</span>
-          <span class="hidden group-hover:block absolute z-50 mt-2 w-64 p-3 rounded-lg shadow bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 text-xs">Estimated date your goal will be achieved using expected growth.</span>
+          <span class="hidden group-hover:block absolute left-1/2 -translate-x-1/2 z-50 mt-2 w-64 max-w-[calc(100vw-2.5rem)] p-3 rounded-lg shadow bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 text-xs text-center whitespace-normal">Estimated date your goal will be achieved using expected growth.</span>
         </span>
       </h5>
       <p class="${cls(expHit)}">${fmt(expHit)}</p>
@@ -5677,7 +5677,7 @@ function updateWealthChart() {
       <h5 class="font-bold text-gray-900 dark:text-gray-100 flex items-center justify-center gap-1">High Growth
         <span class="relative group inline-block align-middle cursor-help">
           <span class="text-gray-400">?</span>
-          <span class="hidden group-hover:block absolute z-50 mt-2 w-64 p-3 rounded-lg shadow bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 text-xs">Estimated date your goal will be achieved using high growth.</span>
+          <span class="hidden group-hover:block absolute left-1/2 -translate-x-1/2 z-50 mt-2 w-64 max-w-[calc(100vw-2.5rem)] p-3 rounded-lg shadow bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 text-xs text-center whitespace-normal">Estimated date your goal will be achieved using high growth.</span>
         </span>
       </h5>
       <p class="${cls(highHit)}">${fmt(highHit)}</p>
