@@ -2,6 +2,9 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
+## [1.1.60] - 2026-01-24
+- Restore normal page scrolling on mobile when the navigation menu is closed.
+
 ## [1.1.59] - 2026-01-03
 - Rename the compound and simple interest headings to match other calculators on the page.
 - Add a passive income target calculator that shows how much to invest to hit a chosen payout and return rate.

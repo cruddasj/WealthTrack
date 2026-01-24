@@ -1,5 +1,12 @@
 [
   {
+    "version": "1.1.60",
+    "date": "2026-01-24",
+    "changes": [
+      "Fix mobile scrolling so the page moves normally even when the navigation menu is closed."
+    ]
+  },
+  {
     "version": "1.1.59",
     "date": "2026-01-03",
     "changes": [
