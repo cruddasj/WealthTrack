@@ -364,198 +364,254 @@
 
 /* Theming variables (light/dark defaults) */
 :root {
-  --accent: #10b981;
-  --accent-hover: #059669;
-  --card-bg: #ffffff;
-  --card-border: #e5e7eb;
-  --card-filter: none;
+  --app-bg: radial-gradient(circle at 5% 0%, #f8fafc 0%, #eef2ff 42%, #e2e8f0 100%);
+  --surface-bg: rgba(255, 255, 255, 0.88);
+  --surface-border: rgba(148, 163, 184, 0.22);
+  --surface-shadow: 0 22px 45px rgba(15, 23, 42, 0.08);
+  --surface-filter: blur(10px);
+  --text-primary: #0f172a;
+  --text-muted: #475569;
+  --accent: #2563eb;
+  --accent-hover: #1d4ed8;
+  --accent-soft: rgba(37, 99, 235, 0.14);
+  --sidebar-bg: rgba(255, 255, 255, 0.72);
+  --sidebar-border: rgba(148, 163, 184, 0.25);
+  --sidebar-shadow: 0 20px 44px rgba(15, 23, 42, 0.12);
+  --input-bg: rgba(248, 250, 252, 0.9);
+  --input-border: rgba(148, 163, 184, 0.38);
+  --chart-surface: linear-gradient(140deg, rgba(255, 255, 255, 0.88), rgba(241, 245, 249, 0.9));
 }
 .dark {
-  --card-bg: #1f2937;
-  --card-border: #374151;
+  --app-bg: radial-gradient(circle at 15% 5%, #1f2937 0%, #101827 45%, #020617 100%);
+  --surface-bg: rgba(17, 24, 39, 0.86);
+  --surface-border: rgba(148, 163, 184, 0.18);
+  --surface-shadow: 0 26px 54px rgba(0, 0, 0, 0.46);
+  --surface-filter: blur(14px);
+  --text-primary: #f8fafc;
+  --text-muted: #94a3b8;
+  --accent: #22d3ee;
+  --accent-hover: #06b6d4;
+  --accent-soft: rgba(34, 211, 238, 0.18);
+  --sidebar-bg: rgba(10, 15, 28, 0.85);
+  --sidebar-border: rgba(148, 163, 184, 0.22);
+  --sidebar-shadow: 0 28px 56px rgba(1, 6, 18, 0.6);
+  --input-bg: rgba(30, 41, 59, 0.9);
+  --input-border: rgba(100, 116, 139, 0.45);
+  --chart-surface: linear-gradient(160deg, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.55));
 }
 
-/* Theme: Inverted (based on pastel)
- Light mode: dark canvas + light cards + light sidebar
- Dark mode: light canvas + light cards + light sidebar */
-.theme-inverted:not(.dark) body {
-  background: linear-gradient(180deg, #1f2937, #111827) !important;
-}
-.theme-inverted.dark body {
-  background: linear-gradient(180deg, #f8fafc, #eef2ff) !important;
-}
-.theme-inverted #sidebar {
-  background: #ffffff !important;
-  color: #1f2937 !important;
-  border-color: #e5e7eb !important;
-}
-.theme-inverted #sidebar .nav-btn {
-  color: #4b5563 !important;
-}
-.theme-inverted #sidebar .nav-btn:hover {
-  background-color: #e5e7eb !important;
-}
-/* In dark mode, invert the nav to dark with white text/icons */
-.theme-inverted.dark #sidebar {
-  background: #1f2937 !important;
-  color: #f9fafb !important;
-  border-color: #374151 !important;
-}
-.theme-inverted.dark #sidebar .nav-btn {
-  color: #e5e7eb !important;
-}
-.theme-inverted.dark #sidebar .nav-btn:hover {
-  background-color: #374151 !important;
-}
-.theme-inverted.dark #sidebar svg,
-.theme-inverted.dark #sidebar i {
-  color: #ffffff !important;
-}
-/* Page headings should be light on dark canvas */
-.theme-inverted:not(.dark) h2 {
-  color: #e2e8f0 !important;
-}
-/* Card titles should remain dark on light cards */
-.theme-inverted:not(.dark) .card h3,
-.theme-inverted:not(.dark) .card h4 {
-  color: #111827 !important;
-}
-.theme-inverted.dark h2,
-.theme-inverted.dark h3 {
-  color: #111827 !important;
-}
-/* Card titles on dark cards need light text in dark mode */
-.theme-inverted.dark .card h3,
-.theme-inverted.dark .card h4 {
-  color: #f3f4f6 !important;
-}
-/* Modal titles should be light on dark modal background in inverted dark mode */
-.theme-inverted.dark .modal-panel h2,
-.theme-inverted.dark .modal-panel h3,
-.theme-inverted.dark .modal-panel h4,
-.theme-inverted.dark .modal-panel h5 {
-  color: #f3f4f6 !important;
+body {
+  background: var(--app-bg) !important;
+  color: var(--text-primary);
 }
 
-/* Theme: Glass - frosted glass cards and sidebar */
+#sidebar {
+  background: var(--sidebar-bg) !important;
+  border-color: var(--sidebar-border) !important;
+  backdrop-filter: var(--surface-filter);
+  -webkit-backdrop-filter: var(--surface-filter);
+  box-shadow: var(--sidebar-shadow);
+}
+
+/* Theme: Inverted - soft porcelain in light mode, graphite in dark mode */
+.theme-inverted:not(.dark) {
+  --app-bg: radial-gradient(circle at top right, #fef9c3 0%, #fee2e2 44%, #f5f3ff 100%);
+  --surface-bg: rgba(255, 255, 255, 0.86);
+  --surface-border: rgba(244, 114, 182, 0.2);
+  --surface-shadow: 0 22px 44px rgba(190, 24, 93, 0.12);
+  --text-primary: #3f1d2e;
+  --text-muted: #6b334f;
+  --accent: #db2777;
+  --accent-hover: #be185d;
+  --accent-soft: rgba(219, 39, 119, 0.16);
+  --sidebar-bg: rgba(255, 255, 255, 0.76);
+  --sidebar-border: rgba(244, 114, 182, 0.25);
+  --sidebar-shadow: 0 24px 46px rgba(190, 24, 93, 0.14);
+  --input-bg: rgba(255, 255, 255, 0.92);
+  --input-border: rgba(251, 113, 133, 0.36);
+  --chart-surface: linear-gradient(145deg, rgba(255, 255, 255, 0.9), rgba(254, 226, 226, 0.62));
+}
+.theme-inverted.dark {
+  --app-bg: radial-gradient(circle at 15% 0%, #0f172a 0%, #020617 55%, #000000 100%);
+  --surface-bg: rgba(3, 7, 18, 0.86);
+  --surface-border: rgba(100, 116, 139, 0.25);
+  --surface-shadow: 0 24px 52px rgba(0, 0, 0, 0.62);
+  --text-primary: #e2e8f0;
+  --text-muted: #94a3b8;
+  --accent: #38bdf8;
+  --accent-hover: #0ea5e9;
+  --accent-soft: rgba(56, 189, 248, 0.2);
+  --sidebar-bg: rgba(2, 6, 23, 0.86);
+  --sidebar-border: rgba(56, 189, 248, 0.2);
+  --sidebar-shadow: 0 26px 56px rgba(2, 6, 23, 0.7);
+  --input-bg: rgba(15, 23, 42, 0.9);
+  --input-border: rgba(56, 189, 248, 0.3);
+  --chart-surface: linear-gradient(160deg, rgba(2, 6, 23, 0.95), rgba(15, 23, 42, 0.7));
+}
+
+/* Theme: Glass - vivid translucent aurora styling */
 .theme-glass:not(.dark) {
-  --card-bg: rgba(255, 255, 255, 0.25);
-  --card-border: rgba(255, 255, 255, 0.4);
-  --card-filter: blur(20px) saturate(180%);
-  --card-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  --app-bg: linear-gradient(140deg, #f0f9ff 0%, #ecfeff 35%, #fdf4ff 100%);
+  --surface-bg: rgba(255, 255, 255, 0.56);
+  --surface-border: rgba(255, 255, 255, 0.5);
+  --surface-shadow: 0 20px 46px rgba(14, 116, 144, 0.16);
+  --surface-filter: blur(18px) saturate(175%);
+  --text-primary: #083344;
+  --text-muted: #155e75;
+  --accent: #0891b2;
+  --accent-hover: #0e7490;
+  --accent-soft: rgba(8, 145, 178, 0.17);
+  --sidebar-bg: rgba(255, 255, 255, 0.48);
+  --sidebar-border: rgba(255, 255, 255, 0.45);
+  --sidebar-shadow: 0 28px 52px rgba(8, 145, 178, 0.16);
+  --input-bg: rgba(248, 250, 252, 0.72);
+  --input-border: rgba(125, 211, 252, 0.48);
+  --chart-surface: linear-gradient(140deg, rgba(255, 255, 255, 0.62), rgba(217, 249, 255, 0.62));
 }
 .theme-glass.dark {
-  --card-bg: rgba(17, 24, 39, 0.4);
-  --card-border: rgba(255, 255, 255, 0.15);
-  --card-filter: blur(20px) saturate(180%);
-  --card-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
-}
-.theme-glass:not(.dark) body {
-  background: linear-gradient(135deg, #e6e9ec, #7777938d) !important;
-}
-.theme-glass.dark body {
-  background: linear-gradient(10deg, #808889, #2b343a) !important;
-}
-.theme-glass #sidebar {
-  background-color: var(--card-bg) !important;
-  border-color: var(--card-border) !important;
-  backdrop-filter: var(--card-filter);
-  -webkit-backdrop-filter: var(--card-filter);
-  box-shadow: var(--card-shadow);
-}
-@media (max-width: 767px) {
-  /* Match desktop styling on mobile for glass theme */
-  .theme-glass #sidebar {
-    background-color: var(--card-bg) !important;
-    border-color: var(--card-border) !important;
-    backdrop-filter: var(--card-filter);
-    -webkit-backdrop-filter: var(--card-filter);
-    box-shadow: var(--card-shadow);
-  }
+  --app-bg: linear-gradient(160deg, #0f172a 0%, #1e1b4b 42%, #111827 100%);
+  --surface-bg: rgba(15, 23, 42, 0.58);
+  --surface-border: rgba(129, 140, 248, 0.25);
+  --surface-shadow: 0 26px 58px rgba(2, 6, 23, 0.64);
+  --surface-filter: blur(18px) saturate(165%);
+  --text-primary: #e0e7ff;
+  --text-muted: #a5b4fc;
+  --accent: #818cf8;
+  --accent-hover: #6366f1;
+  --accent-soft: rgba(129, 140, 248, 0.2);
+  --sidebar-bg: rgba(15, 23, 42, 0.62);
+  --sidebar-border: rgba(129, 140, 248, 0.27);
+  --sidebar-shadow: 0 28px 60px rgba(2, 6, 23, 0.72);
+  --input-bg: rgba(30, 41, 59, 0.86);
+  --input-border: rgba(129, 140, 248, 0.38);
+  --chart-surface: linear-gradient(150deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.72));
 }
 
-/* Glass theme: ensure light mobile overlay matches desktop */
+.card,
+.guidance-card,
+.themed-tip {
+  background: var(--surface-bg) !important;
+  border-color: var(--surface-border) !important;
+  box-shadow: var(--surface-shadow);
+  backdrop-filter: var(--surface-filter);
+  -webkit-backdrop-filter: var(--surface-filter);
+}
+
+.card h3,
+.card h4,
+.guidance-card,
+.form-label,
+.label {
+  color: var(--text-primary) !important;
+}
+
+p,
+small,
+.text-gray-500,
+.text-gray-600,
+.text-gray-400,
+.text-slate-500,
+.text-slate-400 {
+  color: var(--text-muted) !important;
+}
+
+.nav-btn {
+  color: var(--text-muted) !important;
+  border: 1px solid transparent;
+  border-radius: 0.95rem;
+  margin-bottom: 0.45rem;
+  transition: all 0.26s ease;
+}
+
+.nav-btn:hover {
+  color: var(--text-primary) !important;
+  background: var(--accent-soft) !important;
+  border-color: var(--surface-border) !important;
+  transform: translateX(2px);
+}
+
+.nav-btn.active-nav-button {
+  background: linear-gradient(120deg, var(--accent), var(--accent-hover)) !important;
+  color: #ffffff !important;
+  box-shadow: 0 12px 24px color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+.nav-btn.active-nav-button svg,
+.nav-btn.active-nav-button i {
+  color: #ffffff !important;
+}
+
+.btn {
+  border-radius: 0.9rem;
+  border: 1px solid transparent;
+  box-shadow: 0 10px 20px rgba(15, 23, 42, 0.18);
+}
+.btn-green,
+.btn-blue,
+.btn-purple {
+  background-image: linear-gradient(120deg, var(--accent), var(--accent-hover));
+  color: #fff !important;
+}
+.btn-green:hover,
+.btn-blue:hover,
+.btn-purple:hover {
+  filter: brightness(1.06);
+  transform: translateY(-1px);
+}
+
+.input-field,
+select.input-field,
+textarea.input-field {
+  background: var(--input-bg) !important;
+  border: 1px solid var(--input-border);
+  color: var(--text-primary) !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+}
+
+.input-field:focus,
+select.input-field:focus,
+textarea.input-field:focus {
+  box-shadow: 0 0 0 3px var(--accent-soft);
+  border-color: color-mix(in srgb, var(--accent) 56%, white);
+}
+
+.chart-container {
+  border-radius: 1rem;
+  border: 1px solid var(--surface-border);
+  background: var(--chart-surface);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  padding: 0.75rem;
+}
+
+#mobileHeader {
+  background: var(--sidebar-bg) !important;
+  border-bottom: 1px solid var(--sidebar-border);
+  backdrop-filter: var(--surface-filter);
+  -webkit-backdrop-filter: var(--surface-filter);
+}
+
 .theme-glass:not(.dark) #overlay {
-  background-color: rgba(255, 255, 255, 0.5) !important;
+  background-color: rgba(14, 116, 144, 0.24) !important;
 }
 .theme-glass.dark #overlay {
-  background-color: rgba(0, 0, 0, 0.5) !important;
+  background-color: rgba(2, 6, 23, 0.6) !important;
 }
 
-/* Glass theme: force white inputs in dark mode */
-.theme-glass.dark .input-field {
-  background-color: #ffffff !important;
-  color: #111827 !important;
+/* Keep date icon legible on tinted input backgrounds */
+input[type="date"].input-field::-webkit-calendar-picker-indicator {
+  filter: invert(28%);
 }
-.theme-glass.dark .input-field::placeholder {
-  color: #6b7280 !important;
-}
-/* Date picker icon should not be inverted on white inputs */
-.theme-glass.dark input[type="date"].input-field::-webkit-calendar-picker-indicator {
-  filter: none;
-  opacity: 0.85;
+.dark input[type="date"].input-field::-webkit-calendar-picker-indicator {
+  filter: invert(78%);
 }
 
-/* Glass theme: make small stat boxes dark in dark mode */
-.theme-glass.dark .stat-box {
-  background-color: rgba(31, 41, 55, 0.85) !important;
-  color: #f3f4f6 !important;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  -webkit-backdrop-filter: var(--card-filter);
-  backdrop-filter: var(--card-filter);
-}
-/* Preserve Tailwind text-* utilities (e.g., text-green-500/red-600) */
-.theme-glass.dark .stat-box p:not([class*="text-"]),
-.theme-glass.dark .stat-box li:not([class*="text-"]) {
-  color: #f3f4f6 !important;
-}
-.theme-glass.dark .stat-box h4,
-.theme-glass.dark .stat-box h5,
-.theme-glass.dark .stat-box label {
-  color: #f3f4f6 !important;
-}
-
-/* Glass theme: stronger sidebar nav hover contrast */
-/* Dark mode: light hover bg with dark text/icons */
-.theme-glass.dark #sidebar .nav-btn:hover {
-  background-color: #f3f4f6 !important;
-  color: #111827 !important;
-}
-.theme-glass.dark #sidebar .nav-btn:hover svg,
-.theme-glass.dark #sidebar .nav-btn:hover i {
-  color: #111827 !important;
-}
-/* Light mode: dark hover bg with light text/icons */
-.theme-glass:not(.dark) #sidebar .nav-btn:hover {
-  background-color: #374151 !important;
-  color: #f9fafb !important;
-}
-.theme-glass:not(.dark) #sidebar .nav-btn:hover svg,
-.theme-glass:not(.dark) #sidebar .nav-btn:hover i {
-  color: #f9fafb !important;
-}
-
-/* Apply variables to core components */
-.card {
-  background-color: var(--card-bg) !important;
-  border-color: var(--card-border) !important;
-  backdrop-filter: var(--card-filter);
-  -webkit-backdrop-filter: var(--card-filter);
-}
-/* Themed tip: match current card styling */
-.themed-tip {
-  background-color: var(--card-bg) !important;
-  border-color: var(--card-border) !important;
-  backdrop-filter: var(--card-filter);
-  -webkit-backdrop-filter: var(--card-filter);
-}
+/* Accent helper for primary button intent */
 .btn-green {
   background-color: var(--accent) !important;
 }
 .btn-green:hover {
   background-color: var(--accent-hover) !important;
 }
-/* Keep toggles default; no theme-driven colour here */
 
 /* dark mode toggle */
 .dark-mode-toggle {
