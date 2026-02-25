@@ -1,5 +1,12 @@
 [
   {
+    "version": "1.1.63",
+    "date": "2026-02-25",
+    "changes": [
+      "Fix Android-installed app icons so the WealthTrack logo lines stay white and visible on the dark background."
+    ]
+  },
+  {
     "version": "1.1.60",
     "date": "2026-01-24",
     "changes": [
