@@ -1,5 +1,13 @@
 [
   {
+    "version": "1.1.61",
+    "date": "2026-02-25",
+    "changes": [
+      "Refresh the app with a more modern design language for cards, side navigation, buttons, forms, and chart panels while keeping behaviour the same.",
+      "Restyle all three themes (Default, Inverted, and Glass) with distinct looks in light and dark mode, including an Android-inspired dark aesthetic."
+    ]
+  },
+  {
     "version": "1.1.60",
     "date": "2026-01-24",
     "changes": [

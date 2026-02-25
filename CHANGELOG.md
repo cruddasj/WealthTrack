@@ -2,6 +2,10 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
+## [1.1.61] - 2026-02-25
+- Give the app a modern visual refresh across cards, navigation, forms, and charts while keeping all existing functionality unchanged.
+- Restyle the Default, Inverted, and Glass themes so each option has a distinct look in both light and dark mode.
+
 ## [1.1.60] - 2026-01-24
 - Restore normal page scrolling on mobile when the navigation menu is closed.
 
