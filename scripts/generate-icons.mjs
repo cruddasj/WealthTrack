@@ -26,7 +26,7 @@ async function run() {
     {
       const outMaskable = path.join(outDir, `icon-${size}-maskable.png`);
       const density = Math.max(MIN_DENSITY, size);
-      const logoBuf = await sharp(svgBlack, { density, limitInputPixels: false })
+      const logoBuf = await sharp(svgWhite, { density, limitInputPixels: false })
         .resize(Math.round(size * SCALE_MASKABLE), Math.round(size * SCALE_MASKABLE), { fit: 'contain' })
         .png(PNG_TRANSPARENT)
         .toBuffer();
@@ -70,4 +70,3 @@ run().catch((err) => {
   console.error(err);
   process.exit(1);
 });
-
