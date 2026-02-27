@@ -2,6 +2,9 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
+## [1.1.64] - 2026-02-27
+- Refresh dark mode with true black backgrounds for a deeper, higher-contrast look.
+
 ## [1.1.63] - 2026-02-25
 - Fix generated Android maskable app icons so the WealthTrack logo lines render in white instead of blending into the dark background.
 

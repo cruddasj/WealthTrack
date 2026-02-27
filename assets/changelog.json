@@ -1,5 +1,12 @@
 [
   {
+    "version": "1.1.64",
+    "date": "2026-02-27",
+    "changes": [
+      "Give dark mode true black backgrounds for deeper contrast across the app."
+    ]
+  },
+  {
     "version": "1.1.63",
     "date": "2026-02-25",
     "changes": [
