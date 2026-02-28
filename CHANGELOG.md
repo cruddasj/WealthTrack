@@ -16,6 +16,9 @@ All notable changes to WealthTrack will be documented in this file. This project
 ## 1.1.72 - 2026-02-28
 - Added automated test suite to verify application functionality and ensure ongoing stability.
 
+## [[NEXT_VERSION]] - [NEXT_DATE]
+- Update GitHub Actions to latest versions and pin to SHA commit hashes for security best practices.
+
 ## [1.1.65] - 2026-02-28
 - Limit the Save Snapshot list to your five latest entries by default, with a See more toggle when older snapshots exist.
 - Focus the Snapshot History chart on the five most recent snapshots for a clearer short-term trend view.
