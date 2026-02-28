@@ -9153,6 +9153,12 @@ if (typeof module !== 'undefined') {
     buildForecastScenarios,
     updateTotals,
     updateTaxSettingsUI,
+    computeAssetTaxDetails,
+    applyPassiveGrowth,
+    applyEventToValue,
+    calculateCurrentValue,
+    calculateCurrentLiability,
+    calculatePassiveAssetValueAt,
     // State (for testing)
     getAssets: () => assets,
     setAssets: (val) => { assets = val; },

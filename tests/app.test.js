@@ -214,4 +214,168 @@ describe('App Core Logic', () => {
     expect(result.base[1]).toBe(500);
     expect(result.base[12]).toBe(6000);
   });
+  test('calculateCurrentValue handles start dates', () => {
+    const now = new Date('2025-01-01').getTime();
+
+    // Asset starts in the past
+    const pastAsset = {
+      value: 1000,
+      startDate: now - 1000000
+    };
+    expect(app.calculateCurrentValue(pastAsset, now)).toBe(1000);
+
+    // Asset starts in the future
+    const futureAsset = {
+      value: 1000,
+      startDate: now + 1000000
+    };
+    expect(app.calculateCurrentValue(futureAsset, now)).toBe(0);
+
+    // Invalid asset
+    expect(app.calculateCurrentValue(null, now)).toBe(0);
+  });
+
+  test('calculateCurrentLiability handles start dates and interest', () => {
+    const now = new Date('2025-01-01').getTime();
+
+    // Liability starts in the future
+    const futureLiability = {
+      value: 1000,
+      startDate: now + 1000000
+    };
+    expect(app.calculateCurrentLiability(futureLiability, now)).toBe(0);
+
+    // Invalid liability
+    expect(app.calculateCurrentLiability(null, now)).toBe(0);
+
+    // Liability from exactly 1 year ago (12 months)
+    const oneYearAgo = new Date('2024-01-01').getTime();
+    const liability = {
+      value: 1000,
+      interest: 12, // 1% per month
+      monthlyPayment: 50,
+      startDate: oneYearAgo
+    };
+
+    // 1000 * 1.01 - 50 = 1010 - 50 = 960
+    // 960 * 1.01 - 50 = 969.6 - 50 = 919.6
+    // ... we don't need exact match, just ensure it calculated something
+    const currentLiab = app.calculateCurrentLiability(liability, now);
+    expect(currentLiab).toBeGreaterThan(0);
+    expect(currentLiab).toBeLessThan(1000);
+  });
+
+  test('applyEventToValue calculates absolute and percent events', () => {
+    expect(app.applyEventToValue(1000, { amount: 500, isPercent: false })).toBe(1500);
+    expect(app.applyEventToValue(1000, { amount: 10, isPercent: true })).toBe(1100);
+    expect(app.applyEventToValue(1000, null)).toBe(1000);
+  });
+
+  test('applyPassiveGrowth calculates compounded growth over time', () => {
+    const fromTime = new Date('2025-01-01').getTime();
+    const toTime = new Date('2026-01-01').getTime(); // 1 year
+
+    // 1000 with 5% annual rate
+    expect(app.applyPassiveGrowth(1000, fromTime, toTime, 5)).toBeCloseTo(1050, 0);
+
+    // invalid cases
+    expect(app.applyPassiveGrowth(1000, toTime, fromTime, 5)).toBe(1000); // reverse time
+    expect(app.applyPassiveGrowth(1000, fromTime, toTime, 0)).toBe(1000); // zero rate
+    expect(app.applyPassiveGrowth(null, fromTime, toTime, 5)).toBe(0);
+  });
+
+  test('generateRandomEvents creates random events for given years and assets', () => {
+    const now = Date.now();
+    app.setAssets([
+      { name: 'Asset 1', dateAdded: now, return: 5, startDate: now }
+    ]);
+
+    const labels = [
+      new Date('2025-01-01'),
+      new Date('2026-01-01')
+    ];
+
+    // generateRandomEvents uses Math.random, we can mock it to ensure events are created
+    jest.spyOn(Math, 'random').mockReturnValue(0.1); // Always < 0.3 to trigger event creation
+
+    const assetIdSet = new Set([now]);
+    const events = app.generateRandomEvents(labels, assetIdSet);
+
+    expect(events.length).toBeGreaterThan(0);
+    expect(events[0].name).toBe('Asset 1');
+    expect(events[0].isPercent).toBe(true);
+
+    jest.restoreAllMocks();
+  });
+
+  test('computeAssetTaxDetails calculates basic tax information', () => {
+    const now = Date.now();
+    app.setAssets([
+      {
+        name: 'Taxable Asset',
+        value: 100000,
+        return: 5, // 5% = 5000 return
+        dateAdded: now,
+        startDate: now,
+        taxTreatment: 'income' // subject to income tax
+      }
+    ]);
+    app.setTaxSettings({
+      band: 'basic',
+      incomeAllowance: 1000,
+      dividendAllowance: 500,
+      capitalAllowance: 3000
+    });
+    app.invalidateTaxCache();
+
+    const taxDetails = app.computeAssetTaxDetails();
+
+    expect(taxDetails).toBeDefined();
+    expect(taxDetails.detailMap.has(now)).toBe(true);
+
+    const assetDetails = taxDetails.detailMap.get(now);
+
+    // Gross return is 5000 (100000 * 5%)
+    // Allowance is 1000
+    // Taxable amount is 4000
+    // Basic rate income tax is 20%
+    // Tax due is 800 (4000 * 20%)
+    expect(assetDetails.base.annualGross).toBe(5000);
+    expect(assetDetails.base.taxableAmount).toBe(4000);
+    expect(assetDetails.base.annualTax).toBe(800);
+    expect(assetDetails.base.taxRateApplied).toBe(20);
+
+    // Net return is 4200 (5000 - 800)
+    // Net rate is 4.2%
+    expect(assetDetails.base.netRate).toBeCloseTo(4.2, 1);
+  });
+
+  test('calculatePassiveAssetValueAt projects value to target date considering events and growth', () => {
+    const startTs = new Date('2025-01-01').getTime();
+    const asset = {
+      name: 'Passive Asset',
+      value: 10000,
+      return: 5,
+      dateAdded: startTs,
+      startDate: startTs,
+      taxTreatment: 'tax-free'
+    };
+    app.setAssets([asset]);
+    app.invalidateTaxCache();
+
+    const eventsByAsset = new Map();
+    // Add an event adding 5000 half a year in
+    const midYearTs = new Date('2025-07-01').getTime();
+    eventsByAsset.set(startTs, [
+      { date: midYearTs, amount: 5000, isPercent: false }
+    ]);
+
+    // Project to exactly 1 year ahead
+    const targetTs = new Date('2026-01-01').getTime();
+
+    const projectedValue = app.calculatePassiveAssetValueAt(asset, targetTs, eventsByAsset, startTs);
+
+    // Should be > 15000 due to initial value + growth + event + more growth
+    expect(projectedValue).toBeGreaterThan(15000);
+  });
 });
