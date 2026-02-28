@@ -2,6 +2,12 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
+## [NEXT_VERSION] - [NEXT_DATE]
+- Add automated end-to-end tests for each calculator to verify accuracy and ensure long-term reliability.
+
+## 1.1.81 - 2026-02-28
+- Update GitHub Actions to latest versions and pin to SHA commit hashes for security best practices.
+
 ## 1.1.78 - 2026-02-28
 - Add automated linting checks and instructions to keep code formatting clean and catch errors early before commits.
 
