@@ -1,5 +1,12 @@
 [
   {
+    "version": "[NEXT_VERSION]",
+    "date": "[NEXT_DATE]",
+    "changes": [
+      "Raise Jest coverage enforcement to require at least 90% statements, branches, functions, and lines across tracked files."
+    ]
+  },
+  {
     "version": "1.1.92",
     "date": "2026-02-28",
     "changes": [
