@@ -2,6 +2,11 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
+## [NEXT_VERSION] - [NEXT_DATE]
+- Add comprehensive Playwright E2E tests for financial inputs and UI interactions.
+- Ensure users can add and edit income, expenses, assets, liabilities, and goals via automated tests.
+- Verify card expansion/collapsing and mobile menu functionality across different viewports.
+
 ## 1.1.78 - 2026-02-28
 - Add automated linting checks and instructions to keep code formatting clean and catch errors early before commits.
 

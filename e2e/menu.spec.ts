@@ -2,6 +2,14 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Menu Navigation', () => {
   test.beforeEach(async ({ page }) => {
+    // Disable onboarding and welcome via localStorage
+    await page.addInitScript(() => {
+      window.localStorage.setItem('wealthtrack:welcomeSeen', '1');
+      window.localStorage.setItem('wealthtrack:onboardDataSeen', '1');
+      window.localStorage.setItem('wealthtrack:forecastTipSeen', '1');
+      window.localStorage.setItem('wealthtrack:welcomeDisabled', '0'); // KEEP IT ENABLED
+    });
+
     // Go to the starting URL
     await page.goto('/');
     // Check we loaded correctly
@@ -15,38 +23,20 @@ test.describe('Menu Navigation', () => {
       await closeModalBtn.click();
     }
 
-    // Close mobile menu if present and opened to avoid intercepting clicks
-    const menuToggle = page.locator('#menu-toggle');
-    if (await menuToggle.isVisible()) {
-      await menuToggle.click({ force: true });
-    }
-
-    // Wait for the animation to complete
-    await page.waitForTimeout(1000);
-
     // Go to Welcome
-    await page.locator('nav').locator('button', { hasText: 'Welcome' }).click({ force: true });
+    await page.locator('nav').locator('button', { hasText: 'Welcome' }).click();
     await expect(page.locator('#welcome')).toHaveClass(/active/);
 
-    // Wait for the animation to complete
-    await page.waitForTimeout(1000);
-
     // Go to Data Entry (Financial Inputs)
-    await page.locator('nav').locator('button', { hasText: 'Financial Inputs' }).click({ force: true });
+    await page.locator('nav').locator('button', { hasText: 'Financial Inputs' }).click();
     await expect(page.locator('#data-entry')).toHaveClass(/active/);
 
-    // Wait for the animation to complete
-    await page.waitForTimeout(1000);
-
     // Go to Calculators
-    await page.locator('nav').locator('button', { hasText: 'Calculators' }).click({ force: true });
+    await page.locator('nav').locator('button', { hasText: 'Calculators' }).click();
     await expect(page.locator('#calculators')).toHaveClass(/active/);
 
-    // Wait for the animation to complete
-    await page.waitForTimeout(1000);
-
     // Go to Settings
-    await page.locator('nav').locator('button', { hasText: 'Settings & Data' }).click({ force: true });
+    await page.locator('nav').locator('button', { hasText: 'Settings & Data' }).click();
     await expect(page.locator('#settings')).toHaveClass(/active/);
   });
 });

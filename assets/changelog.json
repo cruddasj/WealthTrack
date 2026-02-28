@@ -1,5 +1,14 @@
 [
   {
+    "version": "[NEXT_VERSION]",
+    "date": "[NEXT_DATE]",
+    "changes": [
+      "Add comprehensive Playwright E2E tests for financial inputs and UI interactions.",
+      "Ensure users can add and edit income, expenses, assets, liabilities, and goals via automated tests.",
+      "Verify card expansion/collapsing and mobile menu functionality across different viewports."
+    ]
+  },
+  {
     "version": "1.1.78",
     "date": "2026-02-28",
     "changes": [
