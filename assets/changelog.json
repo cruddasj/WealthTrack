@@ -1,5 +1,12 @@
 [
   {
+    "version": "[NEXT_VERSION]",
+    "date": "[NEXT_DATE]",
+    "changes": [
+      "Chore(deps-dev): bump tailwindcss from 3.4.19 to 4.2.1"
+    ]
+  },
+  {
     "version": "1.1.65",
     "date": "2026-02-28",
     "changes": [
