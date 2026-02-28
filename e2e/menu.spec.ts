@@ -17,26 +17,31 @@ test.describe('Menu Navigation', () => {
   });
 
   test('Navigate through main menu sections', async ({ page }) => {
-    // Wait for the modal if present and dismiss it if it blocks
-    const closeModalBtn = page.locator('.modal-close');
-    if (await closeModalBtn.isVisible()) {
-      await closeModalBtn.click();
+    async function dismissModals() {
+      const closeModalBtn = page.locator('.modal-close');
+      if (await closeModalBtn.isVisible()) {
+        await closeModalBtn.click();
+      }
     }
 
     // Go to Welcome
     await page.locator('nav').locator('button', { hasText: 'Welcome' }).click();
     await expect(page.locator('#welcome')).toHaveClass(/active/);
+    await dismissModals();
 
     // Go to Data Entry (Financial Inputs)
     await page.locator('nav').locator('button', { hasText: 'Financial Inputs' }).click();
     await expect(page.locator('#data-entry')).toHaveClass(/active/);
+    await dismissModals();
 
     // Go to Calculators
     await page.locator('nav').locator('button', { hasText: 'Calculators' }).click();
     await expect(page.locator('#calculators')).toHaveClass(/active/);
+    await dismissModals();
 
     // Go to Settings
     await page.locator('nav').locator('button', { hasText: 'Settings & Data' }).click();
     await expect(page.locator('#settings')).toHaveClass(/active/);
+    await dismissModals();
   });
 });
