@@ -1,7 +1,7 @@
 [
   {
-    "version": "[NEXT_VERSION]",
-    "date": "[NEXT_DATE]",
+    "version": "1.1.76",
+    "date": "2026-02-28",
     "changes": [
       "Add automated test suite for utility and calculator functions to improve code reliability.",
       "Add GitHub Actions workflow (pr-test.yml) to run tests and report coverage on pull requests.",
