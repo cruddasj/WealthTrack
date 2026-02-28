@@ -369,12 +369,12 @@
   --card-bg: #ffffff;
   --card-border: #e5e7eb;
   --card-filter: none;
-  --dark-canvas: #000000;
-  --dark-surface-1: #0b0b0b;
-  --dark-surface-2: #111111;
-  --dark-surface-3: #151515;
-  --dark-border-1: #1f1f1f;
-  --dark-border-2: #2a2a2a;
+  --dark-canvas: #0f172a;
+  --dark-surface-1: #1e293b;
+  --dark-surface-2: #334155;
+  --dark-surface-3: #475569;
+  --dark-border-1: #334155;
+  --dark-border-2: #475569;
 }
 .dark {
   --card-bg: #1f2937;
