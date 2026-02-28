@@ -9227,6 +9227,8 @@ if (typeof module !== 'undefined') {
     setLiabilities: (val) => { liabilities = val; },
     getSimEvents: () => simEvents,
     setSimEvents: (val) => { simEvents = val; },
+    getScenarioEventsEnabled: () => scenarioEventsEnabled,
+    setScenarioEventsEnabled: (val) => { scenarioEventsEnabled = !!val; },
     getGoalValue: () => goalValue,
     setGoalValue: (val) => { goalValue = val; },
     getInflationRate: () => inflationRate,

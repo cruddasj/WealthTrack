@@ -4,6 +4,7 @@ All notable changes to WealthTrack will be documented in this file. This project
 
 ## [NEXT_VERSION] - [NEXT_DATE]
 
+- Keep the left navigation width stable on Financial Inputs and harden forecast event tests so local npm test runs stay reliable.
 - Upgrade Tailwind CSS from v3 to v4 and migrate the stylesheet build to the new Tailwind v4 tooling.
 - Refresh development dependencies with the latest patch update for Node.js type definitions.
 - Clarify npm runtime compatibility by requiring Node.js 20+ in project metadata and documentation to match the upgraded Tailwind v4 toolchain.
