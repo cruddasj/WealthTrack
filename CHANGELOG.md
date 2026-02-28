@@ -2,6 +2,10 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
+## [NEXT_VERSION] - [NEXT_DATE]
+
+- Increase Jest coverage for utility helpers by adding edge-case tests for NI threshold fallbacks, semantic version comparisons, and default compounding periods.
+
 ## 1.1.94 - 2026-02-28
 
 - Add comprehensive Playwright E2E tests covering Forecasts, Portfolio Insights, Snapshots, and Settings.
