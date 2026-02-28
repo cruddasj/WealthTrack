@@ -7303,7 +7303,7 @@ function handleFormSubmit(e) {
           ? Math.max(0, annualIncome - pensionGrossContribution)
           : annualIncome;
       const reliefTopUp =
-        contributionMethod === "relief" ? pensionGrossContribution * BASIC_RELIEF_RATE : 0;
+        contributionMethod === "relief" ? pensionGrossContribution * 0.2 : 0;
       const netPensionOutflow =
         contributionMethod === "relief"
           ? pensionGrossContribution - reliefTopUp

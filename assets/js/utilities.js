@@ -49,8 +49,6 @@ const TAX_YEAR_THRESHOLDS = {
 
 const DEFAULT_TAX_YEAR_KEY = 2025;
 
-const BASIC_RELIEF_RATE = 0.2;
-
 const TAX_TREATMENTS = {
   "tax-free": {
     label: "Tax-free or sheltered (ISA, pension)",
