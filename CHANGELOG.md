@@ -2,6 +2,10 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
+## [NEXT_VERSION] - [NEXT_DATE]
+
+- Increase automated unit test coverage by adding extra utility function tests for tax, formatting, version parsing, and student loan scenarios.
+
 ## 1.1.88 - 2026-02-28
 
 - Expand Jest unit tests to significantly increase test coverage for core application logic including growth calculations, event handling, liability tracking, and tax details.
