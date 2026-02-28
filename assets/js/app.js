@@ -8040,6 +8040,26 @@ window.addEventListener("load", () => {
 
   setupMobileHeaderOffsetWatcher();
 
+  const toggleDesktopSidebar = () => {
+    const body = document.body;
+    const isCollapsed = body.classList.toggle("desktop-sidebar-collapsed");
+    try {
+      localStorage.setItem("wealthtrack:sidebarCollapsed", isCollapsed ? "1" : "0");
+    } catch (_) {}
+    window.dispatchEvent(new Event("resize"));
+  };
+
+  const hidePanelBtn = $("desktop-hide-panel");
+  const showPanelBtn = $("desktop-show-panel");
+  if (hidePanelBtn) on(hidePanelBtn, "click", toggleDesktopSidebar);
+  if (showPanelBtn) on(showPanelBtn, "click", toggleDesktopSidebar);
+
+  try {
+    if (localStorage.getItem("wealthtrack:sidebarCollapsed") === "1") {
+      document.body.classList.add("desktop-sidebar-collapsed");
+    }
+  } catch (_) {}
+
   $("goalValue").value = goalValue || "";
   $("goalYear").value = goalTargetDate
     ? new Date(goalTargetDate).getFullYear()

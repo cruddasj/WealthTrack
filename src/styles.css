@@ -676,3 +676,15 @@ html.dark:not(.theme-inverted):not(.theme-glass) .input-field {
     display: block;
   }
 }
+
+@media (min-width: 768px) {
+  body.desktop-sidebar-collapsed #sidebar {
+    margin-left: -16rem;
+  }
+  body.desktop-sidebar-collapsed #desktop-show-panel {
+    display: block !important;
+  }
+  body.desktop-sidebar-collapsed main {
+    padding-left: 4.5rem;
+  }
+}
