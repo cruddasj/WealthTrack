@@ -139,7 +139,7 @@
     <!-- Sidebar -->
     <div
       id="sidebar"
-      class="fixed inset-y-0 left-0 w-64 bg-white dark:bg-gray-800 p-6 flex flex-col items-center shadow-lg border-r border-gray-200 dark:border-gray-700 overflow-y-auto md:overflow-visible transform -translate-x-full md:relative md:translate-x-0 transition-transform duration-300 ease-in-out z-40 md:min-h-screen"
+      class="fixed inset-y-0 left-0 w-64 bg-white dark:bg-gray-800 p-6 flex flex-col items-center shadow-lg border-r border-gray-200 dark:border-gray-700 overflow-y-auto md:overflow-visible transform -translate-x-full md:relative md:translate-x-0 md:shrink-0 transition-transform duration-300 ease-in-out z-40 md:min-h-screen"
       style="min-height: 100vh; min-height: 100dvh;"
     >
       <div class="mb-8 w-full">
@@ -2346,7 +2346,7 @@
             >
               ×
             </button>
-            <div id="modal-body" class="overflow-y-auto max-h-[80vh]"></div>
+            <div id="modal-body"></div>
           </div>
         </div>
 
@@ -2797,7 +2797,7 @@
       <div>
         <h4 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">Snapshot Details</h4>
         <p class="text-sm text-gray-500 dark:text-gray-400 mb-4" data-date></p>
-        <div class="overflow-y-auto max-h-96" data-list></div>
+        <div class="overflow-x-auto" data-list></div>
         <div class="mt-4 text-center">
           <button class="btn btn-blue" data-close>Close</button>
         </div>

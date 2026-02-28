@@ -12,6 +12,7 @@ describe('App Core Logic', () => {
     app.setExpenses([]);
     app.setLiabilities([]);
     app.setSimEvents([]);
+    app.setScenarioEventsEnabled(true);
     app.setGoalValue(0);
     app.setInflationRate(2.5);
     app.invalidateTaxCache();
@@ -116,8 +117,8 @@ describe('App Core Logic', () => {
       }
     ]);
 
-    // Add a windfall event at month 6
-    const eventDate = new Date('2025-07-01').getTime();
+    // Add a windfall event 6 months after the mocked current date
+    const eventDate = new Date('2025-07-01T00:00:00Z').getTime();
     app.setSimEvents([
       {
         date: eventDate,

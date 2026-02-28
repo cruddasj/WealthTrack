@@ -2,6 +2,15 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
+## [NEXT_VERSION] - [NEXT_DATE]
+
+- Restore the hand-pointer cursor on desktop sidebar navigation and silence the recurring npm proxy warning in local runs.
+- Keep the left navigation width stable on Financial Inputs and harden forecast event tests so local npm test runs stay reliable.
+- Upgrade Tailwind CSS from v3 to v4 and migrate the stylesheet build to the new Tailwind v4 tooling.
+- Refresh development dependencies with the latest patch update for Node.js type definitions.
+- Clarify npm runtime compatibility by requiring Node.js 20+ in project metadata and documentation to match the upgraded Tailwind v4 toolchain.
+- Fix layout regressions after the Tailwind v4 upgrade by removing duplicate modal scroll containers and preventing dashboard cards from overflowing off-screen.
+
 ## 1.1.96 - 2026-02-28
 
 - Refresh and rationalise utility tests by replacing weak assertions with deterministic checks and broader edge-case coverage for random sampling and numeric fallback behaviour.

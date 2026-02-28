@@ -71,7 +71,7 @@ npm run test:e2e
 
 ### Rebuilding CSS
 
-Prerequisite: Node.js 16+ and npm.
+Prerequisite: Node.js 20+ and npm 10+.
 
 Install dependencies (first time only):
 
@@ -93,6 +93,6 @@ npm run watch:css
 
 Notes:
 
-- Edit styles in `src/styles.css` (uses `@tailwind`/`@layer`/`@apply`).
+- Edit styles in `src/styles.css` (uses Tailwind v4 directives such as `@import`, `@config`, `@layer`, and `@apply`).
 - Do not edit `assets/styles.css` by hand; it is generated.
 - If you add new HTML/JS files that include Tailwind classes, update `tailwind.config.js` `content` globs so the classes are included in the build.
