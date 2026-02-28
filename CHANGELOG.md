@@ -2,6 +2,11 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
+## [NEXT_VERSION] - [NEXT_DATE]
+
+- Expand Jest unit tests to significantly increase test coverage for core application logic including growth calculations, event handling, liability tracking, and tax details.
+- Expose additional internal calculation functions from the application module to facilitate comprehensive unit testing.
+
 ## 1.1.87 - 2026-02-28
 
 - Add linting for Markdown files and GitHub Action workflows to ensure consistent formatting and catch configuration errors early.
