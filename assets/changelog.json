@@ -1,5 +1,13 @@
 [
   {
+    "version": "[NEXT_VERSION]",
+    "date": "[NEXT_DATE]",
+    "changes": [
+      "Add end-to-end coverage for Settings export/import flows, including profile selection and round-trip restore checks after clearing app data.",
+      "Update development dependencies with the latest patch release for Node.js type definitions."
+    ]
+  },
+  {
     "version": "1.1.97",
     "date": "2026-02-28",
     "changes": [
