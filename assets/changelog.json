@@ -1,7 +1,7 @@
 [
   {
-    "version": "[NEXT_VERSION]",
-    "date": "[NEXT_DATE]",
+    "version": "1.1.82",
+    "date": "2026-02-28",
     "changes": [
       "Add automated end-to-end tests for each calculator to verify accuracy and ensure long-term reliability."
     ]
