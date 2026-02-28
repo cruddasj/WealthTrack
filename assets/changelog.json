@@ -1,7 +1,7 @@
 [
   {
-    "version": "[NEXT_VERSION]",
-    "date": "[NEXT_DATE]",
+    "version": "1.1.78",
+    "date": "2026-02-28",
     "changes": [
       "Add automated linting checks and instructions to keep code formatting clean and catch errors early before commits."
     ]
