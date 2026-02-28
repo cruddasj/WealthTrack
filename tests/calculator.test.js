@@ -1,4 +1,4 @@
-const app = require('../assets/js/app.js');
+const app = require('../assets/js/utilities.js');
 
 describe('Calculator Functions', () => {
   test('calculatePersonalAllowance', () => {
