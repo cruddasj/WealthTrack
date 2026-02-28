@@ -32,3 +32,9 @@ src_extracted_tailwind.css
 # Keep built CSS committed for GitHub Pages deployment
 # DO NOT ignore: assets/styles.css
 
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/
