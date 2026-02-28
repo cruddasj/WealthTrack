@@ -37,6 +37,8 @@ let passiveIncomeAsOf = null;
 let passiveAssetSelection = null;
 let passiveAssetPicker = null;
 let mobileHeaderResizeObserver = null;
+const SNAPSHOT_DISPLAY_LIMIT = 5;
+let showAllSnapshots = false;
 
 const profilePickers = {};
 let importFileContent = null;
@@ -4783,9 +4785,16 @@ function renderEvents() {
 function renderSnapshots() {
   $("snapshotsHeader").style.display =
     snapshots.length > 0 ? "block" : "none";
-  $("snapshotUl").innerHTML = snapshots
+
+  const visibleSnapshots = showAllSnapshots
+    ? snapshots
+    : snapshots.slice(-SNAPSHOT_DISPLAY_LIMIT);
+
+  $("snapshotUl").innerHTML = visibleSnapshots
     .map(
-      (s, i) => `
+      (s) => {
+        const i = snapshots.indexOf(s);
+        return `
   <li class="py-3 border-b border-gray-200 last:border-b-0 dark:border-gray-700">
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <div>
@@ -4826,15 +4835,25 @@ function renderSnapshots() {
         </div>
       </div>
     </div>
-  </li>`,
+  </li>`;
+      },
     )
     .join("");
+
+  const snapshotSeeMore = $("snapshotSeeMore");
+  if (snapshotSeeMore) {
+    const hasMoreThanLimit = snapshots.length > SNAPSHOT_DISPLAY_LIMIT;
+    snapshotSeeMore.classList.toggle("hidden", !hasMoreThanLimit);
+    if (hasMoreThanLimit) {
+      snapshotSeeMore.textContent = showAllSnapshots ? "Show less" : "See more";
+    }
+  }
+
   closeSnapshotActionMenus();
   updateSnapshotChart();
   renderProgressCheck();
   updateSnapshotComparisonCard();
 }
-
 function closeSnapshotActionMenus() {
   document
     .querySelectorAll("[data-snapshot-menu]")
@@ -6307,9 +6326,10 @@ function updateSnapshotChart() {
     return;
   }
 
-  const labels = snapshots.map((s) => fmtDate(new Date(s.date)));
+  const snapshotHistory = snapshots.slice(-SNAPSHOT_DISPLAY_LIMIT);
+  const labels = snapshotHistory.map((s) => fmtDate(new Date(s.date)));
   const totals = {};
-  snapshots.forEach((s) =>
+  snapshotHistory.forEach((s) =>
     s.assets.forEach((a) => {
       totals[a.name] = (totals[a.name] || 0) + a.value;
     }),
@@ -6319,7 +6339,7 @@ function updateSnapshotChart() {
   const colorFor = (i) => `hsl(${(i * 57) % 360},70%,60%)`;
   const datasets = names.map((name, i) => ({
     label: name,
-    data: snapshots.map(
+    data: snapshotHistory.map(
       (s) => s.assets.find((a) => a.name === name)?.value || 0,
     ),
     backgroundColor: colorFor(i),
@@ -8432,6 +8452,9 @@ window.addEventListener("load", () => {
             "Are you sure you want to delete this snapshot?",
             () => {
               snapshots.splice(+index, 1);
+              if (snapshots.length <= SNAPSHOT_DISPLAY_LIMIT) {
+                showAllSnapshots = false;
+              }
               persist();
               renderSnapshots();
               updateEmptyStates();
@@ -8451,6 +8474,10 @@ window.addEventListener("load", () => {
               action.setAttribute("aria-expanded", "true");
             }
           }
+          break;
+        case "toggle-snapshot-list":
+          showAllSnapshots = !showAllSnapshots;
+          renderSnapshots();
           break;
         case "edit-event":
           showEditEvent(+index);
@@ -8491,6 +8518,7 @@ window.addEventListener("load", () => {
               assets: detailed,
               forecast: getSnapshotForecastSeries(),
             });
+            showAllSnapshots = false;
             persist();
             renderSnapshots();
             updateEmptyStates();
