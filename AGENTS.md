@@ -18,6 +18,7 @@ Do
 - You MUST maintain the changelog: always add a concise summary for non-technical audiences of any change (not just user-facing ones) to both `CHANGELOG.md` and `assets/changelog.json`. Use the placeholders `[NEXT_VERSION]` and `[NEXT_DATE]` instead of hardcoding version numbers and dates in these files.
 - The release pipeline automatically computes the next version, replaces the placeholders, bumps `assets/version.json` and `service-worker.js`, and commits these changes back to the repository on merge to main. Do not manually edit `assets/version.json` or bump versions in PRs, as this avoids conflicts when multiple PRs are open.
 - Update detection no longer uses `VERSION_BASE`; keep relying on `assets/version.json` and the changelog data, and do not reintroduce the removed base file.
+- Always check whether any new changes have appeared in main just before creating a pull request. If they have, rebase your changes.
 
 Don't
 - Don't reintroduce Tailwind via the CDN in `index.html`. The app now relies on the compiled stylesheet `assets/styles.css`.
