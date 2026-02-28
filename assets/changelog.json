@@ -1,7 +1,7 @@
 [
   {
-    "version": "[NEXT_VERSION]",
-    "date": "[NEXT_DATE]",
+    "version": "1.1.91",
+    "date": "2026-02-28",
     "changes": [
       "Increase automated Jest coverage by adding a bootstrap test that exercises app startup flows in a browser-like environment."
     ]
