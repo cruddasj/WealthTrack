@@ -2,6 +2,20 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
+## 1.1.84 - 2026-02-28
+- Add comprehensive Playwright E2E tests for financial inputs and UI interactions.
+- Ensure users can add and edit income, expenses, assets, liabilities, and goals via automated tests.
+- Verify card expansion/collapsing and mobile menu functionality across different viewports.
+
+## 1.1.83 - 2026-02-28
+- Add automated end-to-end tests to verify that the app remains fully accessible after loading sample data, ensuring a reliable experience for new users.
+
+## 1.1.82 - 2026-02-28
+- Add automated end-to-end tests for each calculator to verify accuracy and ensure long-term reliability.
+
+## 1.1.81 - 2026-02-28
+- Update GitHub Actions to latest versions and pin to SHA commit hashes for security best practices.
+
 ## 1.1.78 - 2026-02-28
 - Add automated linting checks and instructions to keep code formatting clean and catch errors early before commits.
 
@@ -15,6 +29,9 @@ All notable changes to WealthTrack will be documented in this file. This project
 
 ## 1.1.72 - 2026-02-28
 - Added automated test suite to verify application functionality and ensure ongoing stability.
+
+## [1.1.81] - 2026-02-28
+- Update GitHub Actions to latest versions and pin to SHA commit hashes for security best practices.
 
 ## [1.1.65] - 2026-02-28
 - Limit the Save Snapshot list to your five latest entries by default, with a See more toggle when older snapshots exist.

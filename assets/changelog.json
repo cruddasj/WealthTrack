@@ -1,5 +1,36 @@
 [
   {
+    "version": "1.1.84",
+    "date": "2026-02-28",
+    "changes": [
+      "Add comprehensive Playwright E2E tests for financial inputs and UI interactions.",
+      "Ensure users can add and edit income, expenses, assets, liabilities, and goals via automated tests.",
+      "Verify card expansion/collapsing and mobile menu functionality across different viewports."
+    ]
+  },
+  {
+    "version": "1.1.83",
+    "date": "2026-02-28",
+    "changes": [
+      "Add automated end-to-end tests to verify that the app remains fully accessible after loading sample data, ensuring a reliable experience for new users."
+    ]
+  },
+  {
+    ],
+    "version": "1.1.82",
+    "date": "2026-02-28",
+    "changes": [
+      "Add automated end-to-end tests for each calculator to verify accuracy and ensure long-term reliability."
+    ]
+  },
+  {
+    "version": "1.1.81",
+    "date": "2026-02-28",
+    "changes": [
+      "Update GitHub Actions to latest versions and pin to SHA commit hashes for security best practices."
+    ]
+  },
+  {
     "version": "1.1.78",
     "date": "2026-02-28",
     "changes": [

@@ -20,6 +20,7 @@ Do
 - The release pipeline automatically computes the next version, replaces the placeholders, bumps `assets/version.json` and `service-worker.js`, and commits these changes back to the repository on merge to main. Do not manually edit `assets/version.json` or bump versions in PRs, as this avoids conflicts when multiple PRs are open.
 - Update detection no longer uses `VERSION_BASE`; keep relying on `assets/version.json` and the changelog data, and do not reintroduce the removed base file.
 - To prevent merge conflicts in the changelog when multiple PRs are open, always check if any new changes have appeared in main immediately before creating a pull request. If they have, make sure to pull the latest changes from the main branch and rebase your changes.
+- Pin actions to a commit SHA when creating or editing GitHub actions.
 
 Don't
 - Don't reintroduce Tailwind via the CDN in `index.html`. The app now relies on the compiled stylesheet `assets/styles.css`.
