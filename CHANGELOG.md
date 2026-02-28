@@ -2,6 +2,9 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
+## [NEXT_VERSION] - [NEXT_DATE]
+- Add a sidebar collapse button on desktop screens to provide more space for dashboards and tools while keeping navigation accessible.
+
 ## 1.1.73 - 2026-02-28
 - Update dependabot configuration to automatically apply only minor and patch updates for dependencies.
 
