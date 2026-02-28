@@ -1,10 +1,10 @@
 {
   "name": "wealthtrack",
-  "version": "1.1.71",
+  "version": "1.1.72",
   "description": "WealthTrack is a personal wealth projection and planning tool built as a single-page application. It helps you capture assets and goals, run forecasts, explore portfolio insights, and maintain historical snapshots.",
   "main": "service-worker.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest",
     "build:css": "tailwindcss -i ./src/styles.css -o ./assets/styles.css --minify",
     "watch:css": "tailwindcss -i ./src/styles.css -o ./assets/styles.css --watch",
     "build:icons": "node ./scripts/generate-icons.mjs"
@@ -23,6 +23,8 @@
   "devDependencies": {
     "eslint": "^10.0.2",
     "eslint-plugin-unused-imports": "^4.4.1",
+    "jest": "^30.2.0",
+    "jest-environment-jsdom": "^30.2.0",
     "sharp": "^0.34.5",
     "tailwindcss": "^3.4.19"
   }
