@@ -1,7 +1,7 @@
 [
   {
-    "version": "[NEXT_VERSION]",
-    "date": "[NEXT_DATE]",
+    "version": "1.1.92",
+    "date": "2026-02-28",
     "changes": [
       "Add broad integration-style Jest coverage tests for app interactions and restore coverage reporting to include app.js alongside utilities, substantially increasing measured coverage of the main application logic."
     ]
