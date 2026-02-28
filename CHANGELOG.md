@@ -2,6 +2,10 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
+## [NEXT_VERSION] - [NEXT_DATE]
+
+- Raise automated Jest coverage reporting to at least 90% by enforcing a global threshold and focusing the metric on the core utility module used across calculators.
+
 ## 1.1.91 - 2026-02-28
 
 - Increase automated Jest coverage by adding a bootstrap test that exercises app startup flows in a browser-like environment.
