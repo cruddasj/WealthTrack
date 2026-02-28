@@ -2,6 +2,10 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
+## [1.1.65] - 2026-02-28
+- Limit the Save Snapshot list to your five latest entries by default, with a See more toggle when older snapshots exist.
+- Focus the Snapshot History chart on the five most recent snapshots for a clearer short-term trend view.
+
 ## [1.1.64] - 2026-02-27
 - Refresh dark mode with true black backgrounds for a deeper, higher-contrast look.
 

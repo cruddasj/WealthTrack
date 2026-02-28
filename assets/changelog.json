@@ -1,5 +1,13 @@
 [
   {
+    "version": "1.1.65",
+    "date": "2026-02-28",
+    "changes": [
+      "Show only the five newest snapshots in Save Snapshot by default and add a See more toggle when older entries are available.",
+      "Limit the Snapshot History chart to the five latest snapshots so recent progress is easier to read."
+    ]
+  },
+  {
     "version": "1.1.64",
     "date": "2026-02-27",
     "changes": [
