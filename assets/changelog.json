@@ -1,5 +1,12 @@
 [
   {
+    "version": "[NEXT_VERSION]",
+    "date": "[NEXT_DATE]",
+    "changes": [
+      "Upgrade Tailwind CSS from version 3 to version 4 for a faster build engine and modernized styling configuration."
+    ]
+  },
+  {
     "version": "1.1.83",
     "date": "2026-02-28",
     "changes": [
