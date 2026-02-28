@@ -52,6 +52,21 @@ To install the app, open it in a supporting browser (Chrome, Edge, or mobile equ
 - The Pages deployment workflow (`.github/workflows/static.yml`) runs on pushes to `main`. It automatically computes the next version, replaces placeholders in changelogs, updates `assets/version.json` and `service-worker.js`, commits these back to the main branch, and creates the corresponding release tag. It also prunes older releases to keep only the five most recent.
 - The service worker cache is stamped with the release version so clients automatically pick up the newest assets without needing to clear site data.
 
+### Testing
+
+The project uses Jest for unit testing and Playwright for end-to-end (E2E) testing. Automated tests help ensure the code remains functional and prevent regressions.
+
+**Run unit tests (Jest):**
+```bash
+npm run test
+```
+
+**Run E2E tests (Playwright):**
+```bash
+# This will start a local server and run the Playwright test suite
+npm run test:e2e
+```
+
 ### Rebuilding CSS
 
 Prerequisite: Node.js 16+ and npm.

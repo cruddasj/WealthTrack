@@ -5,6 +5,7 @@
   "main": "service-worker.js",
   "scripts": {
     "test": "jest",
+    "test:e2e": "playwright test",
     "lint": "eslint .",
     "build:css": "tailwindcss -i ./src/styles.css -o ./assets/styles.css --minify",
     "watch:css": "tailwindcss -i ./src/styles.css -o ./assets/styles.css --watch",
@@ -22,6 +23,8 @@
   },
   "homepage": "https://github.com/cruddasj/WealthTrack#readme",
   "devDependencies": {
+    "@playwright/test": "^1.58.2",
+    "@types/node": "^25.3.2",
     "eslint": "^10.0.2",
     "eslint-plugin-unused-imports": "^4.4.1",
     "jest": "^30.2.0",
