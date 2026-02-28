@@ -8,6 +8,7 @@ All notable changes to WealthTrack will be documented in this file. This project
 - Automate linting fixes in Pull Requests, allowing the CI pipeline to commit and push corrections back to the branch.
 
 ## 1.1.86 - 2026-02-28
+
 - Increase Jest unit test coverage by over 15%, exceeding the 10% target.
 - Add comprehensive tests for core application logic including forecasting, net worth, and data normalization.
 - Achieve 100% line coverage for utility functions.
