@@ -1,5 +1,12 @@
 [
   {
+    "version": "[NEXT_VERSION]",
+    "date": "[NEXT_DATE]",
+    "changes": [
+      "Chore(deps): bump actions/upload-pages-artifact from 3 to 4"
+    ]
+  },
+  {
     "version": "1.1.65",
     "date": "2026-02-28",
     "changes": [
