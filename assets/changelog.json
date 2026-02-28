@@ -1,5 +1,15 @@
 [
   {
+    "version": "[NEXT_VERSION]",
+    "date": "[NEXT_DATE]",
+    "changes": [
+      "Add comprehensive Playwright E2E tests covering Forecasts, Portfolio Insights, Snapshots, and Settings.",
+      "Verify Scenario Modelling, Stress Testing, and FIRE Readiness projections via automated tests.",
+      "Ensure reliability of snapshot management, portfolio comparisons, and profile switching.",
+      "Improve test robustness by handling animations, visibility checks, and refined UI element selection."
+    ]
+  },
+  {
     "version": "1.1.84",
     "date": "2026-02-28",
     "changes": [
