@@ -8,6 +8,7 @@ Overview
 
 Do
 - Check for any minor or patch updates to npm libraries and apply them if they are found before making any further changes.
+- For any new code developed, tests should be included, and before committing changes, all tests must pass.
 - Edit source styles in `src/styles.css` only. Rebuild CSS with:
   - `npm run build:css` (one-off) or `npm run watch:css` (during development).
 - Keep the generated file `assets/styles.css` up to date and committed when changing styles.
