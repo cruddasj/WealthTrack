@@ -5,6 +5,7 @@
   "main": "service-worker.js",
   "scripts": {
     "test": "jest",
+    "lint": "eslint .",
     "build:css": "tailwindcss -i ./src/styles.css -o ./assets/styles.css --minify",
     "watch:css": "tailwindcss -i ./src/styles.css -o ./assets/styles.css --watch",
     "build:icons": "node ./scripts/generate-icons.mjs"
