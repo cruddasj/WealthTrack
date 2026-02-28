@@ -154,9 +154,21 @@ describe('Utility/Tax Functions', () => {
     expect(app.normalizeAppVersion(null)).toBeNull();
   });
 
-  test('randomNormal', () => {
-    const val = app.randomNormal(0, 1);
-    expect(typeof val).toBe('number');
+  test('randomNormal supports deterministic outputs and default params', () => {
+    const spy = jest.spyOn(Math, 'random');
+
+    // Default params (mean=0, std=1) and non-zero random inputs should produce finite output.
+    spy.mockReturnValueOnce(0.5).mockReturnValueOnce(0.5);
+    const defaultSample = app.randomNormal();
+    expect(Number.isFinite(defaultSample)).toBe(true);
+
+    // Deterministic sample for custom mean/std.
+    // sqrt(-2ln(0.25)) * cos(2π*0.5) = -1.665109...
+    spy.mockReturnValueOnce(0.25).mockReturnValueOnce(0.5);
+    const customSample = app.randomNormal(10, 2);
+    expect(customSample).toBeCloseTo(6.66978, 4);
+
+    spy.mockRestore();
   });
 
   test('getBandSummary', () => {
@@ -171,10 +183,11 @@ describe('Utility/Tax Functions', () => {
     expect(app.formatPercent('invalid')).toBe('0%');
   });
 
-  test('toNonNegativeNumber handles invalid and negative values', () => {
+  test('toNonNegativeNumber handles numeric strings, negative values, and fallbacks', () => {
     expect(app.toNonNegativeNumber('12.5')).toBe(12.5);
     expect(app.toNonNegativeNumber(-1)).toBe(0);
     expect(app.toNonNegativeNumber('invalid', 99)).toBe(99);
+    expect(app.toNonNegativeNumber('invalid', -2)).toBe(-2);
   });
 
   test('fmtPercent applies defaults for non-finite and signed values', () => {
@@ -188,7 +201,7 @@ describe('Utility/Tax Functions', () => {
     expect(app.getTaxBandConfig('additional').incomeRate).toBe(45);
   });
 
-  test('normalizeTaxTreatment and getTaxTreatmentMeta default safely', () => {
+  test('tax treatment metadata remains stable for known and unknown tax treatment keys', () => {
     expect(app.normalizeTaxTreatment('income')).toBe('income');
     expect(app.normalizeTaxTreatment('made-up')).toBe('tax-free');
     expect(app.getTaxTreatmentMeta('capital-gains').allowanceKey).toBe('capital');
