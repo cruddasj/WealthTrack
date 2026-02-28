@@ -2,6 +2,11 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
+## [NEXT_VERSION] - [NEXT_DATE]
+- Add automated test suite for utility and calculator functions to improve code reliability.
+- Add GitHub Actions workflow (`pr-test.yml`) to run tests and report coverage on pull requests.
+- Export internal functions in `app.js` to enable targeted unit testing.
+
 ## 1.1.73 - 2026-02-28
 - Update dependabot configuration to automatically apply only minor and patch updates for dependencies.
 

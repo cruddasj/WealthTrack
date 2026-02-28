@@ -1,5 +1,14 @@
 [
   {
+    "version": "[NEXT_VERSION]",
+    "date": "[NEXT_DATE]",
+    "changes": [
+      "Add automated test suite for utility and calculator functions to improve code reliability.",
+      "Add GitHub Actions workflow (pr-test.yml) to run tests and report coverage on pull requests.",
+      "Export internal functions in app.js to enable targeted unit testing."
+    ]
+  },
+  {
     "version": "1.1.73",
     "date": "2026-02-28",
     "changes": [
