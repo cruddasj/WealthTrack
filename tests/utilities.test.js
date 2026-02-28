@@ -212,4 +212,24 @@ describe('Utility/Tax Functions', () => {
     expect(tax).toBeGreaterThan(0);
     expect(ni).toBeGreaterThan(0);
   });
+
+  test('calculateUkNi falls back to default threshold values when config keys are missing', () => {
+    const withEmptyConfig = app.calculateUkNi(20000, {});
+    const withDefaultConfig = app.calculateUkNi(20000);
+    expect(withEmptyConfig).toBeCloseTo(withDefaultConfig, 2);
+
+    const withOnlyPrimaryThreshold = app.calculateUkNi(60000, { primaryNiThreshold: 10000 });
+    expect(withOnlyPrimaryThreshold).toBeGreaterThan(withDefaultConfig);
+  });
+
+  test('compareAppVersions handles empty-string values consistently', () => {
+    expect(app.compareAppVersions(null, '')).toBe(0);
+    expect(app.compareAppVersions('', '1.0.0')).toBe(-1);
+    expect(app.compareAppVersions('1.0.0', '')).toBe(1);
+  });
+
+  test('calculateFutureValueFreq uses monthly defaults when periods are omitted or zero', () => {
+    expect(app.calculateFutureValueFreq(1000, 100, 0, 1)).toBe(2200);
+    expect(app.calculateFutureValueFreq(1000, 100, 0, 1, 0)).toBe(2200);
+  });
 });
