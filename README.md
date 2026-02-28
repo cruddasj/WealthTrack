@@ -57,11 +57,13 @@ To install the app, open it in a supporting browser (Chrome, Edge, or mobile equ
 The project uses Jest for unit testing and Playwright for end-to-end (E2E) testing. Automated tests help ensure the code remains functional and prevent regressions.
 
 **Run unit tests (Jest):**
+
 ```bash
 npm run test
 ```
 
 **Run E2E tests (Playwright):**
+
 ```bash
 # This will start a local server and run the Playwright test suite
 npm run test:e2e
@@ -90,6 +92,7 @@ npm run watch:css
 ```
 
 Notes:
+
 - Edit styles in `src/styles.css` (uses `@tailwind`/`@layer`/`@apply`).
 - Do not edit `assets/styles.css` by hand; it is generated.
 - If you add new HTML/JS files that include Tailwind classes, update `tailwind.config.js` `content` globs so the classes are included in the build.
