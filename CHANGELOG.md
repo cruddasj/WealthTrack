@@ -2,8 +2,11 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
-## [1.1.69] - 2026-02-28
+## [NEXT_VERSION] - [NEXT_DATE]
 - Added a comprehensive automated test suite to verify application functionality and ensure ongoing stability.
+
+## [1.1.68] - 2026-02-28
+- Add automatic release pipeline tagging and version bumping.
 
 ## [1.1.65] - 2026-02-28
 - Limit the Save Snapshot list to your five latest entries by default, with a See more toggle when older snapshots exist.
