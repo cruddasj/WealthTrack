@@ -2,6 +2,10 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
+## [NEXT_VERSION] - [NEXT_DATE]
+- Update the PR Test workflow to include a merge conflict check that fails if conflicts are detected.
+- Rename the pull request workflow to PR Test and update action versions to their latest pinned SHAs.
+
 ## 1.1.84 - 2026-02-28
 - Add comprehensive Playwright E2E tests for financial inputs and UI interactions.
 - Ensure users can add and edit income, expenses, assets, liabilities, and goals via automated tests.

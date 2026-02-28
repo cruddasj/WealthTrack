@@ -1,5 +1,13 @@
 [
   {
+    "version": "[NEXT_VERSION]",
+    "date": "[NEXT_DATE]",
+    "changes": [
+      "Update the PR Test workflow to include a merge conflict check that fails if conflicts are detected.",
+      "Rename the pull request workflow to PR Test and update action versions to their latest pinned SHAs."
+    ]
+  },
+  {
     "version": "1.1.84",
     "date": "2026-02-28",
     "changes": [
@@ -16,7 +24,6 @@
     ]
   },
   {
-    ],
     "version": "1.1.82",
     "date": "2026-02-28",
     "changes": [
