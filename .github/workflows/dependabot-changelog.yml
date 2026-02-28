@@ -1,0 +1,92 @@
+name: Dependabot Changelog Updater
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+permissions:
+  contents: write
+
+jobs:
+  update-changelog:
+    runs-on: ubuntu-latest
+    if: github.actor == 'dependabot[bot]'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Update Changelog
+        run: |
+          cat << 'JS' > update-changelog.js
+          const fs = require('fs');
+          const prTitle = process.env.PR_TITLE;
+
+          if (!prTitle) {
+            console.error("No PR title found.");
+            process.exit(1);
+          }
+
+          // Update CHANGELOG.md
+          let mdContent = fs.readFileSync('CHANGELOG.md', 'utf8');
+          if (!mdContent.includes(prTitle)) {
+            const marker = '## [';
+            const insertIndex = mdContent.indexOf(marker);
+            if (insertIndex !== -1) {
+              if (mdContent.substring(insertIndex, insertIndex + 20).includes('[NEXT_VERSION]')) {
+                const nextLineIndex = mdContent.indexOf('\n', insertIndex);
+                mdContent = mdContent.slice(0, nextLineIndex + 1) + `- ${prTitle}\n` + mdContent.slice(nextLineIndex + 1);
+              } else {
+                const newEntry = `## [[NEXT_VERSION]] - [NEXT_DATE]\n- ${prTitle}\n\n`;
+                mdContent = mdContent.slice(0, insertIndex) + newEntry + mdContent.slice(insertIndex);
+              }
+              fs.writeFileSync('CHANGELOG.md', mdContent);
+            }
+          }
+
+          // Update assets/changelog.json
+          let jsonContent = JSON.parse(fs.readFileSync('assets/changelog.json', 'utf8'));
+          let found = false;
+          if (jsonContent[0].version === '[NEXT_VERSION]') {
+            if (jsonContent[0].changes.includes(prTitle)) {
+              found = true;
+            } else {
+              jsonContent[0].changes.push(prTitle);
+              found = true;
+            }
+          }
+          if (!found) {
+            jsonContent.unshift({
+              version: '[NEXT_VERSION]',
+              date: '[NEXT_DATE]',
+              changes: [prTitle]
+            });
+          }
+          fs.writeFileSync('assets/changelog.json', JSON.stringify(jsonContent, null, 2) + '\n');
+          JS
+
+          node update-changelog.js
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+
+      - name: Commit and Push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add CHANGELOG.md assets/changelog.json
+          if git diff --cached --quiet; then
+            echo "No changelog updates needed."
+          else
+            git commit -m "chore: update changelog for dependabot PR [skip ci]"
+            # Use the explicit repository URL with the token to push
+            git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+            git push origin HEAD:${{ github.head_ref }}
+          fi
