@@ -2,6 +2,12 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
+## [NEXT_VERSION] - [NEXT_DATE]
+- Increase Jest unit test coverage by over 15%, exceeding the 10% target.
+- Add comprehensive tests for core application logic including forecasting, net worth, and data normalization.
+- Achieve 100% line coverage for utility functions.
+- Enable unit testing for internal application state by adding secure getter and setter exports.
+
 ## 1.1.84 - 2026-02-28
 - Add comprehensive Playwright E2E tests for financial inputs and UI interactions.
 - Ensure users can add and edit income, expenses, assets, liabilities, and goals via automated tests.
