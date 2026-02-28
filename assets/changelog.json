@@ -1,5 +1,10 @@
 [
   {
+    "version": "[NEXT_VERSION]",
+    "date": "[NEXT_DATE]",
+    "changes": [
+      "Add automated end-to-end tests to verify that the app remains fully accessible after loading sample data, ensuring a reliable experience for new users."
+    ],
     "version": "1.1.82",
     "date": "2026-02-28",
     "changes": [
