@@ -1,5 +1,13 @@
 [
   {
+    "version": "[NEXT_VERSION]",
+    "date": "[NEXT_DATE]",
+    "changes": [
+      "Refresh and rationalise utility tests by replacing weak assertions with deterministic checks and broader edge-case coverage for random sampling and numeric fallback behaviour.",
+      "Update npm development dependencies to include the latest patch release for Node.js type definitions."
+    ]
+  },
+  {
     "version": "1.1.95",
     "date": "2026-02-28",
     "changes": [

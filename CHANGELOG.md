@@ -2,6 +2,11 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
+## [NEXT_VERSION] - [NEXT_DATE]
+
+- Refresh and rationalise utility tests by replacing weak assertions with deterministic checks and broader edge-case coverage for random sampling and numeric fallback behaviour.
+- Update npm development dependencies to include the latest patch release for Node.js type definitions.
+
 ## 1.1.95 - 2026-02-28
 
 - Increase Jest coverage for utility helpers by adding edge-case tests for NI threshold fallbacks, semantic version comparisons, and default compounding periods.
