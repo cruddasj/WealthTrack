@@ -280,7 +280,7 @@
 
   /* nav buttons */
   .nav-btn {
-    @apply w-full text-left px-4 py-3 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 font-medium transition duration-300 mb-2 whitespace-nowrap;
+    @apply w-full text-left px-4 py-3 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 font-medium transition duration-300 mb-2 whitespace-nowrap cursor-pointer;
   }
 
   /* tabs */
