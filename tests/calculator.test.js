@@ -1,4 +1,4 @@
-const app = require('../assets/js/app.js');
+const app = require('../assets/js/utilities.js');
 
 describe('Calculator Functions', () => {
   test('calculatePersonalAllowance', () => {
@@ -15,12 +15,23 @@ describe('Calculator Functions', () => {
     expect(app.calculateUkIncomeTax(10000, pa)).toBe(0);
     expect(app.calculateUkIncomeTax(30000, pa)).toBeCloseTo(3486, 2);
     expect(app.calculateUkIncomeTax(60000, pa)).toBeCloseTo(11432, 2);
+
+    // Test with custom thresholds
+    const customThresholds = { basicLimit: 20000, higherLimit: 50000 };
+    expect(app.calculateUkIncomeTax(60000, 10000, customThresholds)).toBeGreaterThan(0);
+
+    // Test with missing cfg properties (though it defaults)
+    expect(app.calculateUkIncomeTax(60000, 10000, {})).toBeGreaterThan(0);
   });
 
   test('calculateUkNi', () => {
     expect(app.calculateUkNi(10000)).toBe(0);
     expect(app.calculateUkNi(30000)).toBeCloseTo(1394.4, 2);
     expect(app.calculateUkNi(60000)).toBeCloseTo(3210.6, 2);
+
+    // Test with custom thresholds
+    const customThresholds = { primaryNiThreshold: 5000, upperNiThreshold: 20000 };
+    expect(app.calculateUkNi(30000, customThresholds)).toBeGreaterThan(0);
   });
 
   test('calculateStudentLoanRepayment', () => {
@@ -28,6 +39,9 @@ describe('Calculator Functions', () => {
     const plan1Expected = (50000 - 24990) * 0.09;
     expect(app.calculateStudentLoanRepayment(50000, 'plan1')).toBeCloseTo(plan1Expected, 2);
     expect(app.calculateStudentLoanRepayment(20000, 'plan1')).toBe(0);
+
+    // Cover missing planKey
+    expect(app.calculateStudentLoanRepayment(50000, 'unknown')).toBe(0);
   });
 
   test('calculateFutureValueFreq', () => {
@@ -39,5 +53,8 @@ describe('Calculator Functions', () => {
     // With regular contributions: $1000, $100/mo, 5% annual, 1 year, 12 periods/yr
     const fvWithPmts = app.calculateFutureValueFreq(1000, 100, 5, 1, 12);
     expect(fvWithPmts).toBeGreaterThan(1050 + 1200); // Actually with interest it will be a bit more
+
+    // With 0 rate
+    expect(app.calculateFutureValueFreq(1000, 100, 0, 1, 12)).toBe(1000 + 100 * 12);
   });
 });

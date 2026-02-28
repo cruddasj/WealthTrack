@@ -1,12 +1,48 @@
 [
   {
-    "version": "[NEXT_VERSION]",
-    "date": "[NEXT_DATE]",
+    "version": "1.1.93",
+    "date": "2026-02-28",
     "changes": [
-      "Add comprehensive Playwright E2E tests covering Forecasts, Portfolio Insights, Snapshots, and Settings.",
-      "Verify Scenario Modelling, Stress Testing, and FIRE Readiness projections via automated tests.",
-      "Ensure reliability of snapshot management, portfolio comparisons, and profile switching.",
-      "Improve test robustness by handling animations, visibility checks, and refined UI element selection."
+      "Raise Jest coverage enforcement to require at least 90% statements, branches, functions, and lines across tracked files."
+    ]
+  },
+  {
+    "version": "1.1.92",
+    "date": "2026-02-28",
+    "changes": [
+      "Add broad integration-style Jest coverage tests for app interactions and restore coverage reporting to include app.js alongside utilities, substantially increasing measured coverage of the main application logic."
+    ]
+  },
+  {
+    "version": "1.1.91",
+    "date": "2026-02-28",
+    "changes": [
+      "Increase automated Jest coverage by adding a bootstrap test that exercises app startup flows in a browser-like environment."
+    ]
+  },
+  {
+    "version": "1.1.90",
+    "date": "2026-02-28",
+    "changes": [
+      "Increase automated unit test coverage by adding extra utility function tests for tax, formatting, version parsing, and student loan scenarios."
+    ]
+  },
+  {
+    "version": "1.1.88",
+    "date": "2026-02-28",
+    "changes": [
+      "Expand Jest unit tests to significantly increase test coverage for core application logic including growth calculations, event handling, liability tracking, and tax details.",
+      "Expose additional internal calculation functions from the application module to facilitate comprehensive unit testing."
+    ]
+  },
+  {
+    "version": "1.1.86",
+    "date": "2026-02-28",
+    "changes": [
+      "Increase Jest unit test coverage by over 15%, exceeding the 10% target.",
+      "Add comprehensive tests for core application logic including forecasting, net worth, and data normalization.",
+      "Achieve 100% line coverage for utility functions.",
+      "Enable unit testing for internal application state by adding secure getter and setter exports."
     ]
   },
   {
@@ -26,7 +62,6 @@
     ]
   },
   {
-    ],
     "version": "1.1.82",
     "date": "2026-02-28",
     "changes": [
