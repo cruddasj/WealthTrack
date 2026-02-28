@@ -170,4 +170,46 @@ describe('Utility/Tax Functions', () => {
     expect(app.formatPercent(5)).toBe('5%');
     expect(app.formatPercent('invalid')).toBe('0%');
   });
+
+  test('toNonNegativeNumber handles invalid and negative values', () => {
+    expect(app.toNonNegativeNumber('12.5')).toBe(12.5);
+    expect(app.toNonNegativeNumber(-1)).toBe(0);
+    expect(app.toNonNegativeNumber('invalid', 99)).toBe(99);
+  });
+
+  test('fmtPercent applies defaults for non-finite and signed values', () => {
+    expect(app.fmtPercent(Infinity)).toBe('0%');
+    expect(app.fmtPercent(2.345, { digits: 1 })).toBe('2.3%');
+    expect(app.fmtPercent(2.345, { digits: 1, signed: true })).toBe('+2.3%');
+  });
+
+  test('getTaxBandConfig falls back to basic band for unknown keys', () => {
+    expect(app.getTaxBandConfig('not-a-band').incomeRate).toBe(20);
+    expect(app.getTaxBandConfig('additional').incomeRate).toBe(45);
+  });
+
+  test('normalizeTaxTreatment and getTaxTreatmentMeta default safely', () => {
+    expect(app.normalizeTaxTreatment('income')).toBe('income');
+    expect(app.normalizeTaxTreatment('made-up')).toBe('tax-free');
+    expect(app.getTaxTreatmentMeta('capital-gains').allowanceKey).toBe('capital');
+    expect(app.getTaxTreatmentMeta('unknown').allowanceLabel).toBe('No allowance needed');
+  });
+
+  test('toAppVersionParts splits semantic and prerelease components', () => {
+    expect(app.toAppVersionParts('1.2.3-beta.4')).toEqual([1, 2, 3, 'beta', 4]);
+    expect(app.toAppVersionParts(123)).toEqual([]);
+  });
+
+  test('calculateStudentLoanRepayment includes all supported plans', () => {
+    expect(app.calculateStudentLoanRepayment(32000, 'plan4')).toBeCloseTo((32000 - 31295) * 0.09, 2);
+    expect(app.calculateStudentLoanRepayment(26000, 'plan5')).toBeCloseTo((26000 - 25000) * 0.09, 2);
+    expect(app.calculateStudentLoanRepayment(22000, 'postgrad')).toBeCloseTo((22000 - 21000) * 0.06, 2);
+  });
+
+  test('calculateUkIncomeTax and calculateUkNi respect fallback thresholds', () => {
+    const tax = app.calculateUkIncomeTax(70000, 12570, { basicLimit: 37700, higherLimit: 80000 });
+    const ni = app.calculateUkNi(70000, { primaryNiThreshold: 10000, upperNiThreshold: 50000 });
+    expect(tax).toBeGreaterThan(0);
+    expect(ni).toBeGreaterThan(0);
+  });
 });
