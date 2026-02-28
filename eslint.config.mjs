@@ -1,5 +1,8 @@
 export default [
     {
+        ignores: ["coverage/**"],
+    },
+    {
         files: ["**/*.js"],
         rules: {
             "no-unused-vars": ["error", {
