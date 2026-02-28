@@ -2,7 +2,7 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
-## [NEXT_VERSION] - [NEXT_DATE]
+## 1.1.72 - 2026-02-28
 - Added automated test suite to verify application functionality and ensure ongoing stability.
 
 ## [1.1.65] - 2026-02-28
