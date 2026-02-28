@@ -1,5 +1,13 @@
 [
   {
+    "version": "[NEXT_VERSION]",
+    "date": "[NEXT_DATE]",
+    "changes": [
+      "Upgrade Tailwind CSS from v3 to v4 and migrate the stylesheet build to the new Tailwind v4 tooling.",
+      "Refresh development dependencies with the latest patch update for Node.js type definitions."
+    ]
+  },
+  {
     "version": "1.1.96",
     "date": "2026-02-28",
     "changes": [
