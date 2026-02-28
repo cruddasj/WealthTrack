@@ -43,7 +43,6 @@ let showAllSnapshots = false;
 const profilePickers = {};
 let importFileContent = null;
 let importFileToken = null;
-let importPreviewData = null;
 const getImportFileToken = (file) =>
   file && file.name != null
     ? `${file.name}|${file.size}|${file.lastModified}`
@@ -1041,7 +1040,7 @@ function computeAssetTaxDetails() {
   return taxComputationCache;
 }
 
-function describeAssetTax(asset, summary) {
+function describeAssetTax(asset) {
   const meta = getTaxTreatmentMeta(asset?.taxTreatment);
   if (!meta) return "";
   return `<span class="inline-flex items-center gap-2 whitespace-nowrap">${meta.label}</span>`;
@@ -1258,7 +1257,6 @@ function parseImportPayload(rawContent, password) {
 
 function attemptImportPreview() {
   if (!importFileContent) {
-    importPreviewData = null;
     resetProfilePicker("import");
     return;
   }
@@ -1266,10 +1264,8 @@ function attemptImportPreview() {
   const password = passwordInput ? passwordInput.value : "";
   try {
     const parsed = parseImportPayload(importFileContent, password);
-    importPreviewData = parsed;
     populateProfilePickerOptions("import", parsed.profiles);
-  } catch (err) {
-    importPreviewData = null;
+  } catch (_) {
     if (password) {
       resetProfilePicker(
         "import",
@@ -1334,7 +1330,6 @@ function updateGoalButton() {
   if (btn) btn.textContent = goalValue > 0 && goalTargetDate ? "Update" : "Set";
 }
 
-const perYear = { none: 0, monthly: 12, quarterly: 4, yearly: 1 };
 const MS_PER_YEAR = 1000 * 60 * 60 * 24 * 365.25;
 const monthlyFrom = (freq, amount) =>
   ({
@@ -2106,15 +2101,6 @@ function calculatePassiveWorth(now = Date.now()) {
   }, 0);
 }
 
-function calculateFutureValue(P, monthly, annualRate, years) {
-  const r = annualRate / 100 / 12;
-  const n = Math.round(years * 12);
-  if (r === 0) return P + monthly * n;
-  return (
-    P * Math.pow(1 + r, n) + monthly * ((Math.pow(1 + r, n) - 1) / r)
-  );
-}
-
 // Generic FV with selectable compounding frequency (periods per year)
 function calculateFutureValueFreq(
   P,
@@ -2788,7 +2774,6 @@ function showEditAsset(index) {
   tpl.querySelector("#editAssetValue").value = asset.value;
   tpl.querySelector("#editDepositAmount").value = asset.originalDeposit;
   tpl.querySelector("#editDepositFrequency").value = asset.frequency;
-  const editDepositFrequency = tpl.querySelector("#editDepositFrequency");
   const editAssetStart = tpl.querySelector("#editAssetStartDate");
   if (editAssetStart)
     editAssetStart.value = toDateInputValue(asset.explicitStartDate);
@@ -3149,12 +3134,6 @@ const CHART_COLOURS = {
   green: "rgba(16,185,129,.5)",
 };
 
-// Opaque point colours for strong visibility (match line hues)
-const POINT_COLOURS = {
-  blue: "rgba(59,130,246,1)",
-  red: "rgba(239,68,68,1)",
-  green: "rgba(16,185,129,1)",
-};
 
 // Plugin to add extra spacing beneath the legend (push chart down)
 const LegendPad = {
@@ -3372,7 +3351,7 @@ function adaptChartToZoom(chart) {
     : (fn) => setTimeout(fn, 0))(() => {
     try {
       chart.update("none");
-    } catch (e) {}
+    } catch (_) {}
   });
 }
 
@@ -7652,7 +7631,6 @@ function handleFormSubmit(e) {
         taxCode,
         grossAfterPensionWithBonus,
       );
-      const taxableIncomeWithBonus = Math.max(0, grossAfterPensionWithBonus - personalAllowanceWithBonus);
       const incomeTaxWithBonus = calculateUkIncomeTax(
         grossAfterPensionWithBonus,
         personalAllowanceWithBonus,
@@ -7663,12 +7641,6 @@ function handleFormSubmit(e) {
         grossAfterPensionWithBonus,
         studentLoanInput?.value || "none",
       );
-      const takeHomeBeforePensionWithBonus =
-        grossAfterPensionWithBonus - incomeTaxWithBonus - nationalInsuranceWithBonus - studentLoanWithBonus;
-      const takeHomeAnnualWithBonus =
-        contributionMethod === "relief"
-          ? takeHomeBeforePensionWithBonus - netPensionOutflow
-          : takeHomeBeforePensionWithBonus;
       const bonusTaxDelta = Math.max(0, incomeTaxWithBonus - incomeTax);
       const bonusNiDelta = Math.max(0, nationalInsuranceWithBonus - nationalInsurance);
       const bonusLoanDelta = Math.max(0, studentLoanWithBonus - studentLoan);
@@ -8773,7 +8745,6 @@ window.addEventListener("load", () => {
                 resetProfilePicker("import");
                 importFileContent = null;
                 importFileToken = null;
-                importPreviewData = null;
                 closeAllProfilePickers();
                 showAlert("Data imported successfully", () => {
                   navigateTo("data-entry");
@@ -8861,7 +8832,6 @@ window.addEventListener("load", () => {
       if (!file) {
         importFileContent = null;
         importFileToken = null;
-        importPreviewData = null;
         resetProfilePicker("import");
         return;
       }
@@ -8874,7 +8844,6 @@ window.addEventListener("load", () => {
       reader.onerror = () => {
         importFileContent = null;
         importFileToken = null;
-        importPreviewData = null;
         resetProfilePicker("import", "Unable to read the selected file", {
           hint: "Please choose a different file to continue.",
         });
