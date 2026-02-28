@@ -1,5 +1,12 @@
 [
   {
+    "version": "1.1.66",
+    "date": "2026-02-28",
+    "changes": [
+      "Refined the dark mode theme with a modern, softer slate color palette while maintaining a true black background for optimal contrast."
+    ]
+  },
+  {
     "version": "1.1.65",
     "date": "2026-02-28",
     "changes": [
