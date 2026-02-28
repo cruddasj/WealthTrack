@@ -1,10 +1,12 @@
 [
   {
-    "version": "[NEXT_VERSION]",
-    "date": "[NEXT_DATE]",
+    "version": "1.1.86",
+    "date": "2026-02-28",
     "changes": [
-      "Add linting for Markdown files and GitHub Action workflows to ensure consistent formatting and catch configuration errors early.",
-      "Automate linting fixes in Pull Requests, allowing the CI pipeline to commit and push corrections back to the branch."
+      "Increase Jest unit test coverage by over 15%, exceeding the 10% target.",
+      "Add comprehensive tests for core application logic including forecasting, net worth, and data normalization.",
+      "Achieve 100% line coverage for utility functions.",
+      "Enable unit testing for internal application state by adding secure getter and setter exports."
     ]
   },
   {
