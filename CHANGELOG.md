@@ -7,6 +7,7 @@ All notable changes to WealthTrack will be documented in this file. This project
 - Upgrade Tailwind CSS from v3 to v4 and migrate the stylesheet build to the new Tailwind v4 tooling.
 - Refresh development dependencies with the latest patch update for Node.js type definitions.
 - Clarify npm runtime compatibility by requiring Node.js 20+ in project metadata and documentation to match the upgraded Tailwind v4 toolchain.
+- Fix layout regressions after the Tailwind v4 upgrade by removing duplicate modal scroll containers and preventing dashboard cards from overflowing off-screen.
 
 ## 1.1.96 - 2026-02-28
 

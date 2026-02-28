@@ -48,6 +48,7 @@
      to avoid a visible gap when sections are short/collapsed. */
   main {
     position: relative;
+    min-width: 0;
     min-height: calc(100vh - var(--mobile-header-offset));
     min-height: calc(100dvh - var(--mobile-header-offset));
     overflow-x: hidden;
@@ -303,7 +304,7 @@
     padding-left: 1rem;
     padding-right: 1rem;
     z-index: 1000;
-    overflow-y: auto;
+    overflow: hidden;
     -webkit-overflow-scrolling: touch;
   }
   .modal-panel {
@@ -319,6 +320,7 @@
     /* Keep modal content scrollable without clipping focus rings */
     max-height: min(80vh, calc(100vh - 2rem));
     overflow-y: auto;
+    overflow-x: hidden;
     overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
   }
@@ -328,6 +330,7 @@
   .modal-panel > #modal-body {
     overflow: visible;
     max-height: none;
+    min-width: 0;
   }
   .modal-panel .input-field {
     width: calc(100% - 0.5rem);
