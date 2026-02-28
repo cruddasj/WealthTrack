@@ -9145,12 +9145,31 @@ if ("serviceWorker" in navigator) {
 
 if (typeof module !== 'undefined') {
   module.exports = {
+    // Functions
     normalizeData,
     generateRandomEvents,
     calculateNetWorth,
     calculatePassiveWorth,
     buildForecastScenarios,
     updateTotals,
-    updateTaxSettingsUI
+    updateTaxSettingsUI,
+    // State (for testing)
+    getAssets: () => assets,
+    setAssets: (val) => { assets = val; },
+    getIncomes: () => incomes,
+    setIncomes: (val) => { incomes = val; },
+    getExpenses: () => expenses,
+    setExpenses: (val) => { expenses = val; },
+    getLiabilities: () => liabilities,
+    setLiabilities: (val) => { liabilities = val; },
+    getSimEvents: () => simEvents,
+    setSimEvents: (val) => { simEvents = val; },
+    getGoalValue: () => goalValue,
+    setGoalValue: (val) => { goalValue = val; },
+    getInflationRate: () => inflationRate,
+    setInflationRate: (val) => { inflationRate = val; },
+    getTaxSettings: () => taxSettings,
+    setTaxSettings: (val) => { taxSettings = val; },
+    invalidateTaxCache: () => { taxComputationCache = null; }
   };
 }
