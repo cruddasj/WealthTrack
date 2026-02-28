@@ -2,7 +2,7 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
-## [NEXT_VERSION] - [NEXT_DATE]
+## 1.1.97 - 2026-02-28
 
 - Restore the hand-pointer cursor on desktop sidebar navigation and silence the recurring npm proxy warning in local runs.
 - Keep the left navigation width stable on Financial Inputs and harden forecast event tests so local npm test runs stay reliable.
