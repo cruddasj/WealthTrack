@@ -67,15 +67,20 @@ jobs:
             base = parseBase(seed) || { major: 1, minor: 0, patch: -1 };
           }
 
+          let next;
           try {
             const raw = fs.readFileSync('assets/version.json', 'utf8');
             const current = parseBase(JSON.parse(raw).version, true);
             if (current && compare(current, base) > 0) {
-              base = current;
+              // Version already bumped in this PR (ahead of base tag)
+              next = current;
             }
           } catch (_) {}
 
-          const next = { ...base, patch: base.patch + 1 };
+          if (!next) {
+            // Version not bumped yet, increment base
+            next = { ...base, patch: base.patch + 1 };
+          }
           const version = `${next.major}.${next.minor}.${next.patch}`;
           process.stdout.write(version);
           NODE
