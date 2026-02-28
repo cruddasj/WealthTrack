@@ -9426,3 +9426,44 @@ if ("serviceWorker" in navigator) {
       });
   });
 }
+
+if (typeof module !== 'undefined') {
+  module.exports = {
+    fmtCurrency,
+    fmtPercent,
+    calculateUkIncomeTax,
+    calculateUkNi,
+    calculateStudentLoanRepayment,
+    toNonNegativeNumber,
+    formatPercent,
+    getTaxBandConfig,
+    getBandSummary,
+    normalizeTaxTreatment,
+    getTaxTreatmentMeta,
+    normalizeTaxSettings,
+    calculatePersonalAllowance,
+    getAllowanceFromTaxCode,
+    formatGrossNetRate,
+    getGrossRate,
+    parseCssNumber,
+    formatDateForInput,
+    formatChangelogDate,
+    compareAppVersions,
+    toAppVersionParts,
+    normalizeAppVersion,
+    normalizeData,
+    randomNormal,
+    generateRandomEvents,
+    calculateFutureValueFreq,
+    calculateNetWorth,
+    calculatePassiveWorth,
+    buildForecastScenarios,
+    updateTotals,
+    updateTaxSettingsUI
+  };
+}
+if (typeof module !== 'undefined') {
+  Object.assign(module.exports, {
+    getTaxYearConfig
+  });
+}
