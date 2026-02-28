@@ -3,7 +3,7 @@
     "version": "[NEXT_VERSION]",
     "date": "[NEXT_DATE]",
     "changes": [
-      "Raise automated Jest coverage reporting to at least 90% by enforcing a global threshold and focusing the metric on the core utility module used across calculators."
+      "Add broad integration-style Jest coverage tests for app interactions and restore coverage reporting to include app.js alongside utilities, substantially increasing measured coverage of the main application logic."
     ]
   },
   {

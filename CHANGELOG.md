@@ -4,7 +4,7 @@ All notable changes to WealthTrack will be documented in this file. This project
 
 ## [NEXT_VERSION] - [NEXT_DATE]
 
-- Raise automated Jest coverage reporting to at least 90% by enforcing a global threshold and focusing the metric on the core utility module used across calculators.
+- Add broad integration-style Jest coverage tests for app interactions and restore coverage reporting to include app.js alongside utilities, substantially increasing measured coverage of the main application logic.
 
 ## 1.1.91 - 2026-02-28
 
