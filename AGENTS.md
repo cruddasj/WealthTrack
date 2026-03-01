@@ -4,7 +4,7 @@ Scope: This file applies to the entire repository.
 
 Overview
 
-- WealthTrack is a static SPA (no backend). It uses Tailwind CSS (CLI v3) with a small custom stylesheet. The compiled CSS is committed for GitHub Pages deployment.
+- WealthTrack is a static SPA (no backend). It uses Tailwind CSS (CLI v4) with a small custom stylesheet. The compiled CSS is committed for GitHub Pages deployment.
 - Icon PNG assets are generated during the CI/CD pipeline; do not commit regenerated binaries.
 
 Do
@@ -36,8 +36,8 @@ Don't
 
 Environment
 
-- Requires Node.js 16+ and npm.
-- Tailwind CLI: v3 (configured via `tailwind.config.js`).
+- Requires Node.js 20+ and npm 10+.
+- Tailwind CLI: v4 (configured via `tailwind.config.js`).
 
 Deployment
 
