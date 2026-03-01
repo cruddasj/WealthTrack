@@ -90,4 +90,24 @@ test.describe('Menu Navigation', () => {
     ).toBe(true);
   });
 
+  test('Mobile menu navigation functionality', async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 667 });
+
+    const sidebar = page.locator('#sidebar');
+    const menuToggle = page.locator('#menu-toggle');
+
+    // Initially hidden (off-screen)
+    await expect(sidebar).toHaveClass(/-translate-x-full/);
+
+    // Open menu
+    await menuToggle.click();
+    await expect(sidebar).not.toHaveClass(/-translate-x-full/);
+
+    // Navigate to Settings & Data
+    await page.locator('nav').locator('button', { hasText: 'Settings & Data' }).click();
+    await expect(page.locator('#settings')).toHaveClass(/active/);
+
+    // Menu should close after navigation
+    await expect(sidebar).toHaveClass(/-translate-x-full/);
+  });
 });

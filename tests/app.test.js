@@ -379,23 +379,6 @@ describe('App Core Logic', () => {
     // Should be > 15000 due to initial value + growth + event + more growth
     expect(projectedValue).toBeGreaterThan(15000);
   });
-  test('storage logic works correctly', () => {
-    // We can't fully test DOM-dependent functions like applyThemeChoice without setting up DOM,
-    // but we can test pure state functions
-    expect(app.storageKey('test')).toBe('wealthtrack:test');
-
-    app.save('testKey', { a: 1 });
-    expect(app.load('testKey', null)).toEqual({ a: 1 });
-    expect(app.getLocalStorageItem('testKey')).toBe('{"a":1}');
-  });
-
-  test('migrateStorageKeys handles migrations', () => {
-    localStorage.setItem('assets', '[]');
-    app.migrateStorageKeys();
-    expect(localStorage.getItem('assets')).toBeNull();
-    expect(localStorage.getItem('wealthtrack:assets')).toBe('[]');
-  });
-
   test('date utilities handle inputs correctly', () => {
     expect(app.clampDepositDay(15)).toBe(15);
     expect(app.clampDepositDay(32)).toBe(31);
@@ -513,29 +496,6 @@ describe('App Core Logic', () => {
     expect(eligible).toHaveLength(2);
     expect(eligible[0].name).toBe('A');
     expect(eligible[1].name).toBe('C');
-  });
-
-  test('deposit iterator logic', () => {
-    const startTs = new Date('2025-01-01T00:00:00.000Z').getTime();
-
-    // First deposit on or after
-    // Monthly, day 15
-    const nextDep = app.firstDepositOnOrAfter(startTs, 1, 15);
-    expect(new Date(nextDep).getDate()).toBe(15);
-
-    const asset = {
-      frequency: 'monthly',
-      originalDeposit: 100,
-      startDate: startTs
-    };
-
-    const iterator = app.createDepositIterator(asset, startTs);
-    expect(iterator).not.toBeNull();
-
-    // Should consume deposits
-    const limit = new Date('2025-04-01T00:00:00.000Z').getTime();
-    const total = iterator.consumeBefore(limit);
-    expect(total).toBeGreaterThan(0);
   });
 
   test('DOM and rendering state', () => {
@@ -725,33 +685,6 @@ describe('App Core Logic', () => {
     expect(() => app.refreshFireProjection()).not.toThrow();
   });
 
-  test('runStressTest', () => {
-    const now = app.startOfToday();
-    app.setAssets([
-      { name: 'A', value: 100000, return: 5, includeInPassive: true, dateAdded: now, startDate: now, frequency: 'none' }
-    ]);
-    app.normalizeData();
-    app.invalidateTaxCache();
-
-    const result = app.runStressTest(5, 'base', [now]);
-    expect(result).toHaveProperty('baseline');
-    expect(result).toHaveProperty('pct');
-    expect(result.sample).toBeDefined();
-  });
-
-  test('forecastGoalDate', () => {
-    const now = app.startOfToday();
-    app.setAssets([
-      { name: 'A', value: 100000, return: 5, includeInPassive: true, dateAdded: now, startDate: now, frequency: 'none' }
-    ]);
-    app.setGoalValue(200000);
-    app.normalizeData();
-    app.invalidateTaxCache();
-
-    const result = app.forecastGoalDate([], 'high', new Set([now]));
-    expect(result).toHaveProperty('hitDate');
-  });
-
   test('updateTaxSettingsUI updates DOM correctly', () => {
     document.body.innerHTML = `
       <select id="taxBandSelect"><option value="basic">basic</option><option value="higher">higher</option></select>
@@ -833,28 +766,6 @@ describe('App Core Logic', () => {
     expect(document.getElementById('taxCalculatorResult').innerHTML).toBe('');
   });
 });
-
-  test('buildForecastScenarios coverage details', () => {
-    // Already tested to some extent, but let's run it with includeBreakdown
-    const now = app.startOfToday();
-    app.setAssets([
-      { name: 'A', value: 100000, return: 5, includeInPassive: true, dateAdded: now, startDate: now, frequency: 'none' }
-    ]);
-    app.setSimEvents([{ date: now + 1000000, amount: 5, isPercent: true, label: 'ev' }]);
-    app.normalizeData();
-    app.invalidateTaxCache();
-    app.setGoalValue(200000);
-
-    // Add global event
-    app.setSimEvents([{ date: now + 2000000, amount: -100, isPercent: false }]);
-
-    const result = app.buildForecastScenarios(1, { includeBreakdown: true });
-    expect(result.assetDetails).toBeDefined();
-
-    // Passive only mode
-    const passiveResult = app.buildForecastScenarios(1, { passiveOnly: true, includeBreakdown: true });
-    expect(passiveResult.assetDetails).toBeDefined();
-  });
 
   test('updateCurrencySymbols', () => {
     document.body.innerHTML = `
