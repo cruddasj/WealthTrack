@@ -2,7 +2,7 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
-## [NEXT_VERSION] - [NEXT_DATE]
+## 1.1.125 - 2026-03-01
 
 - Fix release version detection so GitHub Actions also recognizes bracketed changelog headers (for example `[1.2.0]`) and no longer falls back to 1.1.x tags when a newer minor release is documented.
 

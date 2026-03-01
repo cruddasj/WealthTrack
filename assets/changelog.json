@@ -1,7 +1,7 @@
 [
   {
-    "version": "[NEXT_VERSION]",
-    "date": "[NEXT_DATE]",
+    "version": "1.1.125",
+    "date": "2026-03-01",
     "changes": [
       "Fix release version detection so GitHub Actions also recognizes bracketed changelog headers (for example '[1.2.0]') and no longer falls back to 1.1.x tags when a newer minor release is documented."
     ]
