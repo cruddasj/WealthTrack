@@ -2,7 +2,7 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
-## [NEXT_VERSION] - [NEXT_DATE]
+## 1.1.117 - 2026-03-01
 
 - Switch Portfolio Allocation, Future Portfolio, and Snapshot History charts to Chart.js HTML legends so legend items render below each chart with improved spacing and click-to-toggle behaviour.
 - Fix Snapshot History legend layout so it renders beneath the chart instead of alongside it.
