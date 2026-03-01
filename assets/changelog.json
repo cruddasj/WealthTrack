@@ -1,5 +1,12 @@
 [
   {
+    "version": "[NEXT_VERSION]",
+    "date": "[NEXT_DATE]",
+    "changes": [
+      "Update FIRE Readiness forecast cards so scenarios that are already covered at the start date show 'Goal met now' instead of repeating the current month."
+    ]
+  },
+  {
     "version": "1.1.119",
     "date": "2026-03-01",
     "changes": [
