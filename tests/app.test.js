@@ -753,8 +753,9 @@ describe('App Core Logic', () => {
     const path = require('path');
     const appSource = fs.readFileSync(path.join(__dirname, '..', 'assets/js/app.js'), 'utf8');
 
-    expect(appSource).toContain('legend: { position: "bottom" }');
-    expect(appSource).toContain('bottom: 18');
+    expect(appSource).toContain('htmlLegend: { containerID: "assetBreakdownLegend" }');
+    expect(appSource).toContain('legend: { display: false }');
+    expect(appSource).toContain('bottom: 36');
   });
 
   test('future portfolio chart matches allocation donut layout', () => {
@@ -762,8 +763,9 @@ describe('App Core Logic', () => {
     const path = require('path');
     const appSource = fs.readFileSync(path.join(__dirname, '..', 'assets/js/app.js'), 'utf8');
 
-    expect(appSource).toContain('legend: { position: "bottom" }');
-    expect(appSource).toContain('bottom: 18');
+    expect(appSource).toContain('htmlLegend: { containerID: "futurePortfolioLegend" }');
+    expect(appSource).toContain('legend: { display: false }');
+    expect(appSource).toContain('bottom: 36');
   });
 
   test('applyTaxSettingsChanges', () => {

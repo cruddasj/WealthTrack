@@ -2,6 +2,10 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
+## [NEXT_VERSION] - [NEXT_DATE]
+
+- Switch Portfolio Allocation and Future Portfolio donut charts to Chart.js HTML legends so legend items render below each chart with improved spacing and click-to-toggle behaviour.
+
 ## 1.1.115 - 2026-03-01
 
 - Make the Future Portfolio donut chart layout match Portfolio Allocation by placing the legend below the chart with extra spacing for readability.

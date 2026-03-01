@@ -1,5 +1,12 @@
 [
   {
+    "version": "[NEXT_VERSION]",
+    "date": "[NEXT_DATE]",
+    "changes": [
+      "Switch Portfolio Allocation and Future Portfolio donut charts to Chart.js HTML legends so legend items render below each chart with improved spacing and click-to-toggle behaviour."
+    ]
+  },
+  {
     "version": "1.1.115",
     "date": "2026-03-01",
     "changes": [
