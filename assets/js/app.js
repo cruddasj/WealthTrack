@@ -5754,7 +5754,11 @@ function renderAssetBreakdownChart() {
         },
       },
       plugins: {
-        legend: { position: "bottom" },
+        legend: {
+          position: "bottom",
+          labels: { padding: 16 },
+        },
+        legendPad: { extra: 20 },
         tooltip: { callbacks: { label: pieTooltip } },
       },
     },
@@ -6003,7 +6007,11 @@ function updateFuturePortfolioCard() {
           },
         },
         plugins: {
-          legend: { position: "bottom" },
+          legend: {
+            position: "bottom",
+            labels: { padding: 16 },
+          },
+          legendPad: { extra: 20 },
           tooltip: { callbacks: { label: pieTooltip } },
         },
       },

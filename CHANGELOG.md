@@ -2,6 +2,10 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
+## [NEXT_VERSION] - [NEXT_DATE]
+
+- Improve mobile spacing between Portfolio Allocation donut charts and their legends so labels no longer sit directly against the chart.
+
 ## 1.1.115 - 2026-03-01
 
 - Make the Future Portfolio donut chart layout match Portfolio Allocation by placing the legend below the chart with extra spacing for readability.
