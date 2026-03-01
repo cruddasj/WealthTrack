@@ -1,7 +1,7 @@
 [
   {
-    "version": "[NEXT_VERSION]",
-    "date": "[NEXT_DATE]",
+    "version": "1.1.113",
+    "date": "2026-03-01",
     "changes": [
       "Move the Portfolio Allocation chart legend below the donut so labels are easier to read on mobile screens."
     ]
