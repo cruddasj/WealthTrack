@@ -664,6 +664,8 @@ function applyMobileNavSticky(enabled, { persistChoice = true } = {}) {
 
 
 const SCENARIO_KEYS = ["low", "base", "high"];
+const FUTURE_PORTFOLIO_CHART_TYPE = "polarArea";
+
 const SCENARIO_LABELS = {
   low: "Low Growth",
   base: "Expected Growth",
@@ -6027,13 +6029,20 @@ function updateFuturePortfolioCard() {
       ],
     };
     const cfg = {
-      type: "pie",
+      type: FUTURE_PORTFOLIO_CHART_TYPE,
       data,
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        scales: {
+          r: {
+            ticks: { display: false },
+            grid: { color: "rgba(148,163,184,0.25)" },
+            angleLines: { color: "rgba(148,163,184,0.2)" },
+          },
+        },
         plugins: {
-          legend: { position: "top" },
+          legend: { display: false },
           tooltip: { callbacks: { label: pieTooltip } },
         },
       },
@@ -9219,6 +9228,7 @@ if (typeof module !== 'undefined') {
     updateGoalButton,
     applyTaxSettingsChanges,
     clearTaxCalculatorResult,
+    FUTURE_PORTFOLIO_CHART_TYPE,
     // State (for testing)
     getAssets: () => assets,
     setAssets: (val) => { assets = val; },

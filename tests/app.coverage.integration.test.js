@@ -26,7 +26,11 @@ function submit(formId) {
 }
 
 describe('App integration flows for coverage', () => {
+  let chartConfigs;
+
   beforeEach(() => {
+    chartConfigs = [];
+
     jest.resetModules();
     document.open();
     document.write(html);
@@ -35,7 +39,8 @@ describe('App integration flows for coverage', () => {
 
     global.GBP_CURRENCY = 'GBP';
     global.ChartZoom = {};
-    global.Chart = function Chart() {
+    global.Chart = function Chart(_ctx, config) {
+      chartConfigs.push(config);
       return {
         destroy() {},
         update() {},
@@ -190,7 +195,11 @@ describe('App integration flows for coverage', () => {
     setValue('goalValue', '100000');
     setValue('goalYear', '2030');
     document.getElementById('goalBtn').click();
+    setValue('futurePortfolioScenario', 'base');
+    setValue('futurePortfolioDate', '2026-01-01');
     submit('futurePortfolioForm');
+
+    expect(chartConfigs.length).toBeGreaterThan(0);
     submit('inflationForm');
     submit('fireForecastForm');
     submit('stressTestForm');

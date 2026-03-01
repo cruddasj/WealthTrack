@@ -25,6 +25,10 @@ describe('App Core Logic', () => {
     jest.useRealTimers();
   });
 
+
+  test('future portfolio chart uses polar area chart type', () => {
+    expect(app.FUTURE_PORTFOLIO_CHART_TYPE).toBe('polarArea');
+  });
   test('normalizeData should set defaults and process assets', () => {
     const asset = {
       name: 'Test Asset',
