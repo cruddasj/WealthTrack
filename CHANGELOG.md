@@ -2,7 +2,7 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
-## [NEXT_VERSION] - [NEXT_DATE]
+## 1.1.106 - 2026-03-01
 
 - Add new Playwright coverage for first-time welcome guidance and navigation from the WealthTrack brand shortcut.
 - Verify first-time content visibility controls in Settings so onboarding guidance can be hidden and restored reliably.

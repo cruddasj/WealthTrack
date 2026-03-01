@@ -1,7 +1,7 @@
 [
   {
-    "version": "[NEXT_VERSION]",
-    "date": "[NEXT_DATE]",
+    "version": "1.1.106",
+    "date": "2026-03-01",
     "changes": [
       "Add new Playwright coverage for first-time welcome guidance and navigation from the WealthTrack brand shortcut.",
       "Verify first-time content visibility controls in Settings so onboarding guidance can be hidden and restored reliably."
