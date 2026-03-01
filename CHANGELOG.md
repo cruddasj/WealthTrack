@@ -2,7 +2,7 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
-## [NEXT_VERSION] - [NEXT_DATE]
+## 1.1.126 - 2026-03-01
 
 - Make Financial Inputs rows non-selectable after adding assets, incomes, expenses, or liabilities so mobile long-press edit gestures trigger more reliably.
 - Reduce the Financial Inputs long-press edit hold time from 3 seconds to 1 second for faster mobile editing.
