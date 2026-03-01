@@ -2,6 +2,11 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
+## [NEXT_VERSION] - [NEXT_DATE]
+
+- Remove the special Jest coverage threshold override for app.js and add broader app-level tests to raise measured coverage.
+- Expand Jest coverage with additional app helper tests and include `assets/js/app.js` in default coverage collection.
+
 ## 1.1.101 - 2026-03-01
 
 - Restore the mobile navigation backdrop so page content stays visible with a soft blur instead of turning fully black.
