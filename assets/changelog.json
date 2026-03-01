@@ -1,7 +1,7 @@
 [
   {
-    "version": "[NEXT_VERSION]",
-    "date": "[NEXT_DATE]",
+    "version": "1.1.108",
+    "date": "2026-03-01",
     "changes": [
       "Refresh contributor and README documentation so required Node.js, npm, and Tailwind CSS versions match the current project tooling.",
       "Add a quick development tooling reference in the README so setup steps and library versions are easier to verify before running checks."
