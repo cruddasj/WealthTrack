@@ -2,6 +2,11 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
+## [NEXT_VERSION] - [NEXT_DATE]
+
+- Move Financial Inputs mobile row actions so Edit appears in a dedicated first column while Delete remains in the right-side actions column.
+- Remove the long-press row edit shortcut on Financial Inputs after reliability issues on touch devices.
+
 ## 1.1.125 - 2026-03-01
 
 - Fix release version detection so GitHub Actions also recognizes bracketed changelog headers (for example `[1.2.0]`) and no longer falls back to 1.1.x tags when a newer minor release is documented.
