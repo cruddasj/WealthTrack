@@ -87,6 +87,13 @@ describe('App integration flows for coverage', () => {
     global.confirm = jest.fn(() => true);
     global.prompt = jest.fn(() => 'Coverage Profile');
     global.STUDENT_LOAN_PLANS = { none: { threshold: Infinity }, plan1: { threshold: 24990, rate: 0.09 } };
+    global.CryptoJS = {
+      AES: {
+        encrypt: jest.fn(() => ({ toString: () => 'encrypted-payload' })),
+        decrypt: jest.fn(() => ({ toString: () => '{}' }))
+      },
+      enc: { Utf8: 'utf8' }
+    };
 
   });
 
@@ -240,6 +247,16 @@ describe('App integration flows for coverage', () => {
 
     // Snapshot and profile actions
     document.getElementById('snapshotBtn').click();
+    const exportPassword = document.getElementById('exportPassword');
+    if (exportPassword) exportPassword.value = 'secret';
+    const exportBtn = document.querySelector('[data-action="export-data"]');
+    if (exportBtn) exportBtn.click();
+    if (exportPassword) exportPassword.value = '';
+    if (exportBtn) exportBtn.click();
+
+    const updateBtn = document.querySelector('[data-action="update-app"]');
+    if (updateBtn) updateBtn.click();
+
     document.getElementById('addProfileBtn').click();
     document.getElementById('renameProfileBtn').click();
 
