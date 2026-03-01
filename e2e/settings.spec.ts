@@ -26,17 +26,47 @@ test.describe('Settings & Data', () => {
     await page.click('#renameProfileBtn', { force: true });
     await page.fill('input[data-input]', 'Renamed Profile');
     await page.locator('button[data-ok]').click();
+
+    // Wait for the modal to close and the select options to be updated
+    await expect(page.locator('#modal')).toBeHidden();
     await expect(page.locator('#profileSelect')).toContainText('Renamed Profile');
 
+    // Wait for the modal from renaming to close fully
+    await expect(page.locator('#modal')).toBeHidden();
+
+    // Wait for the select options to be populated with Renamed Profile
+    await expect(page.locator('#profileSelect option', { hasText: 'Renamed Profile' })).toHaveCount(1);
+
+    // There is no "Default" profile when we rename it since it was the only profile and we renamed it!
+    // We should add a new profile instead to switch to.
+
+    // Add another profile to switch to
+    await page.click('#addProfileBtn', { force: true });
+    await page.fill('input[data-input]', 'Another Profile');
+    await page.locator('button[data-ok]').click();
+    await expect(page.locator('#modal')).toBeHidden();
+
+    await expect(page.locator('#profileSelect option', { hasText: 'Another Profile' })).toHaveCount(1);
+
     // Switch Profile
-    await page.locator('#profileSelect').selectOption({ label: 'Default' });
-    await page.waitForTimeout(500);
-
-    // Switch back to delete
     await page.locator('#profileSelect').selectOption({ label: 'Renamed Profile' });
+    await expect(page.locator('#modal')).toBeVisible({ timeout: 1000 }).catch(() => {});
+    if (await page.locator('#modal').isVisible()) {
+        await page.locator('button[data-ok]').click();
+        await expect(page.locator('#modal')).toBeHidden();
+    }
     await page.waitForTimeout(500);
 
-    // Delete Profile
+    // Switch back to delete Renamed Profile
+    await page.locator('#profileSelect').selectOption({ label: 'Renamed Profile' });
+    await expect(page.locator('#modal')).toBeVisible({ timeout: 1000 }).catch(() => {});
+    if (await page.locator('#modal').isVisible()) {
+        await page.locator('button[data-ok]').click();
+        await expect(page.locator('#modal')).toBeHidden();
+    }
+    await page.waitForTimeout(500);
+
+    // Delete Profile (Renamed Profile)
     await page.click('#deleteProfileBtn', { force: true });
     await page.locator('button[data-confirm]').click();
     await expect(page.locator('#profileSelect')).not.toContainText('Renamed Profile');

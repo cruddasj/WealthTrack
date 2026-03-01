@@ -1135,7 +1135,11 @@ const clampDepositDay = (value, fallback = DEFAULT_DEPOSIT_DAY) => {
   if (raw > 31) return 31;
   return raw;
 };
-const daysInMonth = (year, monthIndex) => new Date(year, monthIndex + 1, 0).getDate();
+const daysInMonth = (year, monthIndex) => {
+  const m = monthIndex + 1;
+  if (m === 2) return (year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0)) ? 29 : 28;
+  return (m === 4 || m === 6 || m === 9 || m === 11) ? 30 : 31;
+};
 const buildDepositDate = (year, monthIndex, depositDay) => {
   const day = clampDepositDay(depositDay);
   const limit = daysInMonth(year, monthIndex);
@@ -1916,6 +1920,7 @@ function buildForecastScenarios(yearsOverride = null, opts = {}) {
   const includeBreakdown = !!(opts && opts.includeBreakdown);
   const years = yearsOverride && yearsOverride > 0 ? yearsOverride : getGoalHorizonYears();
   const labels = getForecastLabels(years);
+  const labelTimes = labels.map(d => d.getTime());
   const totalMonths = years * 12;
   const nowTs = Date.now();
 
@@ -1981,7 +1986,6 @@ function buildForecastScenarios(yearsOverride = null, opts = {}) {
   assets.forEach((asset) => {
     if (passiveOnly && asset?.includeInPassive === false) return;
     const startTimestamp = getStartDate(asset);
-    const startDateObj = new Date(startTimestamp);
     const nowTs = Date.now();
     const initialValue = asset.value || 0;
     const principal = calculateCurrentValue(asset);
@@ -2012,15 +2016,15 @@ function buildForecastScenarios(yearsOverride = null, opts = {}) {
     const arrLow = [];
     const arrHigh = [];
     for (let i = 0; i <= totalMonths; i++) {
-      const currentDate = labels[i];
-      if (!active && currentDate >= startDateObj) {
+      const currentTimestamp = labelTimes[i];
+      if (!active && currentTimestamp >= startTimestamp) {
         active = true;
         valueBase = initialValue;
         valueLow = initialValue;
         valueHigh = initialValue;
       }
       if (active && depositIterator) {
-        const catchUp = depositIterator.consumeBefore(currentDate.getTime());
+        const catchUp = depositIterator.consumeBefore(currentTimestamp);
         if (catchUp) {
           valueBase += catchUp;
           valueLow += catchUp;
@@ -2030,8 +2034,7 @@ function buildForecastScenarios(yearsOverride = null, opts = {}) {
       }
       while (eventIndex < assetEvents.length) {
         const evt = assetEvents[eventIndex];
-        const evtDate = new Date(evt.date);
-        if (currentDate < evtDate) break;
+        if (currentTimestamp < evt.date) break;
         if (evt.date < startTimestamp) {
           eventIndex++;
           continue;
@@ -2074,7 +2077,7 @@ function buildForecastScenarios(yearsOverride = null, opts = {}) {
         valueLow *= 1 + rateLow;
         valueHigh *= 1 + rateHigh;
         if (depositIterator) {
-          const monthEnd = labels[i + 1].getTime();
+          const monthEnd = labelTimes[i + 1];
           const addition = depositIterator.consumeBefore(monthEnd);
           if (addition) {
             valueBase += addition;

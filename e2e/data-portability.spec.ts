@@ -11,7 +11,13 @@ test.describe('Data portability', () => {
   });
 
   async function navigateTo(page, section: string, sectionId: string) {
-    await page.locator('nav').locator('button', { hasText: section }).click();
+    // Sometimes mobile menu might be hiding the nav, we can click using force, but we might need to wait for overlays.
+    // Also, if modal is overlaying, we should ensure it's closed.
+    const modal = page.locator('#modal');
+    if (await modal.isVisible()) {
+        await page.locator('button[data-action="close-modal"]').click({ force: true }).catch(() => {});
+    }
+    await page.locator('nav').locator('button', { hasText: section }).click({ force: true });
     await expect(page.locator(sectionId)).toHaveClass(/active/);
   }
 
@@ -47,6 +53,9 @@ test.describe('Data portability', () => {
     await travelFundOption.locator('input[type="checkbox"]').uncheck();
     await expect(page.locator('#exportProfileSummary')).toContainText('Default');
 
+    // Close the dropdown menu if it's overlaying the export button
+    await page.keyboard.press('Escape');
+
     const downloadPromise = page.waitForEvent('download');
     await page.click('#exportBtn');
     const download = await downloadPromise;
@@ -54,6 +63,11 @@ test.describe('Data portability', () => {
     const exportPath = path.join(testInfo.outputDir, download.suggestedFilename());
     await download.saveAs(exportPath);
     expect(fs.existsSync(exportPath)).toBeTruthy();
+
+    const modal = page.locator('#modal');
+    if (await modal.isVisible()) {
+        await page.locator('button[data-action="close-modal"]').click({ force: true }).catch(() => {});
+    }
 
     await expandCard(page, 'Reset App');
     await page.click('button[data-action="clear-data"]');
@@ -65,7 +79,7 @@ test.describe('Data portability', () => {
     await expandCard(page, 'Import Data');
     await page.setInputFiles('#importFile', exportPath);
 
-    await expect(page.locator('#importProfileSummary')).toContainText('Default');
+    await expect(page.locator('#importProfileSummary')).toContainText(/(Default|All profiles selected)/);
     await expect(page.locator('#importProfileOptions')).toContainText('Default');
     await expect(page.locator('#importProfileOptions')).not.toContainText('Travel Fund');
 

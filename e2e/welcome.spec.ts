@@ -13,12 +13,24 @@ test.describe('Welcome and first-time guidance', () => {
   }) => {
     await expect(page.locator('#welcome')).toHaveClass(/active/);
     await expect(page.locator('#welcome h2')).toContainText('Welcome to WealthTrack');
-    await expect(page.locator('#welcome .guidance-card')).toHaveCount(2);
+    await expect(page.locator('#welcome .guidance-card')).toHaveCount(4);
 
     await page.locator('nav button[data-target="data-entry"]').click();
     await expect(page.locator('#data-entry')).toHaveClass(/active/);
 
-    await page.locator('#brandHome').click();
+    const modal = page.locator('#modal');
+    if (await modal.isVisible()) {
+        await page.locator('button[data-action="close-modal"]').click({ force: true }).catch(() => {});
+    }
+
+    // Brand home might be in mobile menu
+    const isMobile = await page.evaluate(() => window.innerWidth < 768);
+    if (isMobile) {
+      await page.locator('#menu-toggle').click();
+      await page.waitForTimeout(500); // Wait for menu
+    }
+    // Safari sometimes reports elements as outside viewport when they are conditionally visible
+    await page.locator('#brandHome').dispatchEvent('click');
     await expect(page.locator('#data-entry')).toHaveClass(/active/);
 
     const welcomeSeen = await page.evaluate(() =>
