@@ -1,5 +1,13 @@
 [
   {
+    "version": "[NEXT_VERSION]",
+    "date": "[NEXT_DATE]",
+    "changes": [
+      "Refresh the welcome page guidance so it reflects newer planning features like net cash flow context, forecast comparisons, stress testing, and in-app update highlights.",
+      "Prepare this change for the 1.2.0 app release."
+    ]
+  },
+  {
     "version": "1.1.117",
     "date": "2026-03-01",
     "changes": [
