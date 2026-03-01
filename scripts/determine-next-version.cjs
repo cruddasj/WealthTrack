@@ -33,10 +33,10 @@ function compareVersions(left, right) {
 
 function findVersionsInChangelogMarkdown(content) {
   const versions = [];
-  const regex = /^##\s+(\d+\.\d+\.\d+)\s+-\s+/gm;
+  const regex = /^##\s+(?:\[(\d+\.\d+\.\d+)\]|(\d+\.\d+\.\d+))\s+-\s+/gm;
   let match;
   while ((match = regex.exec(content)) !== null) {
-    versions.push(match[1]);
+    versions.push(match[1] || match[2]);
   }
   return versions;
 }

@@ -33,6 +33,14 @@ describe('determine-next-version script', () => {
     expect(versions).toEqual(['1.1.123']);
   });
 
+  test('findVersionsInChangelogMarkdown supports bracketed versions', () => {
+    const versions = findVersionsInChangelogMarkdown(
+      '## [1.2.0] - 2026-03-01\n- Planned release.\n\n## [NEXT_VERSION] - [NEXT_DATE]\n- Upcoming release.',
+    );
+
+    expect(versions).toEqual(['1.2.0']);
+  });
+
   test('findVersionsInChangelogJson ignores placeholders and invalid versions', () => {
     const versions = findVersionsInChangelogJson(
       JSON.stringify([
