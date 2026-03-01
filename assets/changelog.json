@@ -1,7 +1,7 @@
 [
   {
-    "version": "[NEXT_VERSION]",
-    "date": "[NEXT_DATE]",
+    "version": "1.1.104",
+    "date": "2026-03-01",
     "changes": [
       "Expand Jest integration coverage with additional end-to-end style flows for snapshot comparison, profile deletion, and encrypted import handling.",
       "Raise enforced Jest global function coverage to 80% while preserving the existing statement threshold."
