@@ -1,9 +1,8 @@
-
-if (typeof module !== 'undefined' && typeof require !== 'undefined') {
-  const utils = require('./utilities.js');
+if (typeof module !== "undefined" && typeof require !== "undefined") {
+  const utils = require("./utilities.js");
   Object.assign(global, utils); // Make them available globally like in browser
 }
-'use strict';
+("use strict");
 // --- State ---
 let profiles = [];
 let activeProfile = null;
@@ -156,14 +155,19 @@ const setStoredFirstTimeHidden = (hidden) => {
 };
 
 function isFirstTimeContentHidden(profile = activeProfile) {
-  if (profile && Object.prototype.hasOwnProperty.call(profile, "firstTimeContentHidden")) {
+  if (
+    profile &&
+    Object.prototype.hasOwnProperty.call(profile, "firstTimeContentHidden")
+  ) {
     return !!profile.firstTimeContentHidden;
   }
   return getStoredFirstTimeHidden();
 }
 
 function updateFirstTimeContentVisibility(hidden) {
-  const welcomeBtn = document.querySelector('nav button[data-target="welcome"]');
+  const welcomeBtn = document.querySelector(
+    'nav button[data-target="welcome"]',
+  );
   if (welcomeBtn) welcomeBtn.classList.toggle("hidden", hidden);
   document
     .querySelectorAll("[data-first-time]")
@@ -186,13 +190,11 @@ function applyFirstTimeContentHidden(hidden, { persistProfile = true } = {}) {
 }
 
 function normalizeCardHeadings(root = document) {
-  root
-    .querySelectorAll(".card > h3, .card > h4")
-    .forEach((heading) => {
-      if (heading && heading.childElementCount === 0) {
-        heading.textContent = heading.textContent.trim();
-      }
-    });
+  root.querySelectorAll(".card > h3, .card > h4").forEach((heading) => {
+    if (heading && heading.childElementCount === 0) {
+      heading.textContent = heading.textContent.trim();
+    }
+  });
 }
 
 const IMPORT_PROFILE_DEFAULT_HINT =
@@ -403,8 +405,7 @@ function renderPassiveAssetPickerOptions() {
     passiveAssetPicker.toggle.disabled = true;
     if (passiveAssetPicker.selectAll)
       passiveAssetPicker.selectAll.disabled = true;
-    if (passiveAssetPicker.clear)
-      passiveAssetPicker.clear.disabled = true;
+    if (passiveAssetPicker.clear) passiveAssetPicker.clear.disabled = true;
     updatePassiveAssetSummary();
     closePassiveAssetPicker();
     return;
@@ -424,8 +425,7 @@ function renderPassiveAssetPickerOptions() {
   passiveAssetPicker.toggle.disabled = false;
   if (passiveAssetPicker.selectAll)
     passiveAssetPicker.selectAll.disabled = false;
-  if (passiveAssetPicker.clear)
-    passiveAssetPicker.clear.disabled = false;
+  if (passiveAssetPicker.clear) passiveAssetPicker.clear.disabled = false;
   updatePassiveAssetSummary();
 }
 
@@ -604,34 +604,26 @@ const sanitizeMobileNavSticky = (value, fallback = true) =>
 const readStoredMobileNavSticky = () =>
   getLocalStorageItem(LS.mobileNavSticky) !== "0";
 
-
-
 let currentThemeChoice = sanitizeThemeChoice(
   getLocalStorageItem(LS.themeChoice) || "default",
 );
 let isDarkMode = getLocalStorageItem(LS.theme) === "1";
-let isMobileNavSticky = sanitizeMobileNavSticky(readStoredMobileNavSticky(), true);
-
-
-
+let isMobileNavSticky = sanitizeMobileNavSticky(
+  readStoredMobileNavSticky(),
+  true,
+);
 
 const updateCurrencySymbols = () => {
-  document
-    .querySelectorAll("[data-currency-symbol]")
-    .forEach((el) => {
+  document.querySelectorAll("[data-currency-symbol]").forEach((el) => {
+    el.textContent = GBP_CURRENCY.symbol;
+  });
+  document.querySelectorAll("template").forEach((tpl) => {
+    const fragment = tpl.content;
+    if (!fragment) return;
+    fragment.querySelectorAll("[data-currency-symbol]").forEach((el) => {
       el.textContent = GBP_CURRENCY.symbol;
     });
-  document
-    .querySelectorAll("template")
-    .forEach((tpl) => {
-      const fragment = tpl.content;
-      if (!fragment) return;
-      fragment
-        .querySelectorAll("[data-currency-symbol]")
-        .forEach((el) => {
-          el.textContent = GBP_CURRENCY.symbol;
-        });
-    });
+  });
 };
 
 const currencyTick = (v) => fmtCurrency(v);
@@ -654,15 +646,6 @@ function applyMobileNavSticky(enabled, { persistChoice = true } = {}) {
   return normalized;
 }
 
-
-
-
-
-
-
-
-
-
 const SCENARIO_KEYS = ["low", "base", "high"];
 const SCENARIO_LABELS = {
   low: "Low Growth",
@@ -670,43 +653,12 @@ const SCENARIO_LABELS = {
   high: "High Growth",
 };
 
-
-
-
-
-
-
-
-
-
-
-
-
 let taxSettings = normalizeTaxSettings();
 let taxComputationCache = null;
-
 
 function invalidateTaxCache() {
   taxComputationCache = null;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 function computeAssetTaxDetails() {
   if (taxComputationCache) return taxComputationCache;
@@ -770,12 +722,7 @@ function computeAssetTaxDetails() {
       let taxDue = 0;
       let netRate = grossRate;
       let effectiveTaxRate = 0;
-      if (
-        meta?.totalsKey &&
-        meta.rateKey &&
-        baseValue > 0 &&
-        grossRate > 0
-      ) {
+      if (meta?.totalsKey && meta.rateKey && baseValue > 0 && grossRate > 0) {
         const ratio = taxableRatios[scenario][meta.totalsKey] || 0;
         taxableAmount = grossAmount * ratio;
         allowanceShare = grossAmount - taxableAmount;
@@ -850,8 +797,7 @@ function updateTaxSettingsUI() {
     return Number(num.toFixed(2)).toString();
   };
   const incomeInput = $("taxIncomeAllowance");
-  if (incomeInput)
-    incomeInput.value = formatInput(taxSettings.incomeAllowance);
+  if (incomeInput) incomeInput.value = formatInput(taxSettings.incomeAllowance);
   const dividendInput = $("taxDividendAllowance");
   if (dividendInput)
     dividendInput.value = formatInput(taxSettings.dividendAllowance);
@@ -870,7 +816,10 @@ function updateTaxSettingsUI() {
   updateTaxCalculatorInputs();
 }
 
-function applyTaxSettingsChanges({ refreshUI = false, clearCalculator = false } = {}) {
+function applyTaxSettingsChanges({
+  refreshUI = false,
+  clearCalculator = false,
+} = {}) {
   taxSettings = normalizeTaxSettings(taxSettings);
   if (activeProfile) {
     activeProfile.taxSettings = taxSettings;
@@ -930,9 +879,7 @@ function loadPassiveAssetSelection(profile) {
 
 function normalizeImportedProfile(profile, index = 0) {
   const baseId =
-    profile?.id != null && profile.id !== ""
-      ? profile.id
-      : Date.now() + index;
+    profile?.id != null && profile.id !== "" ? profile.id : Date.now() + index;
   return {
     id: baseId,
     name: profile?.name || `Profile ${index + 1}`,
@@ -950,10 +897,8 @@ function normalizeImportedProfile(profile, index = 0) {
     simEvents: ensureArray(profile?.simEvents),
     goalValue: profile?.goalValue || 0,
     goalTargetDate: profile?.goalTargetDate || null,
-    inflationRate:
-      profile?.inflationRate != null ? profile.inflationRate : 2.5,
-    fireExpenses:
-      profile?.fireExpenses != null ? profile.fireExpenses : 0,
+    inflationRate: profile?.inflationRate != null ? profile.inflationRate : 2.5,
+    fireExpenses: profile?.fireExpenses != null ? profile.fireExpenses : 0,
     fireExpensesFrequency:
       profile?.fireExpensesFrequency === "monthly" ? "monthly" : "annual",
     fireWithdrawalRate:
@@ -965,9 +910,7 @@ function normalizeImportedProfile(profile, index = 0) {
     fireForecastFrequency:
       profile?.fireForecastFrequency === "monthly" ? "monthly" : "annual",
     fireForecastInflation:
-      profile?.fireForecastInflation >= 0
-        ? profile.fireForecastInflation
-        : 2.5,
+      profile?.fireForecastInflation >= 0 ? profile.fireForecastInflation : 2.5,
     fireForecastRetireDate:
       profile?.fireForecastRetireDate != null &&
       isFinite(profile.fireForecastRetireDate)
@@ -980,7 +923,8 @@ function normalizeImportedProfile(profile, index = 0) {
       profile?.passiveIncomeAssetSelection ?? profile?.passiveIncomeSelection,
     ),
     firstTimeContentHidden:
-      profile && Object.prototype.hasOwnProperty.call(profile, "firstTimeContentHidden")
+      profile &&
+      Object.prototype.hasOwnProperty.call(profile, "firstTimeContentHidden")
         ? !!profile.firstTimeContentHidden
         : getStoredFirstTimeHidden(),
     mobileNavSticky: sanitizeMobileNavSticky(
@@ -1064,13 +1008,9 @@ function attemptImportPreview() {
         },
       );
     } else {
-      resetProfilePicker(
-        "import",
-        "Select a file to choose profiles",
-        {
-          hint: "Provide the file password if it was encrypted to preview its profiles.",
-        },
-      );
+      resetProfilePicker("import", "Select a file to choose profiles", {
+        hint: "Provide the file password if it was encrypted to preview its profiles.",
+      });
     }
   }
 }
@@ -1110,8 +1050,7 @@ function saveCurrentProfile() {
 function persist() {
   saveCurrentProfile();
   save(LS.profiles, profiles);
-  if (activeProfile)
-    localStorage.setItem(LS.activeProfile, activeProfile.id);
+  if (activeProfile) localStorage.setItem(LS.activeProfile, activeProfile.id);
 }
 
 function updateGoalButton() {
@@ -1137,8 +1076,9 @@ const clampDepositDay = (value, fallback = DEFAULT_DEPOSIT_DAY) => {
 };
 const daysInMonth = (year, monthIndex) => {
   const m = monthIndex + 1;
-  if (m === 2) return (year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0)) ? 29 : 28;
-  return (m === 4 || m === 6 || m === 9 || m === 11) ? 30 : 31;
+  if (m === 2)
+    return year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0) ? 29 : 28;
+  return m === 4 || m === 6 || m === 9 || m === 11 ? 30 : 31;
 };
 const buildDepositDate = (year, monthIndex, depositDay) => {
   const day = clampDepositDay(depositDay);
@@ -1194,7 +1134,11 @@ const createDepositIterator = (asset, referenceTime = Date.now()) => {
     let total = 0;
     let iterations = 0;
     const safetyLimit = 1000;
-    while (nextDeposit != null && nextDeposit < limit && iterations < safetyLimit) {
+    while (
+      nextDeposit != null &&
+      nextDeposit < limit &&
+      iterations < safetyLimit
+    ) {
       total += amountRaw;
       const candidate = addMonthsForDeposit(
         nextDeposit,
@@ -1239,7 +1183,9 @@ const parseDateInput = (value, fallback) => {
   // negative timezones.
   const isoMatch = /^\d{4}-\d{2}-\d{2}$/.test(value);
   if (isoMatch) {
-    const [year, month, day] = value.split("-").map((part) => parseInt(part, 10));
+    const [year, month, day] = value
+      .split("-")
+      .map((part) => parseInt(part, 10));
     if (
       Number.isInteger(year) &&
       Number.isInteger(month) &&
@@ -1365,7 +1311,12 @@ function loadDemoData() {
     const twoYears = new Date(new Date().getFullYear() + 2, 5, 1).getTime();
     simEvents = [
       { name: "Bonus", amount: 2000, isPercent: false, date: nextYear },
-      { name: "Car Purchase", amount: -10000, isPercent: false, date: twoYears },
+      {
+        name: "Car Purchase",
+        amount: -10000,
+        isPercent: false,
+        date: twoYears,
+      },
     ];
     scenarioEventsEnabled = true;
 
@@ -1378,8 +1329,12 @@ function loadDemoData() {
     const baseEnd = scenarios.base[lastIdx];
     const highEnd = scenarios.high[lastIdx];
     // Choose a goal 10% above Base but 5% below High (fallback to midpoint)
-    let proposed = Math.min(highEnd * 0.95, Math.max(baseEnd * 1.1, (baseEnd + highEnd) / 2));
-    if (!(proposed > baseEnd && proposed < highEnd)) proposed = (baseEnd + highEnd) * 0.6;
+    let proposed = Math.min(
+      highEnd * 0.95,
+      Math.max(baseEnd * 1.1, (baseEnd + highEnd) / 2),
+    );
+    if (!(proposed > baseEnd && proposed < highEnd))
+      proposed = (baseEnd + highEnd) * 0.6;
     // Round to nearest 1,000 for a clean number
     goalValue = Math.max(1000, Math.round(proposed / 1000) * 1000);
 
@@ -1417,9 +1372,12 @@ function loadDemoData() {
     refreshFireProjection();
     persist();
 
-    showAlert("Demo data loaded into the Demo profile. Only High growth meets the goal by your target year.", () => {
-      navigateTo("forecasts");
-    });
+    showAlert(
+      "Demo data loaded into the Demo profile. Only High growth meets the goal by your target year.",
+      () => {
+        navigateTo("forecasts");
+      },
+    );
   };
 
   const demo = (profiles || []).find(
@@ -1447,11 +1405,12 @@ function normalizeData() {
     a.dateAdded = added;
     const existingExplicit = toTimestamp(a.explicitStartDate);
     const start = toTimestamp(a.startDate);
-    const inferredExplicit = existingExplicit != null
-      ? existingExplicit
-      : start != null && start !== added
-        ? start
-        : null;
+    const inferredExplicit =
+      existingExplicit != null
+        ? existingExplicit
+        : start != null && start !== added
+          ? start
+          : null;
     a.explicitStartDate = inferredExplicit;
     a.startDate = start ?? added;
     if (a.originalDeposit == null) a.originalDeposit = 0;
@@ -1510,11 +1469,12 @@ function normalizeData() {
     l.dateAdded = added;
     const existingExplicit = toTimestamp(l.explicitStartDate);
     const start = toTimestamp(l.startDate);
-    const inferredExplicit = existingExplicit != null
-      ? existingExplicit
-      : start != null && start !== added
-        ? start
-        : null;
+    const inferredExplicit =
+      existingExplicit != null
+        ? existingExplicit
+        : start != null && start !== added
+          ? start
+          : null;
     l.explicitStartDate = inferredExplicit;
     l.startDate = start ?? added;
     if (l.originalPayment == null) l.originalPayment = 0;
@@ -1670,7 +1630,9 @@ function initProfiles() {
         (Array.isArray(previousSelection) &&
           Array.isArray(normalizedSelection) &&
           previousSelection.length === normalizedSelection.length &&
-          previousSelection.every((val, idx) => val === normalizedSelection[idx]));
+          previousSelection.every(
+            (val, idx) => val === normalizedSelection[idx],
+          ));
       if (!selectionsMatch || p.passiveIncomeSelection != null) {
         profilesUpdated = true;
       }
@@ -1706,13 +1668,9 @@ function initProfiles() {
   fireExpenses =
     activeProfile.fireExpenses != null ? activeProfile.fireExpenses : 0;
   fireExpensesFrequency =
-    activeProfile.fireExpensesFrequency === "monthly"
-      ? "monthly"
-      : "annual";
+    activeProfile.fireExpensesFrequency === "monthly" ? "monthly" : "annual";
   fireWithdrawalRate =
-    activeProfile.fireWithdrawalRate > 0
-      ? activeProfile.fireWithdrawalRate
-      : 4;
+    activeProfile.fireWithdrawalRate > 0 ? activeProfile.fireWithdrawalRate : 4;
   fireProjectionYears =
     activeProfile.fireProjectionYears && activeProfile.fireProjectionYears > 0
       ? activeProfile.fireProjectionYears
@@ -1722,9 +1680,7 @@ function initProfiles() {
       ? activeProfile.fireForecastCosts
       : 0;
   fireForecastFrequency =
-    activeProfile.fireForecastFrequency === "monthly"
-      ? "monthly"
-      : "annual";
+    activeProfile.fireForecastFrequency === "monthly" ? "monthly" : "annual";
   fireForecastInflation =
     activeProfile.fireForecastInflation >= 0
       ? activeProfile.fireForecastInflation
@@ -1897,7 +1853,6 @@ function calculatePassiveWorth(now = Date.now()) {
 
 // Generic FV with selectable compounding frequency (periods per year)
 
-
 // Forecast labels memo
 const getForecastLabels = (() => {
   const memo = new Map();
@@ -1918,9 +1873,10 @@ const getForecastLabels = (() => {
 function buildForecastScenarios(yearsOverride = null, opts = {}) {
   const passiveOnly = !!(opts && opts.passiveOnly);
   const includeBreakdown = !!(opts && opts.includeBreakdown);
-  const years = yearsOverride && yearsOverride > 0 ? yearsOverride : getGoalHorizonYears();
+  const years =
+    yearsOverride && yearsOverride > 0 ? yearsOverride : getGoalHorizonYears();
   const labels = getForecastLabels(years);
-  const labelTimes = labels.map(d => d.getTime());
+  const labelTimes = labels.map((d) => d.getTime());
   const totalMonths = years * 12;
   const nowTs = Date.now();
 
@@ -1930,9 +1886,7 @@ function buildForecastScenarios(yearsOverride = null, opts = {}) {
   const assetTotalsBase = includeBreakdown
     ? Array(labels.length).fill(0)
     : null;
-  const assetTotalsLow = includeBreakdown
-    ? Array(labels.length).fill(0)
-    : null;
+  const assetTotalsLow = includeBreakdown ? Array(labels.length).fill(0) : null;
   const assetTotalsHigh = includeBreakdown
     ? Array(labels.length).fill(0)
     : null;
@@ -2182,10 +2136,13 @@ function buildForecastScenarios(yearsOverride = null, opts = {}) {
       nextLiabilityForecasts.set(liability.dateAdded, arr);
     });
     if (liabilityPaymentTotals) {
-      cumulativeLiabilityPayments = Array(liabilityPaymentTotals.length).fill(0);
+      cumulativeLiabilityPayments = Array(liabilityPaymentTotals.length).fill(
+        0,
+      );
       for (let i = 0; i < liabilityPaymentTotals.length; i++) {
         const prev = i > 0 ? cumulativeLiabilityPayments[i - 1] : 0;
-        cumulativeLiabilityPayments[i] = prev + (liabilityPaymentTotals[i] || 0);
+        cumulativeLiabilityPayments[i] =
+          prev + (liabilityPaymentTotals[i] || 0);
       }
     }
   }
@@ -2335,7 +2292,9 @@ function buildForecastScenarios(yearsOverride = null, opts = {}) {
       const incomePortionLow = Array(labels.length).fill(0);
       const incomePortionHigh = Array(labels.length).fill(0);
       for (let i = 0; i < labels.length; i++) {
-        const payments = liabilityPaymentTotals ? liabilityPaymentTotals[i] || 0 : 0;
+        const payments = liabilityPaymentTotals
+          ? liabilityPaymentTotals[i] || 0
+          : 0;
         const expBase = expenseTotalsBase[i] || 0;
         const expLow = expenseTotalsLow[i] || 0;
         const expHigh = expenseTotalsHigh[i] || 0;
@@ -2432,7 +2391,9 @@ function buildForecastScenarios(yearsOverride = null, opts = {}) {
     low,
     high,
     minSeriesValue: Math.min(...base, ...low, ...high),
-    currentBaseline: passiveOnly ? calculatePassiveWorth() : calculateNetWorth(),
+    currentBaseline: passiveOnly
+      ? calculatePassiveWorth()
+      : calculateNetWorth(),
   };
   if (includeBreakdown) scenarios.assetDetails = assetDetails;
   if (!passiveOnly) lastForecastScenarios = scenarios;
@@ -2517,10 +2478,7 @@ function showPrompt(message, defaultValue, onConfirm) {
 }
 
 function showSnapshotDetails(snapshot) {
-  const tpl = document.importNode(
-    $("tpl-snapshot-details").content,
-    true,
-  );
+  const tpl = document.importNode($("tpl-snapshot-details").content, true);
   tpl.querySelector("[data-date]").textContent =
     `Snapshot taken on: ${new Date(snapshot.date).toLocaleString()}`;
   const list = tpl.querySelector("[data-list]");
@@ -2583,13 +2541,10 @@ function showEditAsset(index) {
     const explicitInput = f.querySelector("#editAssetStartDate")?.value;
     a.explicitStartDate = toTimestamp(explicitInput);
     a.startDate = a.explicitStartDate ?? getStartDate(a);
-    const ret =
-      parseFloat(f.querySelector("#editAssetReturn").value) || 0;
+    const ret = parseFloat(f.querySelector("#editAssetReturn").value) || 0;
     a.return = ret;
-    a.lowGrowth =
-      parseFloat(f.querySelector("#editLowGrowth").value) || ret;
-    a.highGrowth =
-      parseFloat(f.querySelector("#editHighGrowth").value) || ret;
+    a.lowGrowth = parseFloat(f.querySelector("#editLowGrowth").value) || ret;
+    a.highGrowth = parseFloat(f.querySelector("#editHighGrowth").value) || ret;
     a.monthlyDeposit = monthlyFrom(a.frequency, a.originalDeposit);
     const incCbx = f.querySelector("#editIncludePassive");
     a.includeInPassive = incCbx ? !!incCbx.checked : true;
@@ -2681,10 +2636,8 @@ function showEditLiability(index) {
   tpl.querySelector("#editLiabilityName").value = liab.name;
   tpl.querySelector("#editLiabilityValue").value = liab.value;
   tpl.querySelector("#editLiabilityInterest").value = liab.interest || 0;
-  tpl.querySelector("#editLiabilityPaymentAmount").value =
-    liab.originalPayment;
-  tpl.querySelector("#editLiabilityPaymentFrequency").value =
-    liab.frequency;
+  tpl.querySelector("#editLiabilityPaymentAmount").value = liab.originalPayment;
+  tpl.querySelector("#editLiabilityPaymentFrequency").value = liab.frequency;
   const editLiabilityStart = tpl.querySelector("#editLiabilityStartDate");
   if (editLiabilityStart)
     editLiabilityStart.value = toDateInputValue(liab.explicitStartDate);
@@ -2696,13 +2649,11 @@ function showEditLiability(index) {
     const l = liabilities[i];
     if (!l) return;
     l.name = f.querySelector("#editLiabilityName").value;
-    l.value =
-      parseFloat(f.querySelector("#editLiabilityValue").value) || 0;
+    l.value = parseFloat(f.querySelector("#editLiabilityValue").value) || 0;
     l.interest =
       parseFloat(f.querySelector("#editLiabilityInterest").value) || 0;
     l.originalPayment =
-      parseFloat(f.querySelector("#editLiabilityPaymentAmount").value) ||
-      0;
+      parseFloat(f.querySelector("#editLiabilityPaymentAmount").value) || 0;
     l.frequency = f.querySelector("#editLiabilityPaymentFrequency").value;
     l.monthlyPayment = monthlyFrom(l.frequency, l.originalPayment);
     const explicitInput = f.querySelector("#editLiabilityStartDate")?.value;
@@ -2720,7 +2671,8 @@ function showEditEvent(index) {
   const tpl = document.importNode($("tpl-edit-event").content, true);
   tpl.querySelector("#editEventIndex").value = index;
   tpl.querySelector("#editEventName").value = ev.name;
-  tpl.querySelector("#editEventDirection").value = ev.amount < 0 ? "loss" : "gain";
+  tpl.querySelector("#editEventDirection").value =
+    ev.amount < 0 ? "loss" : "gain";
   tpl.querySelector("#editEventAmount").value = Math.abs(ev.amount);
   tpl.querySelector("#editEventType").value = ev.isPercent
     ? "percent"
@@ -2739,20 +2691,15 @@ function showEditEvent(index) {
     const evt = simEvents[i];
     if (!evt) return;
     evt.name = f.querySelector("#editEventName").value;
-    const dir = f.querySelector("#editEventDirection").value === "loss"
-      ? "loss"
-      : "gain";
-    const editAmountRaw = parseFloat(
-      f.querySelector("#editEventAmount").value,
-    );
+    const dir =
+      f.querySelector("#editEventDirection").value === "loss" ? "loss" : "gain";
+    const editAmountRaw = parseFloat(f.querySelector("#editEventAmount").value);
     const editAmount = Number.isFinite(editAmountRaw)
       ? Math.abs(editAmountRaw)
       : NaN;
     evt.amount = dir === "loss" ? -editAmount : editAmount;
     evt.isPercent = f.querySelector("#editEventType").value === "percent";
-    evt.date = new Date(
-      f.querySelector("#editEventDate").value,
-    ).getTime();
+    evt.date = new Date(f.querySelector("#editEventDate").value).getTime();
     const assetVal = f.querySelector("#editEventAsset").value;
     if (assetVal) {
       evt.assetId = Number(assetVal);
@@ -2812,9 +2759,7 @@ function sortAssetsForView(list) {
       case "value":
         return ((a.value || 0) - (b.value || 0)) * dir;
       case "deposit":
-        return (
-          ((a.originalDeposit || 0) - (b.originalDeposit || 0)) * dir
-        );
+        return ((a.originalDeposit || 0) - (b.originalDeposit || 0)) * dir;
       case "return": {
         const al = a.lowGrowth ?? a.return ?? 0;
         const bl = b.lowGrowth ?? b.return ?? 0;
@@ -2838,9 +2783,7 @@ function sortAssetsForView(list) {
         return (ar - br) * dir;
       }
       case "current":
-        return (
-          (calculateCurrentValue(a) - calculateCurrentValue(b)) * dir
-        ); // fallback
+        return (calculateCurrentValue(a) - calculateCurrentValue(b)) * dir; // fallback
       default:
         return 0;
     }
@@ -2913,15 +2856,13 @@ const CHART_COLOURS = {
   green: "rgba(16,185,129,.5)",
 };
 
-
 // Plugin to add extra spacing beneath the legend (push chart down)
 const LegendPad = {
   id: "legendPad",
   beforeInit(chart, _args, opts) {
     const lg = chart?.legend;
     if (!lg || !lg.fit) return;
-    const extra =
-      opts && typeof opts.extra === "number" ? opts.extra : 24;
+    const extra = opts && typeof opts.extra === "number" ? opts.extra : 24;
     const originalFit = lg.fit;
     lg.fit = function fit() {
       originalFit.bind(lg)();
@@ -2967,6 +2908,8 @@ const baseLineOpts = {
       },
     },
     tooltip: {
+      bodyFont: { size: 11 },
+      titleFont: { size: 12 },
       callbacks: {
         label: (c) => `${c.dataset.label}: ${fmtCurrency(c.raw.y)}`,
       },
@@ -3037,7 +2980,7 @@ const attachMobileTooltipDismiss = (chart, canvas) => {
 const updateChartContainers = () => {
   const containers = document.querySelectorAll(".chart-container");
   if (!containers.length) return;
-  const targetHeight = Math.min(420, Math.max(260, window.innerHeight * 0.55));
+  const targetHeight = Math.min(600, Math.max(300, window.innerHeight * 0.65));
   const padding = window.innerWidth < 640 ? "8px 0" : "12px 0";
   containers.forEach((container) => {
     container.style.height = `${targetHeight}px`;
@@ -3061,10 +3004,7 @@ const ensureChart = (ref, ctx, cfg) => {
   return new Chart(ctx, cfg);
 };
 const pieTooltip = (context) => {
-  const total = context.chart.data.datasets[0].data.reduce(
-    (a, b) => a + b,
-    0,
-  );
+  const total = context.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
   const pct = ((context.raw / total) * 100).toFixed(2);
   return `${context.label}: ${fmtCurrency(context.raw)} (${pct}%)`;
 };
@@ -3143,7 +3083,12 @@ function updateChartTheme() {
   if (typeof Chart !== "undefined") {
     Chart.defaults.color = tick;
   }
-  [wealthChart, snapshotChart, assetBreakdownChart, futurePortfolioChart].forEach((c) => {
+  [
+    wealthChart,
+    snapshotChart,
+    assetBreakdownChart,
+    futurePortfolioChart,
+  ].forEach((c) => {
     if (!c) return;
     const { scales, plugins } = c.options;
     if (scales?.x) {
@@ -3155,9 +3100,7 @@ function updateChartTheme() {
       scales.y.ticks.color = tick;
     }
     if (plugins?.legend) {
-      plugins.legend.padding = isMobile
-        ? 8
-        : (plugins.legend.padding ?? 40);
+      plugins.legend.padding = isMobile ? 8 : (plugins.legend.padding ?? 40);
       if (plugins.legend.labels) {
         plugins.legend.labels.color = tick;
         plugins.legend.labels.padding = isMobile
@@ -3174,8 +3117,7 @@ function updateChartTheme() {
     if (c.data?.datasets) {
       c.data.datasets.forEach((d) => {
         if (!d?.label) return;
-        if (d.label.includes("Goal") || d.label.includes("Baseline"))
-          return;
+        if (d.label.includes("Goal") || d.label.includes("Baseline")) return;
         if (d.borderColor) d.pointBorderColor = d.borderColor;
         d.pointBorderWidth = 2;
       });
@@ -3251,9 +3193,7 @@ function applyProfilePreferences(profile) {
 
   const storedDarkRaw = localStorage.getItem(LS.theme);
   const darkPref =
-    profile?.darkMode == null
-      ? storedDarkRaw === "1"
-      : !!profile.darkMode;
+    profile?.darkMode == null ? storedDarkRaw === "1" : !!profile.darkMode;
   applyDarkMode(darkPref, { persistChoice: false, withTransition: false });
   if (profile) profile.darkMode = isDarkMode;
 
@@ -3341,8 +3281,7 @@ function updatePassiveIncome() {
     const netRate =
       ((taxDetails.detailMap.get(asset.dateAdded)?.base?.netRate ??
         parseFloat(asset?.return)) ||
-        0) /
-      100;
+        0) / 100;
     annualIncome += valueAtDate * netRate;
   });
 
@@ -3360,12 +3299,11 @@ function updateFireFormInputs() {
   const amountInput = $("fireLivingExpenses");
   const freqSelect = $("fireExpensesFrequency");
   const rateInput = $("fireWithdrawalRate");
-  const frequency =
-    fireExpensesFrequency === "monthly" ? "monthly" : "annual";
+  const frequency = fireExpensesFrequency === "monthly" ? "monthly" : "annual";
   if (freqSelect) freqSelect.value = frequency;
   if (rateInput) {
     const rateVal = fireWithdrawalRate > 0 ? fireWithdrawalRate : 4;
-    rateInput.value = Number((rateVal).toFixed(2)).toString();
+    rateInput.value = Number(rateVal.toFixed(2)).toString();
     rateInput.disabled = false;
   }
   if (amountInput) {
@@ -3379,22 +3317,17 @@ function updateFireFormInputs() {
   }
 }
 
-
-
 function updateFireForecastInputs() {
   const amountInput = $("fireForecastLivingCosts");
   const freqSelect = $("fireForecastFrequency");
   const inflationInput = $("fireForecastInflation");
   const retireInput = $("fireForecastRetireDate");
-  const frequency =
-    fireForecastFrequency === "monthly" ? "monthly" : "annual";
+  const frequency = fireForecastFrequency === "monthly" ? "monthly" : "annual";
   if (freqSelect) freqSelect.value = frequency;
   if (amountInput) {
     if (fireForecastCosts > 0) {
       const display =
-        frequency === "monthly"
-          ? fireForecastCosts / 12
-          : fireForecastCosts;
+        frequency === "monthly" ? fireForecastCosts / 12 : fireForecastCosts;
       amountInput.value = Number(display.toFixed(2)).toString();
     } else {
       amountInput.value = "";
@@ -3429,9 +3362,7 @@ function updateFireForecastCard() {
   if (resultsEl) resultsEl.innerHTML = "";
   if (summaryEl) summaryEl.textContent = "";
 
-  const passiveAssets = assets.filter(
-    (a) => a && a.includeInPassive !== false,
-  );
+  const passiveAssets = assets.filter((a) => a && a.includeInPassive !== false);
   if (passiveAssets.length === 0) {
     if (summaryEl)
       summaryEl.innerHTML =
@@ -3636,12 +3567,8 @@ function refreshFireProjection() {
   const r = Math.max(0.001, (withdrawalRate || 0) / 100);
   const fireNumber = annualExpenses / r;
   const netWorth = calculateNetWorth();
-  const progressPct =
-    fireNumber > 0 ? (netWorth / fireNumber) * 100 : 0;
-  const clampedProgress = Math.min(
-    100,
-    Math.max(0, progressPct),
-  );
+  const progressPct = fireNumber > 0 ? (netWorth / fireNumber) * 100 : 0;
+  const clampedProgress = Math.min(100, Math.max(0, progressPct));
   const rateLabel = withdrawalRate.toLocaleString(undefined, {
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
@@ -3715,13 +3642,9 @@ function switchProfile(id, { showFeedback = false } = {}) {
   fireExpenses =
     activeProfile.fireExpenses != null ? activeProfile.fireExpenses : 0;
   fireExpensesFrequency =
-    activeProfile.fireExpensesFrequency === "monthly"
-      ? "monthly"
-      : "annual";
+    activeProfile.fireExpensesFrequency === "monthly" ? "monthly" : "annual";
   fireWithdrawalRate =
-    activeProfile.fireWithdrawalRate > 0
-      ? activeProfile.fireWithdrawalRate
-      : 4;
+    activeProfile.fireWithdrawalRate > 0 ? activeProfile.fireWithdrawalRate : 4;
   fireProjectionYears =
     activeProfile.fireProjectionYears && activeProfile.fireProjectionYears > 0
       ? activeProfile.fireProjectionYears
@@ -3731,9 +3654,7 @@ function switchProfile(id, { showFeedback = false } = {}) {
       ? activeProfile.fireForecastCosts
       : 0;
   fireForecastFrequency =
-    activeProfile.fireForecastFrequency === "monthly"
-      ? "monthly"
-      : "annual";
+    activeProfile.fireForecastFrequency === "monthly" ? "monthly" : "annual";
   fireForecastInflation =
     activeProfile.fireForecastInflation >= 0
       ? activeProfile.fireForecastInflation
@@ -3918,14 +3839,14 @@ function updateEmptyStates() {
     simEvents.length > 0 ||
     hasGoalData;
   const isFresh = !hasAnyData;
-  const hasPortfolioInsights = hasAssets || hasIncome || hasExpenses || hasLiabs;
+  const hasPortfolioInsights =
+    hasAssets || hasIncome || hasExpenses || hasLiabs;
 
   // Save Snapshot gating
   const snapBtn = $("snapshotBtn");
   const snapHint = $("snapshotEmptyHint");
   if (snapBtn) snapBtn.disabled = !(hasAssets || hasLiabs);
-  if (snapHint)
-    snapHint.classList.toggle("hidden", hasAssets || hasLiabs);
+  if (snapHint) snapHint.classList.toggle("hidden", hasAssets || hasLiabs);
 
   // Export gating
   const expBtn = $("exportBtn");
@@ -3966,11 +3887,12 @@ function updateEmptyStates() {
     }
   }
   const snapshotSection = $("snapshots");
-  if (snapshotSection)
-    snapshotSection.classList.toggle("hidden", isFresh);
+  if (snapshotSection) snapshotSection.classList.toggle("hidden", isFresh);
 
   // Forecast navigation visibility
-  const forecastBtn = document.querySelector('nav button[data-target="forecasts"]');
+  const forecastBtn = document.querySelector(
+    'nav button[data-target="forecasts"]',
+  );
   if (forecastBtn) {
     const wasHidden = forecastBtn.classList.contains("hidden");
     forecastBtn.classList.toggle("hidden", !canForecast);
@@ -3984,7 +3906,9 @@ function updateEmptyStates() {
   }
 
   // Portfolio navigation visibility
-  const portfolioBtn = document.querySelector('nav button[data-target="portfolio-analysis"]');
+  const portfolioBtn = document.querySelector(
+    'nav button[data-target="portfolio-analysis"]',
+  );
   if (portfolioBtn) {
     const wasHidden = portfolioBtn.classList.contains("hidden");
     portfolioBtn.classList.toggle("hidden", !hasPortfolioInsights);
@@ -3993,11 +3917,16 @@ function updateEmptyStates() {
       setTimeout(() => portfolioBtn.classList.remove("fade-in"), 500);
     }
   }
-  if (!hasPortfolioInsights && $("portfolio-analysis").classList.contains("active")) {
+  if (
+    !hasPortfolioInsights &&
+    $("portfolio-analysis").classList.contains("active")
+  ) {
     navigateTo("data-entry");
   }
 
-  const snapshotsBtn = document.querySelector('nav button[data-target="snapshots"]');
+  const snapshotsBtn = document.querySelector(
+    'nav button[data-target="snapshots"]',
+  );
   const hasSnapshotAccess = !isFresh;
   if (snapshotsBtn) {
     const wasHidden = snapshotsBtn.classList.contains("hidden");
@@ -4329,7 +4258,7 @@ function renderTaxCalculatorOptions() {
       sensitivity: "base",
     }),
   );
-  const options = ["<option value=\"\">Manual entry</option>"];
+  const options = ['<option value="">Manual entry</option>'];
   opts.forEach((asset) => {
     options.push(`<option value="${asset.dateAdded}">${asset.name}</option>`);
   });
@@ -4380,7 +4309,8 @@ function updateStressAssetsButtonLabel() {
   if (!btn) return;
   const total = assets.length;
   const selected = stressAssetIds.size;
-  btn.textContent = selected === total ? "All Assets" : `${selected}/${total} Selected`;
+  btn.textContent =
+    selected === total ? "All Assets" : `${selected}/${total} Selected`;
 }
 
 function renderStressAssetOptions() {
@@ -4399,7 +4329,7 @@ function renderStressAssetOptions() {
   menu.innerHTML = opts
     .map(
       (a) =>
-        `<label class="flex items-center px-3 py-2"><input type="checkbox" data-id="${a.dateAdded}" class="mr-2" ${stressAssetIds.has(a.dateAdded) ? "checked" : ""}/><span>${a.name}</span></label>`
+        `<label class="flex items-center px-3 py-2"><input type="checkbox" data-id="${a.dateAdded}" class="mr-2" ${stressAssetIds.has(a.dateAdded) ? "checked" : ""}/><span>${a.name}</span></label>`,
     )
     .join("");
   updateStressAssetsButtonLabel();
@@ -4471,15 +4401,11 @@ function updateScenarioEventsUI() {
   if (status) {
     const baseClass = "text-xs font-medium mt-1 ";
     if (scenarioEventsEnabled) {
-      status.className =
-        baseClass + "text-green-600 dark:text-green-400";
-      status.textContent =
-        "Scenario Modelling events are enabled.";
+      status.className = baseClass + "text-green-600 dark:text-green-400";
+      status.textContent = "Scenario Modelling events are enabled.";
     } else {
-      status.className =
-        baseClass + "text-amber-600 dark:text-amber-400";
-      status.textContent =
-        "Scenario Modelling events are paused.";
+      status.className = baseClass + "text-amber-600 dark:text-amber-400";
+      status.textContent = "Scenario Modelling events are paused.";
     }
   }
 }
@@ -4536,18 +4462,16 @@ function renderEvents() {
 }
 
 function renderSnapshots() {
-  $("snapshotsHeader").style.display =
-    snapshots.length > 0 ? "block" : "none";
+  $("snapshotsHeader").style.display = snapshots.length > 0 ? "block" : "none";
 
   const visibleSnapshots = showAllSnapshots
     ? snapshots
     : snapshots.slice(-SNAPSHOT_DISPLAY_LIMIT);
 
   $("snapshotUl").innerHTML = visibleSnapshots
-    .map(
-      (s) => {
-        const i = snapshots.indexOf(s);
-        return `
+    .map((s) => {
+      const i = snapshots.indexOf(s);
+      return `
   <li class="py-3 border-b border-gray-200 last:border-b-0 dark:border-gray-700">
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <div>
@@ -4589,8 +4513,7 @@ function renderSnapshots() {
       </div>
     </div>
   </li>`;
-      },
-    )
+    })
     .join("");
 
   const snapshotSeeMore = $("snapshotSeeMore");
@@ -4751,7 +4674,11 @@ function updateProgressCheckResult() {
   const tolerance = 1;
   const diffAbs = fmtCurrency(Math.abs(diff));
   const diffSigned =
-    diff > tolerance ? `+${diffAbs}` : diff < -tolerance ? `-${diffAbs}` : diffAbs;
+    diff > tolerance
+      ? `+${diffAbs}`
+      : diff < -tolerance
+        ? `-${diffAbs}`
+        : diffAbs;
   const statusClass =
     diff > tolerance
       ? "text-green-600 dark:text-green-400"
@@ -4845,7 +4772,9 @@ function updateSnapshotComparisonCard() {
     if (modeSelect) {
       modeSelect.value = "current";
       modeSelect.disabled = true;
-      const snapshotOption = modeSelect.querySelector('option[value="snapshot"]');
+      const snapshotOption = modeSelect.querySelector(
+        'option[value="snapshot"]',
+      );
       if (snapshotOption) snapshotOption.disabled = true;
       modeSelect.onchange = null;
     }
@@ -5025,9 +4954,7 @@ function renderSnapshotComparisonResult() {
         ? `-${changeAbs}`
         : changeAbs;
   const pctChange =
-    baseSummary.total > 0
-      ? (totalChange / baseSummary.total) * 100
-      : null;
+    baseSummary.total > 0 ? (totalChange / baseSummary.total) * 100 : null;
   const pctLabel =
     pctChange == null ? "—" : fmtPercent(pctChange, { signed: true });
 
@@ -5092,7 +5019,9 @@ function renderSnapshotComparisonResult() {
     .sort((a, b) => {
       const shareDelta = Math.abs(b.shareDiff) - Math.abs(a.shareDiff);
       if (Math.abs(shareDelta) > 0.0001) return shareDelta;
-      const valueDelta = Math.abs(b.compareValue - b.baseValue) - Math.abs(a.compareValue - a.baseValue);
+      const valueDelta =
+        Math.abs(b.compareValue - b.baseValue) -
+        Math.abs(a.compareValue - a.baseValue);
       if (Math.abs(valueDelta) > 0.0001) return valueDelta;
       return a.name.localeCompare(b.name);
     });
@@ -5167,7 +5096,8 @@ function renderSnapshotComparisonResult() {
 }
 
 function updateWealthChart() {
-  const hasData = assets.length > 0 || liabilities.length > 0 || incomes.length > 0;
+  const hasData =
+    assets.length > 0 || liabilities.length > 0 || incomes.length > 0;
   $("wealthChart").hidden = !hasData;
   $("wealthChartMessage").hidden = hasData;
   if (!hasData) {
@@ -5181,14 +5111,8 @@ function updateWealthChart() {
     return;
   }
 
-  const {
-    labels,
-    base,
-    low,
-    high,
-    minSeriesValue,
-    currentBaseline,
-  } = buildForecastScenarios();
+  const { labels, base, low, high, minSeriesValue, currentBaseline } =
+    buildForecastScenarios();
 
   const datasets = [
     {
@@ -5297,10 +5221,7 @@ function updateWealthChart() {
       // Add a small buffer (6 months) beyond the hit point so the
       // marker isn't flush against the right edge and is easier to select.
       const bufferMonths = 6;
-      const paddedIdx = Math.min(
-        hitIdx + bufferMonths,
-        labels.length - 1,
-      );
+      const paddedIdx = Math.min(hitIdx + bufferMonths, labels.length - 1);
       xMax = labels[paddedIdx];
     }
   }
@@ -5341,6 +5262,8 @@ function updateWealthChart() {
         },
 
         tooltip: {
+          bodyFont: { size: 11 },
+          titleFont: { size: 12 },
           callbacks: {
             label: (c) => `${c.dataset.label}: ${fmtCurrency(c.raw.y)}`,
             footer: (items) => {
@@ -5364,9 +5287,8 @@ function updateWealthChart() {
                 )
                 .map((a) => {
                   const forecast =
-                    assetForecasts.get(a.dateAdded)?.[scenario]?.[
-                      dataIndex
-                    ] ?? 0;
+                    assetForecasts.get(a.dateAdded)?.[scenario]?.[dataIndex] ??
+                    0;
                   return `  ${a.name}: ${fmtCurrency(forecast)}`;
                 });
               const liabLines = [...liabilities]
@@ -5387,9 +5309,7 @@ function updateWealthChart() {
                   ? [`  Net cash flow: ${fmtCurrency(netCashFlow)}`]
                   : [];
               const lines = [...assetLines, ...liabLines, ...netLine];
-              return lines.length
-                ? ["\nForecast breakdown:", ...lines]
-                : [];
+              return lines.length ? ["\nForecast breakdown:", ...lines] : [];
             },
           },
         },
@@ -5473,7 +5393,8 @@ function getGoalHitsFromChart() {
   const ds = wealthChart.data?.datasets || [];
   const getHit = (arr) => {
     if (!arr) return null;
-    for (let i = 1; i < arr.length; i++) if (arr[i].y >= goalValue) return arr[i].x;
+    for (let i = 1; i < arr.length; i++)
+      if (arr[i].y >= goalValue) return arr[i].x;
     return null;
   };
   return {
@@ -5573,10 +5494,8 @@ function updateForecastRecommendationsCard(
           optimisticCandidate > 0 &&
           highValue >= optimisticCandidate;
         const notTooFar =
-          optimisticCandidate - average <=
-          Math.max(average * 0.12, 200000);
-        const meaningfulJump =
-          optimisticCandidate - milestoneTarget >= 50000;
+          optimisticCandidate - average <= Math.max(average * 0.12, 200000);
+        const meaningfulJump = optimisticCandidate - milestoneTarget >= 50000;
         if (hasHeadroom && notTooFar && meaningfulJump) {
           milestoneTarget = optimisticCandidate;
           milestoneSource = "stretch";
@@ -5697,14 +5616,22 @@ function updateForecastRecommendationsCard(
 }
 
 function updateInflationImpactCard() {
-  const lowEl = $("inflLow"), expEl = $("inflExpected"), highEl = $("inflHigh");
-  const lowYearEl = $("inflLowYear"), expYearEl = $("inflExpectedYear"), highYearEl = $("inflHighYear");
-  const lowEqEl = $("inflLowEq"), expEqEl = $("inflExpectedEq"), highEqEl = $("inflHighEq");
+  const lowEl = $("inflLow"),
+    expEl = $("inflExpected"),
+    highEl = $("inflHigh");
+  const lowYearEl = $("inflLowYear"),
+    expYearEl = $("inflExpectedYear"),
+    highYearEl = $("inflHighYear");
+  const lowEqEl = $("inflLowEq"),
+    expEqEl = $("inflExpectedEq"),
+    highEqEl = $("inflHighEq");
   const rateInput = $("inflationRate");
   const container = $("inflationImpactCard");
   if (!lowEl || !expEl || !highEl || !container) return;
-  const hasPrereq = goalValue > 0 && (assets.length > 0 || liabilities.length > 0);
-  const rate = Math.max(0, parseFloat(rateInput?.value ?? inflationRate) || 0) / 100;
+  const hasPrereq =
+    goalValue > 0 && (assets.length > 0 || liabilities.length > 0);
+  const rate =
+    Math.max(0, parseFloat(rateInput?.value ?? inflationRate) || 0) / 100;
   const hits = getGoalHitsFromChart();
   const now = new Date();
   const yearsTo = (date) => {
@@ -5741,9 +5668,18 @@ function updateInflationImpactCard() {
     }
   };
   if (!hasPrereq) {
-    if (lowEl) { lowEl.textContent = "N/A"; lowEl.className = "mt-1"; }
-    if (expEl) { expEl.textContent = "N/A"; expEl.className = "mt-1"; }
-    if (highEl) { highEl.textContent = "N/A"; highEl.className = "mt-1"; }
+    if (lowEl) {
+      lowEl.textContent = "N/A";
+      lowEl.className = "mt-1";
+    }
+    if (expEl) {
+      expEl.textContent = "N/A";
+      expEl.className = "mt-1";
+    }
+    if (highEl) {
+      highEl.textContent = "N/A";
+      highEl.className = "mt-1";
+    }
     if (lowYearEl) lowYearEl.textContent = "";
     if (expYearEl) expYearEl.textContent = "";
     if (highYearEl) highYearEl.textContent = "";
@@ -5761,9 +5697,18 @@ function updateInflationImpactCard() {
   setVal(lowEl, lowYearEl, hits?.low, lowV);
   setVal(expEl, expYearEl, hits?.base, baseV);
   setVal(highEl, highYearEl, hits?.high, highV);
-  if (lowEqEl) lowEqEl.textContent = hits?.low ? `Equivalent that year: ${fmtCurrency(lowF || 0)}` : "";
-  if (expEqEl) expEqEl.textContent = hits?.base ? `Equivalent that year: ${fmtCurrency(baseF || 0)}` : "";
-  if (highEqEl) highEqEl.textContent = hits?.high ? `Equivalent that year: ${fmtCurrency(highF || 0)}` : "";
+  if (lowEqEl)
+    lowEqEl.textContent = hits?.low
+      ? `Equivalent that year: ${fmtCurrency(lowF || 0)}`
+      : "";
+  if (expEqEl)
+    expEqEl.textContent = hits?.base
+      ? `Equivalent that year: ${fmtCurrency(baseF || 0)}`
+      : "";
+  if (highEqEl)
+    highEqEl.textContent = hits?.high
+      ? `Equivalent that year: ${fmtCurrency(highF || 0)}`
+      : "";
 }
 
 function renderAssetBreakdownChart() {
@@ -5802,7 +5747,7 @@ function renderAssetBreakdownChart() {
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      cutout: '70%',
+      cutout: "70%",
       plugins: {
         legend: { position: "right" },
         tooltip: { callbacks: { label: pieTooltip } },
@@ -5818,7 +5763,8 @@ function renderAssetBreakdownChart() {
     const total = rows.reduce((sum, row) => sum + row.value, 0);
     tableBody.innerHTML = rows
       .map((row) => {
-        const share = total > 0 ? ((row.value / total) * 100).toFixed(2) : "0.00";
+        const share =
+          total > 0 ? ((row.value / total) * 100).toFixed(2) : "0.00";
         return `<tr class="text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
       <td class="px-6 py-3 whitespace-nowrap">${row.name}</td>
       <td class="px-6 py-3 whitespace-nowrap font-semibold">${fmtCurrency(row.value)}</td>
@@ -5958,7 +5904,9 @@ function updateFuturePortfolioCard() {
         globalEvents.push(event);
       }
     });
-    adjustmentsByAsset.forEach((events) => events.sort((a, b) => a.date - b.date));
+    adjustmentsByAsset.forEach((events) =>
+      events.sort((a, b) => a.date - b.date),
+    );
     globalEvents.sort((a, b) => a.date - b.date);
     rawRows.forEach((row) => {
       if (!row?.id) return;
@@ -5966,7 +5914,9 @@ function updateFuturePortfolioCard() {
       if (!events || events.length === 0) return;
       let value = row.value;
       events.forEach((evt) => {
-        value = evt.isPercent ? value * (1 + evt.amount / 100) : value + evt.amount;
+        value = evt.isPercent
+          ? value * (1 + evt.amount / 100)
+          : value + evt.amount;
       });
       row.value = value;
     });
@@ -6018,7 +5968,8 @@ function updateFuturePortfolioCard() {
       .join("");
   }
 
-  if (tableContainer) tableContainer.classList.toggle("hidden", !sortedRows.length);
+  if (tableContainer)
+    tableContainer.classList.toggle("hidden", !sortedRows.length);
 
   if (chartRows.length === 0 && sortedRows.length) {
     const firstPositive = sortedRows.find((row) => row.value > 0);
@@ -6040,7 +5991,7 @@ function updateFuturePortfolioCard() {
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        cutout: '70%',
+        cutout: "70%",
         plugins: {
           legend: { position: "right" },
           tooltip: { callbacks: { label: pieTooltip } },
@@ -6121,7 +6072,7 @@ function updateSnapshotChart() {
         },
         x: {
           stacked: true,
-          grid: { display: false }
+          grid: { display: false },
         },
       },
       plugins: {
@@ -6140,8 +6091,6 @@ function updateSnapshotChart() {
   );
   updateChartTheme();
 }
-
-
 
 function generateRandomEvents(labels, assetIdSet = null) {
   if (!assets.length) return [];
@@ -6197,8 +6146,7 @@ function forecastGoalDate(
   [...baseEvents, ...extraEvents].forEach((ev) => {
     if (ev.assetId) {
       if (assetIds.has(ev.assetId)) {
-        if (!eventsByAsset.has(ev.assetId))
-          eventsByAsset.set(ev.assetId, []);
+        if (!eventsByAsset.has(ev.assetId)) eventsByAsset.set(ev.assetId, []);
         eventsByAsset.get(ev.assetId).push(ev);
       }
     } else {
@@ -6217,10 +6165,10 @@ function forecastGoalDate(
     const taxDetail = taxDetailMap.get(a.dateAdded);
     const netRate =
       scenario === "low"
-        ? taxDetail?.low?.netRate ?? getGrossRate(a, "low")
+        ? (taxDetail?.low?.netRate ?? getGrossRate(a, "low"))
         : scenario === "high"
-          ? taxDetail?.high?.netRate ?? getGrossRate(a, "high")
-          : taxDetail?.base?.netRate ?? getGrossRate(a, "base");
+          ? (taxDetail?.high?.netRate ?? getGrossRate(a, "high"))
+          : (taxDetail?.base?.netRate ?? getGrossRate(a, "base"));
     const r = (netRate || 0) / 100 / 12;
     for (let i = 0; i <= totalMonths; i++) {
       const currentDate = labels[i];
@@ -6279,9 +6227,7 @@ function runStressTest(iterations, scenario, assetIds) {
     if (!sample) sample = { events: randomEvents, hitDate };
   }
   const reached = results.filter((d) => !!d).sort((a, b) => a - b);
-  const pct = results.length
-    ? (reached.length / results.length) * 100
-    : 0;
+  const pct = results.length ? (reached.length / results.length) * 100 : 0;
   const median = reached.length
     ? reached[Math.floor(reached.length / 2)]
     : null;
@@ -6297,9 +6243,13 @@ function runStressTest(iterations, scenario, assetIds) {
 
 function navigateTo(viewId, options = {}) {
   const { expandCards = false } = options;
-  if (viewId === "forecasts" && assets.length === 0 && liabilities.length === 0) {
+  if (
+    viewId === "forecasts" &&
+    assets.length === 0 &&
+    liabilities.length === 0
+  ) {
     showAlert(
-      "Add at least one asset or liability to unlock Forecasts. Set a wealth goal to enable goal-specific insights."
+      "Add at least one asset or liability to unlock Forecasts. Set a wealth goal to enable goal-specific insights.",
     );
     viewId = "data-entry";
   }
@@ -6348,10 +6298,7 @@ function navigateTo(viewId, options = {}) {
       const firstTimeHidden = isFirstTimeContentHidden();
       // Show onboarding if user explicitly asked (pending) OR hasn't seen it before
       if (!firstTimeHidden && (pending || !seen)) {
-        const tpl = document.importNode(
-          $("tpl-onboard-data").content,
-          true,
-        );
+        const tpl = document.importNode($("tpl-onboard-data").content, true);
         openModalNode(tpl);
         localStorage.setItem(LS.onboardPending, "0");
         localStorage.setItem(LS.onboardSeen, "1");
@@ -6434,9 +6381,7 @@ function setupCardCollapsing() {
 
       // Ensure a stable id to persist collapse state
       const title = header.textContent || `card-${idx + 1}`;
-      const baseId = card.id
-        ? `id:${card.id}`
-        : `title:${sanitize(title)}`;
+      const baseId = card.id ? `id:${card.id}` : `title:${sanitize(title)}`;
       const key = storageKey(`cardCollapsed:${baseId}`);
       card.dataset.collapseKey = key;
 
@@ -6596,28 +6541,26 @@ function setupCardCollapsing() {
 
 function expandSectionCards(section) {
   if (!section) return;
-  section
-    .querySelectorAll(".card.is-collapsible")
-    .forEach((card) => {
-      if (!card.classList.contains("collapsed")) return;
-      const key = card.dataset.collapseKey;
-      let hasStoredPreference = false;
-      if (key) {
-        try {
-          const stored = localStorage.getItem(key);
-          hasStoredPreference = stored === "0" || stored === "1";
-        } catch (_) {}
-      }
-      if (hasStoredPreference) return;
-      if (typeof card._wtExpandWithoutPersist === "function") {
-        card._wtExpandWithoutPersist();
-        return;
-      }
-      const header = card.querySelector("h3, h4");
-      if (header) {
-        header.dispatchEvent(new Event("click", { bubbles: true }));
-      }
-    });
+  section.querySelectorAll(".card.is-collapsible").forEach((card) => {
+    if (!card.classList.contains("collapsed")) return;
+    const key = card.dataset.collapseKey;
+    let hasStoredPreference = false;
+    if (key) {
+      try {
+        const stored = localStorage.getItem(key);
+        hasStoredPreference = stored === "0" || stored === "1";
+      } catch (_) {}
+    }
+    if (hasStoredPreference) return;
+    if (typeof card._wtExpandWithoutPersist === "function") {
+      card._wtExpandWithoutPersist();
+      return;
+    }
+    const header = card.querySelector("h3, h4");
+    if (header) {
+      header.dispatchEvent(new Event("click", { bubbles: true }));
+    }
+  });
 }
 
 // Resize sidebar brand logo to match title width (desktop)
@@ -6629,7 +6572,11 @@ function sizeBrandLogo() {
     const rect = title.getBoundingClientRect();
     const measuredWidth = rect && Number.isFinite(rect.width) ? rect.width : 0;
     const w =
-      measuredWidth || title.offsetWidth || title.scrollWidth || logo.offsetWidth || 0;
+      measuredWidth ||
+      title.offsetWidth ||
+      title.scrollWidth ||
+      logo.offsetWidth ||
+      0;
     logo.style.height = "auto";
     if (w > 0) {
       logo.style.width = w + "px";
@@ -6639,14 +6586,6 @@ function sizeBrandLogo() {
     logo.style.marginBottom = "4px";
   } catch (_) {}
 }
-
-
-
-
-
-
-
-
 
 let controllerAppVersionCache = null;
 let controllerAppVersionRequest = null;
@@ -6687,7 +6626,10 @@ async function requestControllerAppVersion(timeoutMs = 3000) {
         const cached = updateControllerAppVersionCache(value);
         resolve(cached || null);
       };
-      const timeoutId = setTimeout(() => finalize(null), Math.max(0, timeoutMs || 0));
+      const timeoutId = setTimeout(
+        () => finalize(null),
+        Math.max(0, timeoutMs || 0),
+      );
       channel.port1.onmessage = (event) => {
         clearTimeout(timeoutId);
         const { data } = event || {};
@@ -6723,13 +6665,16 @@ async function requestControllerAppVersion(timeoutMs = 3000) {
 function getControllerVersionFromServiceWorker({ refresh = false } = {}) {
   if (!("serviceWorker" in navigator)) return Promise.resolve(null);
   if (!refresh) {
-    if (controllerAppVersionCache) return Promise.resolve(controllerAppVersionCache);
+    if (controllerAppVersionCache)
+      return Promise.resolve(controllerAppVersionCache);
     if (controllerAppVersionRequest) return controllerAppVersionRequest;
   }
-  controllerAppVersionRequest = requestControllerAppVersion().then((version) => {
-    controllerAppVersionRequest = null;
-    return version ?? controllerAppVersionCache;
-  });
+  controllerAppVersionRequest = requestControllerAppVersion().then(
+    (version) => {
+      controllerAppVersionRequest = null;
+      return version ?? controllerAppVersionCache;
+    },
+  );
   return controllerAppVersionRequest;
 }
 
@@ -6737,11 +6682,7 @@ if (typeof navigator !== "undefined" && "serviceWorker" in navigator) {
   try {
     navigator.serviceWorker.addEventListener("message", (event) => {
       const { data } = event || {};
-      if (
-        data &&
-        data.type === "VERSION" &&
-        typeof data.version === "string"
-      ) {
+      if (data && data.type === "VERSION" && typeof data.version === "string") {
         updateControllerAppVersionCache(data.version);
       }
     });
@@ -6765,7 +6706,9 @@ async function fetchChangelogEntries() {
       `Unexpected changelog response status: ${response ? response.status : "no-response"}`,
     );
   }
-  const contentType = (response.headers?.get("content-type") || "").toLowerCase();
+  const contentType = (
+    response.headers?.get("content-type") || ""
+  ).toLowerCase();
   if (!contentType.includes("json")) {
     throw new Error(
       `Changelog response was not JSON (content-type: ${contentType || "unknown"})`,
@@ -6814,8 +6757,6 @@ function filterChangelogForUpdate(entries, previousVersion, latestVersion) {
     })
     .sort((a, b) => compareAppVersions(b.version, a.version));
 }
-
-
 
 function readSafeAreaTop() {
   if (!document?.body) return 0;
@@ -6950,8 +6891,7 @@ function handleFormSubmit(e) {
         name: form.liabilityName.value,
         value: parseFloat(form.liabilityValue.value) || 0,
         interest: parseFloat(form.liabilityInterest.value) || 0,
-        originalPayment:
-          parseFloat(form.liabilityPaymentAmount.value) || 0,
+        originalPayment: parseFloat(form.liabilityPaymentAmount.value) || 0,
         frequency: form.liabilityPaymentFrequency.value,
         dateAdded: Date.now(),
       };
@@ -6977,8 +6917,7 @@ function handleFormSubmit(e) {
         : NaN;
       const ev = {
         name: form.eventName.value,
-        amount:
-          direction === "loss" ? -normalizedAmount : normalizedAmount,
+        amount: direction === "loss" ? -normalizedAmount : normalizedAmount,
         isPercent: form.eventType.value === "percent",
         date: new Date(form.eventDate.value).getTime(),
       };
@@ -6996,22 +6935,17 @@ function handleFormSubmit(e) {
     case "fireForm": {
       const amount = parseFloat(form.fireLivingExpenses.value);
       const frequency =
-        form.fireExpensesFrequency.value === "monthly"
-          ? "monthly"
-          : "annual";
+        form.fireExpensesFrequency.value === "monthly" ? "monthly" : "annual";
       const rate = parseFloat(form.fireWithdrawalRate.value);
       if (!(amount > 0)) {
-        showAlert(
-          "Enter your living costs to calculate your FIRE target.",
-        );
+        showAlert("Enter your living costs to calculate your FIRE target.");
         break;
       }
       if (!(rate > 0)) {
         showAlert("Safe withdrawal rate must be greater than zero.");
         break;
       }
-      const annualExpenses =
-        frequency === "monthly" ? amount * 12 : amount;
+      const annualExpenses = frequency === "monthly" ? amount * 12 : amount;
       fireExpenses = annualExpenses;
       fireExpensesFrequency = frequency;
       fireWithdrawalRate = rate;
@@ -7027,13 +6961,9 @@ function handleFormSubmit(e) {
     case "fireForecastForm": {
       const amount = parseFloat(form.fireForecastLivingCosts.value);
       const frequency =
-        form.fireForecastFrequency.value === "monthly"
-          ? "monthly"
-          : "annual";
+        form.fireForecastFrequency.value === "monthly" ? "monthly" : "annual";
       if (!(amount > 0)) {
-        showAlert(
-          "Enter your living costs to project your FIRE readiness.",
-        );
+        showAlert("Enter your living costs to project your FIRE readiness.");
         break;
       }
       const annual = frequency === "monthly" ? amount * 12 : amount;
@@ -7047,7 +6977,11 @@ function handleFormSubmit(e) {
         const parts = retireInput.split("-");
         if (parts.length === 3) {
           const [year, month, day] = parts.map(Number);
-          if (Number.isFinite(year) && Number.isFinite(month) && Number.isFinite(day)) {
+          if (
+            Number.isFinite(year) &&
+            Number.isFinite(month) &&
+            Number.isFinite(day)
+          ) {
             const retireDate = new Date(year, month - 1, day);
             retireDate.setHours(0, 0, 0, 0);
             if (!Number.isNaN(retireDate.getTime())) {
@@ -7168,7 +7102,8 @@ function handleFormSubmit(e) {
         const detail = taxDetails.detailMap.get(asset.dateAdded);
         const scenarioDetail =
           (detail && detail[scenario]) || detail?.base || detail?.expected;
-        const grossRate = scenarioDetail?.grossRate ?? getGrossRate(asset, "base");
+        const grossRate =
+          scenarioDetail?.grossRate ?? getGrossRate(asset, "base");
         const netRate = scenarioDetail?.netRate ?? grossRate;
         const annualGross = scenarioDetail?.annualGross ?? 0;
         const annualTax = scenarioDetail?.annualTax ?? 0;
@@ -7177,10 +7112,9 @@ function handleFormSubmit(e) {
         const value = calculateCurrentValue(asset);
         const netAmount = annualGross - annualTax;
         const meta = metaFromTreatment(asset.taxTreatment);
-        const totals =
-          meta?.totalsKey
-            ? taxDetails.totals[scenario]?.[meta.totalsKey] || null
-            : null;
+        const totals = meta?.totalsKey
+          ? taxDetails.totals[scenario]?.[meta.totalsKey] || null
+          : null;
         const allowanceNote = (() => {
           if (!meta?.totalsKey || !totals) return meta?.info || "";
           const covered = totals.allowanceCovered || 0;
@@ -7300,17 +7234,24 @@ function handleFormSubmit(e) {
         freqInput?.value === "monthly" || freqInput?.value === "annual"
           ? freqInput.value
           : "annual";
-      const annualIncome = frequency === "monthly" ? incomeValue * 12 : incomeValue;
+      const annualIncome =
+        frequency === "monthly" ? incomeValue * 12 : incomeValue;
       const bonusValue = Number.parseFloat(bonusInput?.value);
-      const bonus = Number.isFinite(bonusValue) && bonusValue > 0 ? bonusValue : 0;
+      const bonus =
+        Number.isFinite(bonusValue) && bonusValue > 0 ? bonusValue : 0;
       const sacrificeRaw = Number.parseFloat(sacrificeInput?.value);
-      const sacrificeType = sacrificeTypeInput?.value === "percent" ? "percent" : "amount";
-      const contributionMethod = pensionMethodInput?.value === "relief" ? "relief" : "sacrifice";
+      const sacrificeType =
+        sacrificeTypeInput?.value === "percent" ? "percent" : "amount";
+      const contributionMethod =
+        pensionMethodInput?.value === "relief" ? "relief" : "sacrifice";
       const pensionGrossContribution = (() => {
-        const normalized = Number.isFinite(sacrificeRaw) && sacrificeRaw > 0 ? sacrificeRaw : 0;
+        const normalized =
+          Number.isFinite(sacrificeRaw) && sacrificeRaw > 0 ? sacrificeRaw : 0;
         if (!normalized) return 0;
         const base =
-          sacrificeType === "percent" ? (annualIncome * Math.min(normalized, 100)) / 100 : normalized;
+          sacrificeType === "percent"
+            ? (annualIncome * Math.min(normalized, 100)) / 100
+            : normalized;
         return Math.min(annualIncome, base);
       })();
       const grossAfterPension =
@@ -7324,15 +7265,23 @@ function handleFormSubmit(e) {
           ? pensionGrossContribution - reliefTopUp
           : pensionGrossContribution;
       const taxCode = (taxCodeInput?.value || "1257L").trim();
-      const personalAllowance = calculatePersonalAllowance(taxCode, grossAfterPension);
+      const personalAllowance = calculatePersonalAllowance(
+        taxCode,
+        grossAfterPension,
+      );
       const taxableIncome = Math.max(0, grossAfterPension - personalAllowance);
-      const incomeTax = calculateUkIncomeTax(grossAfterPension, personalAllowance, taxYearCfg);
+      const incomeTax = calculateUkIncomeTax(
+        grossAfterPension,
+        personalAllowance,
+        taxYearCfg,
+      );
       const nationalInsurance = calculateUkNi(grossAfterPension, taxYearCfg);
       const studentLoan = calculateStudentLoanRepayment(
         grossAfterPension,
         studentLoanInput?.value || "none",
       );
-      const takeHomeBeforePension = grossAfterPension - incomeTax - nationalInsurance - studentLoan;
+      const takeHomeBeforePension =
+        grossAfterPension - incomeTax - nationalInsurance - studentLoan;
       const takeHomeAnnual =
         contributionMethod === "relief"
           ? takeHomeBeforePension - netPensionOutflow
@@ -7364,17 +7313,24 @@ function handleFormSubmit(e) {
         personalAllowanceWithBonus,
         taxYearCfg,
       );
-      const nationalInsuranceWithBonus = calculateUkNi(grossAfterPensionWithBonus, taxYearCfg);
+      const nationalInsuranceWithBonus = calculateUkNi(
+        grossAfterPensionWithBonus,
+        taxYearCfg,
+      );
       const studentLoanWithBonus = calculateStudentLoanRepayment(
         grossAfterPensionWithBonus,
         studentLoanInput?.value || "none",
       );
       const bonusTaxDelta = Math.max(0, incomeTaxWithBonus - incomeTax);
-      const bonusNiDelta = Math.max(0, nationalInsuranceWithBonus - nationalInsurance);
+      const bonusNiDelta = Math.max(
+        0,
+        nationalInsuranceWithBonus - nationalInsurance,
+      );
       const bonusLoanDelta = Math.max(0, studentLoanWithBonus - studentLoan);
       const bonusNet = bonus - (bonusTaxDelta + bonusNiDelta + bonusLoanDelta);
       const baseMonthlyTakeHome = takeHomeAnnual / 12;
-      const bonusPeriodTakeHome = bonus > 0 ? baseMonthlyTakeHome + bonusNet : null;
+      const bonusPeriodTakeHome =
+        bonus > 0 ? baseMonthlyTakeHome + bonusNet : null;
 
       const monthlyThresholds = {
         basicLimit: (taxYearCfg?.basicLimit ?? 50270) / 12,
@@ -7383,16 +7339,26 @@ function handleFormSubmit(e) {
         upperNiThreshold: (taxYearCfg?.upperNiThreshold ?? 50270) / 12,
       };
       const monthlyStudentLoanThreshold =
-        (STUDENT_LOAN_PLANS[studentLoanInput?.value || "none"]?.threshold || Infinity) / 12;
+        (STUDENT_LOAN_PLANS[studentLoanInput?.value || "none"]?.threshold ||
+          Infinity) / 12;
       const smoothingGrossMonthly =
         contributionMethod === "sacrifice"
-          ? Math.max(0, annualIncome / 12 + bonus - pensionGrossContribution / 12)
+          ? Math.max(
+              0,
+              annualIncome / 12 + bonus - pensionGrossContribution / 12,
+            )
           : annualIncome / 12 + bonus;
       const smoothingPersonalAllowance = personalAllowanceWithBonus / 12;
       const smoothingIncomeTax = bonus
-        ? calculateUkIncomeTax(smoothingGrossMonthly, smoothingPersonalAllowance, monthlyThresholds)
+        ? calculateUkIncomeTax(
+            smoothingGrossMonthly,
+            smoothingPersonalAllowance,
+            monthlyThresholds,
+          )
         : 0;
-      const smoothingNi = bonus ? calculateUkNi(smoothingGrossMonthly, monthlyThresholds) : 0;
+      const smoothingNi = bonus
+        ? calculateUkNi(smoothingGrossMonthly, monthlyThresholds)
+        : 0;
       const smoothingStudentLoan =
         bonus && smoothingGrossMonthly > monthlyStudentLoanThreshold
           ? (smoothingGrossMonthly - monthlyStudentLoanThreshold) *
@@ -7401,20 +7367,40 @@ function handleFormSubmit(e) {
       const smoothingPensionAdjustment =
         contributionMethod === "relief" ? netPensionOutflow / 12 : 0;
       const smoothingBonusPeriodTakeHome = bonus
-        ? smoothingGrossMonthly - smoothingIncomeTax - smoothingNi - smoothingStudentLoan - smoothingPensionAdjustment
+        ? smoothingGrossMonthly -
+          smoothingIncomeTax -
+          smoothingNi -
+          smoothingStudentLoan -
+          smoothingPensionAdjustment
         : null;
 
       const rows = [
-        fmtRow("Gross income", annualIncome, bonus > 0 ? annualIncome / 12 + bonus : null),
-        fmtRow("Pension contributions", pensionGrossContribution, bonus > 0 ? pensionGrossContribution / 12 : null),
+        fmtRow(
+          "Gross income",
+          annualIncome,
+          bonus > 0 ? annualIncome / 12 + bonus : null,
+        ),
+        fmtRow(
+          "Pension contributions",
+          pensionGrossContribution,
+          bonus > 0 ? pensionGrossContribution / 12 : null,
+        ),
       ];
       if (reliefTopUp > 0)
-        rows.push(fmtRow("HMRC top-up (relief at source)", reliefTopUp, bonus > 0 ? reliefTopUp / 12 : null));
+        rows.push(
+          fmtRow(
+            "HMRC top-up (relief at source)",
+            reliefTopUp,
+            bonus > 0 ? reliefTopUp / 12 : null,
+          ),
+        );
       rows.push(
         fmtRow(
           "Taxable income",
           taxableIncome,
-          bonus > 0 ? Math.max(0, smoothingGrossMonthly - smoothingPersonalAllowance) : null,
+          bonus > 0
+            ? Math.max(0, smoothingGrossMonthly - smoothingPersonalAllowance)
+            : null,
         ),
         fmtRow(
           "Income tax",
@@ -7426,12 +7412,12 @@ function handleFormSubmit(e) {
           nationalInsurance,
           bonus > 0 ? nationalInsurance / 12 + bonusNiDelta : null,
         ),
-        fmtRow("Student loan", studentLoan, bonus > 0 ? studentLoan / 12 + bonusLoanDelta : null),
         fmtRow(
-          "Take home",
-          takeHomeAnnual,
-          bonusPeriodTakeHome,
+          "Student loan",
+          studentLoan,
+          bonus > 0 ? studentLoan / 12 + bonusLoanDelta : null,
         ),
+        fmtRow("Take home", takeHomeAnnual, bonusPeriodTakeHome),
       );
       const pensionNote =
         contributionMethod === "relief"
@@ -7444,7 +7430,9 @@ function handleFormSubmit(e) {
             )}.`
           : "Salary sacrifice contributions are taken from gross pay before tax and National Insurance.";
       const smoothingDelta =
-        bonus && smoothingBonusPeriodTakeHome != null && bonusPeriodTakeHome != null
+        bonus &&
+        smoothingBonusPeriodTakeHome != null &&
+        bonusPeriodTakeHome != null
           ? bonusPeriodTakeHome - smoothingBonusPeriodTakeHome
           : 0;
       const showSmoothingNote = bonus > 2500 && smoothingDelta > 0;
@@ -7537,7 +7525,9 @@ function handleFormSubmit(e) {
 
     case "passiveIncomeTargetForm": {
       const income = +$("passive-income-amount").value;
-      const frequency = ($("passive-income-frequency")?.value || "monthly").toLowerCase();
+      const frequency = (
+        $("passive-income-frequency")?.value || "monthly"
+      ).toLowerCase();
       const returnRate = +$("passive-income-return").value;
       const resultEl = $("passiveIncomeTargetResult");
       const periodsPerYear = {
@@ -7552,7 +7542,12 @@ function handleFormSubmit(e) {
         monthly: "per month",
         yearly: "per year",
       };
-      if (!Number.isFinite(income) || income <= 0 || !Number.isFinite(returnRate) || returnRate <= 0) {
+      if (
+        !Number.isFinite(income) ||
+        income <= 0 ||
+        !Number.isFinite(returnRate) ||
+        returnRate <= 0
+      ) {
         resultEl.innerHTML =
           '<p class="text-sm text-gray-700 dark:text-gray-300">Enter a target income above zero and an annual return rate greater than 0%.</p>';
         break;
@@ -7648,8 +7643,7 @@ function handleFormSubmit(e) {
         r = +$("ci-rate").value,
         t = +$("ci-years").value,
         c = +$("ci-contribution").value;
-      const freq =
-        ($("ci-frequency") && $("ci-frequency").value) || "monthly";
+      const freq = ($("ci-frequency") && $("ci-frequency").value) || "monthly";
       const perYearMap = {
         daily: 365,
         weekly: 52,
@@ -7895,9 +7889,8 @@ window.addEventListener("load", () => {
       showAlert("At least one profile is required.");
       return;
     }
-    showConfirm(
-      `Delete profile "${activeProfile?.name || ""}"?`,
-      () => deleteActiveProfile(),
+    showConfirm(`Delete profile "${activeProfile?.name || ""}"?`, () =>
+      deleteActiveProfile(),
     );
   };
   ["addProfileBtn", "addProfileBtnMobile"].forEach((id) => {
@@ -8013,9 +8006,7 @@ window.addEventListener("load", () => {
       renderAssets();
       return;
     }
-    const stressTh = e.target.closest(
-      "#stressEventsTableHeader th[data-sort]",
-    );
+    const stressTh = e.target.closest("#stressEventsTableHeader th[data-sort]");
     if (stressTh) {
       const key = stressTh.dataset.sort;
       if (stressSort.key === key)
@@ -8080,17 +8071,14 @@ window.addEventListener("load", () => {
           showEditLiability(+index);
           break;
         case "delete-asset":
-          showConfirm(
-            "Are you sure you want to delete this asset?",
-            () => {
-              assets.splice(+index, 1);
-              invalidateTaxCache();
-              renderAssets();
-              renderEvents();
-              updateWealthChart();
-              updateEmptyStates();
-            },
-          );
+          showConfirm("Are you sure you want to delete this asset?", () => {
+            assets.splice(+index, 1);
+            invalidateTaxCache();
+            renderAssets();
+            renderEvents();
+            updateWealthChart();
+            updateEmptyStates();
+          });
           break;
         case "delete-income":
           showConfirm(
@@ -8104,26 +8092,20 @@ window.addEventListener("load", () => {
           );
           break;
         case "delete-expense":
-          showConfirm(
-            "Are you sure you want to delete this expense?",
-            () => {
-              expenses.splice(+index, 1);
-              renderExpenses();
-              updateWealthChart();
-              updateEmptyStates();
-            },
-          );
+          showConfirm("Are you sure you want to delete this expense?", () => {
+            expenses.splice(+index, 1);
+            renderExpenses();
+            updateWealthChart();
+            updateEmptyStates();
+          });
           break;
         case "delete-liability":
-          showConfirm(
-            "Are you sure you want to delete this liability?",
-            () => {
-              liabilities.splice(+index, 1);
-              renderLiabilities();
-              updateWealthChart();
-              updateEmptyStates();
-            },
-          );
+          showConfirm("Are you sure you want to delete this liability?", () => {
+            liabilities.splice(+index, 1);
+            renderLiabilities();
+            updateWealthChart();
+            updateEmptyStates();
+          });
           break;
         case "view-snapshot":
           {
@@ -8148,18 +8130,15 @@ window.addEventListener("load", () => {
           break;
         case "delete-snapshot":
           closeSnapshotActionMenus();
-          showConfirm(
-            "Are you sure you want to delete this snapshot?",
-            () => {
-              snapshots.splice(+index, 1);
-              if (snapshots.length <= SNAPSHOT_DISPLAY_LIMIT) {
-                showAllSnapshots = false;
-              }
-              persist();
-              renderSnapshots();
-              updateEmptyStates();
-            },
-          );
+          showConfirm("Are you sure you want to delete this snapshot?", () => {
+            snapshots.splice(+index, 1);
+            if (snapshots.length <= SNAPSHOT_DISPLAY_LIMIT) {
+              showAllSnapshots = false;
+            }
+            persist();
+            renderSnapshots();
+            updateEmptyStates();
+          });
           break;
         case "toggle-snapshot-actions":
           {
@@ -8183,14 +8162,11 @@ window.addEventListener("load", () => {
           showEditEvent(+index);
           break;
         case "delete-event":
-          showConfirm(
-            "Are you sure you want to delete this event?",
-            () => {
-              simEvents.splice(+index, 1);
-              renderEvents();
-              updateEmptyStates();
-            },
-          );
+          showConfirm("Are you sure you want to delete this event?", () => {
+            simEvents.splice(+index, 1);
+            renderEvents();
+            updateEmptyStates();
+          });
           break;
         case "take-snapshot":
           {
@@ -8200,9 +8176,7 @@ window.addEventListener("load", () => {
               return;
             }
             if (assets.length === 0) {
-              showAlert(
-                "Add at least one asset before saving a snapshot.",
-              );
+              showAlert("Add at least one asset before saving a snapshot.");
               return;
             }
             const name = input.value.trim();
@@ -8286,10 +8260,7 @@ window.addEventListener("load", () => {
             };
             let payload = JSON.stringify(dataToExport);
             if (password)
-              payload = CryptoJS.AES.encrypt(
-                payload,
-                password,
-              ).toString();
+              payload = CryptoJS.AES.encrypt(payload, password).toString();
             const blob = new Blob([payload], {
               type: "application/json",
             });
@@ -8355,7 +8326,8 @@ window.addEventListener("load", () => {
                       "firstTimeContentHidden",
                     )
                   ) {
-                    profile.firstTimeContentHidden = !!profile.firstTimeContentHidden;
+                    profile.firstTimeContentHidden =
+                      !!profile.firstTimeContentHidden;
                   } else {
                     profile.firstTimeContentHidden = getStoredFirstTimeHidden();
                   }
@@ -8468,7 +8440,7 @@ window.addEventListener("load", () => {
                 renderProfileOptions();
                 fi.value = "";
                 document
-                  .querySelectorAll('[data-import-filename]')
+                  .querySelectorAll("[data-import-filename]")
                   .forEach((el) => (el.textContent = "No file chosen"));
                 resetProfilePicker("import");
                 importFileContent = null;
@@ -8512,7 +8484,7 @@ window.addEventListener("load", () => {
             () => {
               localStorage.clear();
               location.reload();
-            }
+            },
           );
           break;
       }
@@ -8541,9 +8513,9 @@ window.addEventListener("load", () => {
     if (!goalChanged) return;
 
     if (goalValue > 0) {
-      const messageParts = [
-        "Your wealth goal has been updated."
-      ].filter(Boolean);
+      const messageParts = ["Your wealth goal has been updated."].filter(
+        Boolean,
+      );
       showAlert(messageParts.join(" "));
     } else {
       showAlert("Your wealth goal has been cleared.");
@@ -8578,17 +8550,14 @@ window.addEventListener("load", () => {
       };
       reader.readAsText(file);
     });
-  document
-    .querySelectorAll('[id="importPassword"]')
-    .forEach((el) =>
-      on(el, "input", () => {
-        if (importFileContent != null) attemptImportPreview();
-      }),
-    );
+  document.querySelectorAll('[id="importPassword"]').forEach((el) =>
+    on(el, "input", () => {
+      if (importFileContent != null) attemptImportPreview();
+    }),
+  );
   // Theme choice handlers
   const themeSel = document.getElementById("themeSelect");
-  if (themeSel)
-    on(themeSel, "change", (e) => applyThemeChoice(e.target.value));
+  if (themeSel) on(themeSel, "change", (e) => applyThemeChoice(e.target.value));
 
   const navStickyToggle = document.getElementById("mobileNavStickyToggle");
   if (navStickyToggle) {
@@ -8666,7 +8635,9 @@ window.addEventListener("load", () => {
       return null;
     }
   })();
-  const storedSection = storedViewId ? document.getElementById(storedViewId) : null;
+  const storedSection = storedViewId
+    ? document.getElementById(storedViewId)
+    : null;
   const hasStoredSection =
     storedSection && storedSection.classList.contains("content-section");
   if (!seen && !isFirstTimeContentHidden()) {
@@ -8772,7 +8743,9 @@ window.addEventListener("load", () => {
     });
     const fetchLatestAppVersion = async () => {
       try {
-        const response = await fetch("assets/version.json", { cache: "no-store" });
+        const response = await fetch("assets/version.json", {
+          cache: "no-store",
+        });
         if (!response || !response.ok) return null;
         const data = await response.json();
         if (!data || typeof data.version !== "string") return null;
@@ -8787,15 +8760,11 @@ window.addEventListener("load", () => {
       return normalizeAppVersion(el.textContent);
     };
     const initialDisplayedVersion = getDisplayedAppVersion();
-    const buildUpdateSummaryContent = (
-      summary,
-      changesByVersion,
-    ) => {
+    const buildUpdateSummaryContent = (summary, changesByVersion) => {
       const wrapper = document.createElement("div");
       wrapper.className = "space-y-4 text-left";
       const summaryParagraph = document.createElement("p");
-      summaryParagraph.className =
-        "text-base text-gray-700 dark:text-gray-200";
+      summaryParagraph.className = "text-base text-gray-700 dark:text-gray-200";
       summaryParagraph.textContent = summary;
       wrapper.appendChild(summaryParagraph);
       changesByVersion.forEach((entry) => {
@@ -8821,7 +8790,8 @@ window.addEventListener("load", () => {
       });
       const reloadNote = document.createElement("p");
       reloadNote.className = "text-xs text-gray-500 dark:text-gray-400";
-      reloadNote.textContent = "WealthTrack will reload to finish applying the update.";
+      reloadNote.textContent =
+        "WealthTrack will reload to finish applying the update.";
       wrapper.appendChild(reloadNote);
       return wrapper;
     };
@@ -8830,7 +8800,9 @@ window.addEventListener("load", () => {
       if (!markResolved()) return;
       const latestVersion = await fetchLatestAppVersion();
       let previousVersion =
-        controllerVersion || initialDisplayedVersion || getDisplayedAppVersion();
+        controllerVersion ||
+        initialDisplayedVersion ||
+        getDisplayedAppVersion();
       if (
         latestVersion &&
         previousVersion &&
@@ -8841,11 +8813,9 @@ window.addEventListener("load", () => {
         previousVersion = initialDisplayedVersion;
       }
       if (latestVersion) {
-        document
-          .querySelectorAll("[data-app-version]")
-          .forEach((el) => {
-            el.textContent = latestVersion;
-          });
+        document.querySelectorAll("[data-app-version]").forEach((el) => {
+          el.textContent = latestVersion;
+        });
       }
       resetButtonState();
       try {
@@ -8878,7 +8848,9 @@ window.addEventListener("load", () => {
         }
       }
       const message = hasVersion
-        ? previousVersion && hasVersion && compareAppVersions(previousVersion, latestVersion) === 0
+        ? previousVersion &&
+          hasVersion &&
+          compareAppVersions(previousVersion, latestVersion) === 0
           ? `You're already using the latest version of WealthTrack (version ${latestVersion}).`
           : `WealthTrack has been updated to version ${latestVersion}.`
         : "WealthTrack has been updated to the latest version.";
@@ -8949,7 +8921,10 @@ window.addEventListener("load", () => {
         const finish = () => {
           if (resolved) return;
           resolved = true;
-          navigator.serviceWorker.removeEventListener("controllerchange", finish);
+          navigator.serviceWorker.removeEventListener(
+            "controllerchange",
+            finish,
+          );
           resolve();
         };
         navigator.serviceWorker.addEventListener("controllerchange", finish);
@@ -8998,7 +8973,9 @@ window.addEventListener("load", () => {
         if (updateResolved) return true;
       } catch (err) {
         console.error("Update install failed", err);
-        finishWithAlert("We couldn't finish installing the update. Please try again later.");
+        finishWithAlert(
+          "We couldn't finish installing the update. Please try again later.",
+        );
         return true;
       }
       setBusyState("Installing update…");
@@ -9013,7 +8990,9 @@ window.addEventListener("load", () => {
         if (updateResolved) return true;
       } catch (err) {
         console.error("Update activation failed", err);
-        finishWithAlert("We couldn't activate the update. Please try again later.");
+        finishWithAlert(
+          "We couldn't activate the update. Please try again later.",
+        );
         return true;
       }
       setBusyState("Finalizing update…");
@@ -9064,10 +9043,14 @@ window.addEventListener("load", () => {
         return;
       }
 
-      finishWithAlert("You're already using the latest version of WealthTrack.");
+      finishWithAlert(
+        "You're already using the latest version of WealthTrack.",
+      );
     } catch (error) {
       console.error("Update check failed", error);
-      finishWithAlert("We couldn't complete the update check. Please try again later.");
+      finishWithAlert(
+        "We couldn't complete the update check. Please try again later.",
+      );
     }
   }
 
@@ -9147,20 +9130,15 @@ window.addEventListener("load", () => {
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker
-      .register("service-worker.js")
-      .catch((error) => {
-        console.error("Service worker registration failed:", error);
-      });
+    navigator.serviceWorker.register("service-worker.js").catch((error) => {
+      console.error("Service worker registration failed:", error);
+    });
   });
 }
 
-
-
-
 /* c8 ignore stop */
 
-if (typeof module !== 'undefined') {
+if (typeof module !== "undefined") {
   module.exports = {
     // Functions
     normalizeData,
@@ -9235,23 +9213,43 @@ if (typeof module !== 'undefined') {
     clearTaxCalculatorResult,
     // State (for testing)
     getAssets: () => assets,
-    setAssets: (val) => { assets = val; },
+    setAssets: (val) => {
+      assets = val;
+    },
     getIncomes: () => incomes,
-    setIncomes: (val) => { incomes = val; },
+    setIncomes: (val) => {
+      incomes = val;
+    },
     getExpenses: () => expenses,
-    setExpenses: (val) => { expenses = val; },
+    setExpenses: (val) => {
+      expenses = val;
+    },
     getLiabilities: () => liabilities,
-    setLiabilities: (val) => { liabilities = val; },
+    setLiabilities: (val) => {
+      liabilities = val;
+    },
     getSimEvents: () => simEvents,
-    setSimEvents: (val) => { simEvents = val; },
+    setSimEvents: (val) => {
+      simEvents = val;
+    },
     getScenarioEventsEnabled: () => scenarioEventsEnabled,
-    setScenarioEventsEnabled: (val) => { scenarioEventsEnabled = !!val; },
+    setScenarioEventsEnabled: (val) => {
+      scenarioEventsEnabled = !!val;
+    },
     getGoalValue: () => goalValue,
-    setGoalValue: (val) => { goalValue = val; },
+    setGoalValue: (val) => {
+      goalValue = val;
+    },
     getInflationRate: () => inflationRate,
-    setInflationRate: (val) => { inflationRate = val; },
+    setInflationRate: (val) => {
+      inflationRate = val;
+    },
     getTaxSettings: () => taxSettings,
-    setTaxSettings: (val) => { taxSettings = val; },
-    invalidateTaxCache: () => { taxComputationCache = null; }
+    setTaxSettings: (val) => {
+      taxSettings = val;
+    },
+    invalidateTaxCache: () => {
+      taxComputationCache = null;
+    },
   };
 }
