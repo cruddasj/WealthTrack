@@ -65,8 +65,20 @@ npm run test
 **Run E2E tests (Playwright):**
 
 ```bash
+# First-time setup (or after Playwright upgrades): install browser binaries
+npx playwright install
+
+# Optional on fresh Linux machines when system deps are missing
+# npx playwright install --with-deps
+
 # This will start a local server and run the Playwright test suite
 npm run test:e2e
+```
+
+If you see `NO_COLOR`/`FORCE_COLOR` warnings in test output, run tests with color forcing disabled:
+
+```bash
+FORCE_COLOR=0 npm run test:e2e
 ```
 
 ### Rebuilding CSS
