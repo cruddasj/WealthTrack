@@ -6106,6 +6106,8 @@ function updateSnapshotChart() {
   if (!has) {
     snapshotChart?.destroy();
     snapshotChart = null;
+    const legendContainer = $("snapshotHistoryLegend");
+    if (legendContainer) legendContainer.innerHTML = "";
     return;
   }
 
@@ -6136,6 +6138,11 @@ function updateSnapshotChart() {
       responsive: true,
       maintainAspectRatio: false,
       borderRadius: 4,
+      layout: {
+        padding: {
+          bottom: 36,
+        },
+      },
       scales: {
         y: {
           beginAtZero: true,
@@ -6149,6 +6156,8 @@ function updateSnapshotChart() {
         },
       },
       plugins: {
+        htmlLegend: { containerID: "snapshotHistoryLegend" },
+        legend: { display: false },
         tooltip: {
           callbacks: {
             label: (c) => `${c.dataset.label}: ${fmtCurrency(c.raw)}`,

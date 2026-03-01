@@ -767,6 +767,16 @@ describe('App Core Logic', () => {
     expect(appSource).toContain('legend: { display: false }');
     expect(appSource).toContain('bottom: 36');
   });
+  test('snapshot history chart uses HTML legend below chart', () => {
+    const fs = require('fs');
+    const path = require('path');
+    const appSource = fs.readFileSync(path.join(__dirname, '..', 'assets/js/app.js'), 'utf8');
+
+    expect(appSource).toContain('htmlLegend: { containerID: "snapshotHistoryLegend" }');
+    expect(appSource).toContain('legend: { display: false }');
+    expect(appSource).toContain('bottom: 36');
+  });
+
 
   test('applyTaxSettingsChanges', () => {
     document.body.innerHTML = `

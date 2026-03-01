@@ -4,7 +4,7 @@ All notable changes to WealthTrack will be documented in this file. This project
 
 ## [NEXT_VERSION] - [NEXT_DATE]
 
-- Switch Portfolio Allocation and Future Portfolio donut charts to Chart.js HTML legends so legend items render below each chart with improved spacing and click-to-toggle behaviour.
+- Switch Portfolio Allocation, Future Portfolio, and Snapshot History charts to Chart.js HTML legends so legend items render below each chart with improved spacing and click-to-toggle behaviour.
 
 ## 1.1.115 - 2026-03-01
 
