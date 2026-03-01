@@ -29,6 +29,22 @@ npx serve -l 8080
 
 Then visit `http://localhost:8080` in your browser.
 
+## Development Tooling Requirements
+
+To keep local development and CI behaviour consistent, use the same major tooling versions defined in `package.json`:
+
+- Node.js **20+**
+- npm **10+**
+- Tailwind CSS CLI **4.x** (`tailwindcss` + `@tailwindcss/cli`)
+- Jest **30.x** for unit tests
+- Playwright **1.58.x** for E2E tests
+
+Install dependencies before running lint, tests, or CSS builds:
+
+```bash
+npm install
+```
+
 ## Progressive Web App
 
 WealthTrack is installable as a Progressive Web App (PWA):
@@ -41,7 +57,7 @@ To install the app, open it in a supporting browser (Chrome, Edge, or mobile equ
 
 ## Development Notes
 
-- Styles are built with Tailwind CSS (CLI, v3). The source stylesheet is `src/styles.css` and the compiled output is `assets/styles.css`, which is checked into the repo so GitHub Pages can deploy without a build step.
+- Styles are built with Tailwind CSS (CLI, v4). The source stylesheet is `src/styles.css` and the compiled output is `assets/styles.css`, which is checked into the repo so GitHub Pages can deploy without a build step.
 - Chart.js powers the data visualisations; Hammer.js and the Chart.js Zoom plugin enable gesture controls.
 - All application state is stored in `localStorage`. Clearing the browser storage resets the app to defaults.
 
