@@ -2,7 +2,7 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
-## [NEXT_VERSION] - [NEXT_DATE]
+## 1.1.119 - 2026-03-01
 
 - Refresh the welcome page guidance so it reflects newer planning features like net cash flow context, forecast comparisons, stress testing, and in-app update highlights.
 - Prepare this change for the 1.2.0 app release.
