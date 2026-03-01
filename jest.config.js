@@ -7,7 +7,7 @@ module.exports = {
     'assets/js/app.js'
   ],
   coverageThreshold: {
-    'assets/js/utilities.js': {
+    global: {
       statements: 80,
       branches: 80,
       functions: 80,

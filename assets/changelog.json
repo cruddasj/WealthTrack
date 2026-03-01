@@ -5,7 +5,8 @@
     "changes": [
       "Raise Jest coverage gates to 80% for statements, branches, functions, and lines.",
       "Focus default coverage reporting on core utility logic and add extra version/date utility tests to keep the stricter threshold green.",
-      "Restore assets/js/app.js to Jest coverage reports and document the rule so future coverage updates do not remove it."
+      "Restore assets/js/app.js to Jest coverage reports and document the rule so future coverage updates do not remove it.",
+      "Align Jest coverage enforcement with global 80% thresholds across statements, branches, functions, and lines while keeping assets/js/app.js in the report."
     ]
   },
   {
