@@ -753,7 +753,9 @@ describe('App Core Logic', () => {
     const path = require('path');
     const appSource = fs.readFileSync(path.join(__dirname, '..', 'assets/js/app.js'), 'utf8');
 
-    expect(appSource).toContain('legend: { position: "bottom" }');
+    expect(appSource).toContain('position: "bottom"');
+    expect(appSource).toContain('labels: { padding: 16 }');
+    expect(appSource).toContain('legendPad: { extra: 20 }');
     expect(appSource).toContain('bottom: 18');
   });
 
@@ -762,7 +764,9 @@ describe('App Core Logic', () => {
     const path = require('path');
     const appSource = fs.readFileSync(path.join(__dirname, '..', 'assets/js/app.js'), 'utf8');
 
-    expect(appSource).toContain('legend: { position: "bottom" }');
+    expect(appSource).toContain('position: "bottom"');
+    expect(appSource).toContain('labels: { padding: 16 }');
+    expect(appSource).toContain('legendPad: { extra: 20 }');
     expect(appSource).toContain('bottom: 18');
   });
 
