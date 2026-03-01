@@ -5749,7 +5749,7 @@ function renderAssetBreakdownChart() {
       maintainAspectRatio: false,
       cutout: "70%",
       plugins: {
-        legend: { position: "right" },
+        legend: { position: "bottom" },
         tooltip: { callbacks: { label: pieTooltip } },
       },
     },
