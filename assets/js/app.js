@@ -3514,6 +3514,7 @@ function updateFireForecastCard() {
       });
       if (!result.withoutInflation && annualPassive >= annualCost) {
         result.withoutInflation = {
+          index: i,
           date,
           passive: annualPassive,
           living: annualCost,
@@ -3523,6 +3524,7 @@ function updateFireForecastCard() {
       const adjustedCost = annualCost * inflationFactor;
       if (!result.withInflation && annualPassive >= adjustedCost) {
         result.withInflation = {
+          index: i,
           date,
           passive: annualPassive,
           living: adjustedCost,
@@ -3548,12 +3550,15 @@ function updateFireForecastCard() {
     const coverage = computeCoverage(cfg.key, cfg.rate);
     const withInfl = coverage.withInflation;
     const noInfl = coverage.withoutInflation;
-    const withHit = withInfl
-      ? `<span class="text-green-500">${formatMonthYear(withInfl.date)}</span>`
-      : '<span class="text-red-600">Not reached</span>';
-    const withoutHit = noInfl
-      ? `<span class="text-green-500">${formatMonthYear(noInfl.date)}</span>`
-      : '<span class="text-red-600">Not reached</span>';
+    const formatCoverageHit = (hit) => {
+      if (!hit) return '<span class="text-red-600">Not reached</span>';
+      if (hit.index === startIndex) {
+        return '<span class="text-green-500">Goal met now</span>';
+      }
+      return `<span class="text-green-500">${formatMonthYear(hit.date)}</span>`;
+    };
+    const withHit = formatCoverageHit(withInfl);
+    const withoutHit = formatCoverageHit(noInfl);
     const withDetail = withInfl
       ? `Inflation-adjusted living costs: ${fmtCurrency(
           withInfl.living,

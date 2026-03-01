@@ -642,6 +642,16 @@ describe('App Core Logic', () => {
     expect(document.getElementById('passiveMonthly').textContent).not.toBe('£0.00');
   });
 
+
+  test('FIRE forecast source includes explicit goal-met-now label logic', () => {
+    const fs = require('fs');
+    const path = require('path');
+    const appSource = fs.readFileSync(path.join(__dirname, '..', 'assets/js/app.js'), 'utf8');
+
+    expect(appSource).toContain('Goal met now');
+    expect(appSource).toContain('if (hit.index === startIndex)');
+  });
+
   test('updateFireForecastCard logic', () => {
     document.body.innerHTML = `
       <div id="fireForecastCard"></div>
