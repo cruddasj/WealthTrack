@@ -1,7 +1,7 @@
 [
   {
-    "version": "[NEXT_VERSION]",
-    "date": "[NEXT_DATE]",
+    "version": "1.1.105",
+    "date": "2026-03-01",
     "changes": [
       "Clarify contributor guidance that updates to jest.config.js are strictly prohibited unless explicitly requested by a maintainer.",
       "Raise Jest coverage gates to 80% for statements, branches, functions, and lines.",

@@ -1,6 +1,6 @@
 {
   "name": "wealthtrack",
-  "version": "1.1.104",
+  "version": "1.1.105",
   "description": "WealthTrack is a personal wealth projection and planning tool built as a single-page application. It helps you capture assets and goals, run forecasts, explore portfolio insights, and maintain historical snapshots.",
   "main": "service-worker.js",
   "scripts": {
