@@ -11,6 +11,12 @@ module.exports = {
       branches: 90,
       functions: 90,
       lines: 90
+    },
+    'assets/js/app.js': {
+      statements: 63,
+      branches: 47,
+      functions: 58,
+      lines: 65
     }
   },
   coverageDirectory: 'coverage',
