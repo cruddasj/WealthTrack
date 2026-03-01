@@ -2,6 +2,11 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
+## [NEXT_VERSION] - [NEXT_DATE]
+
+- Expand Jest integration coverage with additional end-to-end style flows for snapshot comparison, profile deletion, and encrypted import handling.
+- Raise enforced Jest global function coverage to 80% while preserving the existing statement threshold.
+
 ## 1.1.103 - 2026-03-01
 
 - Set the global Jest coverage requirement to 70% across statements, branches, functions, and lines.
