@@ -2,6 +2,11 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
+## [NEXT_VERSION] - [NEXT_DATE]
+
+- Add new Playwright coverage for first-time welcome guidance and navigation from the WealthTrack brand shortcut.
+- Verify first-time content visibility controls in Settings so onboarding guidance can be hidden and restored reliably.
+
 ## 1.1.105 - 2026-03-01
 
 - Clarify contributor guidance that updates to `jest.config.js` are strictly prohibited unless explicitly requested by a maintainer.
