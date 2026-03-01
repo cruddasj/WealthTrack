@@ -2,6 +2,11 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
+## [NEXT_VERSION] - [NEXT_DATE]
+
+- Shorten the Financial Inputs long-press edit interaction to 3 seconds and suppress touch text-selection popups so row editing is smoother on Android Chrome.
+- Prepare this change for the 1.2.0 app release.
+
 ## 1.1.122 - 2026-03-01
 
 - Add a mobile-friendly long-press shortcut on Financial Inputs rows so holding a row for 3 seconds opens its edit form.

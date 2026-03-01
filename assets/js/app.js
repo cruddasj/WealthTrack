@@ -8138,6 +8138,16 @@ window.addEventListener("load", () => {
   on(document, "pointercancel", clearLongPress);
   on(document, "pointerleave", clearLongPress);
 
+  on(document, "contextmenu", (e) => {
+    if (!e.target?.closest?.("tr[data-long-press-action][data-index]")) return;
+    e.preventDefault();
+  });
+
+  on(document, "selectstart", (e) => {
+    if (!e.target?.closest?.("tr[data-long-press-action][data-index]")) return;
+    e.preventDefault();
+  });
+
   // Global click handlers (nav, tabs, actions, modal close)
   on(document, "click", (e) => {
     // Sortable asset table headers

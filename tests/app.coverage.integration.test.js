@@ -243,6 +243,14 @@ describe('App integration flows for coverage', () => {
 
     const incomeRow = document.querySelector('[data-long-press-action="edit-income"]');
     if (incomeRow) {
+      const contextMenuEvent = new MouseEvent('contextmenu', { bubbles: true, cancelable: true });
+      incomeRow.dispatchEvent(contextMenuEvent);
+      expect(contextMenuEvent.defaultPrevented).toBe(true);
+
+      const selectStartEvent = new Event('selectstart', { bubbles: true, cancelable: true });
+      incomeRow.dispatchEvent(selectStartEvent);
+      expect(selectStartEvent.defaultPrevented).toBe(true);
+
       incomeRow.dispatchEvent(pointerEvent('pointerdown'));
       jest.advanceTimersByTime(3100);
       expect(document.getElementById('editIncomeFormModal')).not.toBeNull();
