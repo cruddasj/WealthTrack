@@ -2856,6 +2856,63 @@ const CHART_COLOURS = {
   green: "rgba(16,185,129,.5)",
 };
 
+const getOrCreateLegendList = (chart, id) => {
+  const legendContainer = document.getElementById(id);
+  if (!legendContainer) return null;
+
+  let listContainer = legendContainer.querySelector("ul");
+  if (!listContainer) {
+    listContainer = document.createElement("ul");
+    listContainer.className = "chart-html-legend-list";
+    legendContainer.appendChild(listContainer);
+  }
+
+  return listContainer;
+};
+
+const HtmlLegend = {
+  id: "htmlLegend",
+  afterUpdate(chart, _args, options) {
+    const listContainer = getOrCreateLegendList(chart, options.containerID);
+    if (!listContainer) return;
+    while (listContainer.firstChild) {
+      listContainer.firstChild.remove();
+    }
+
+    const items = chart.options.plugins.legend.labels.generateLabels(chart);
+    items.forEach((item) => {
+      const listItem = document.createElement("li");
+      listItem.className = "chart-html-legend-item";
+      listItem.onclick = () => {
+        if (chart.config.type === "pie" || chart.config.type === "doughnut") {
+          chart.toggleDataVisibility(item.index);
+        } else {
+          chart.setDatasetVisibility(
+            item.datasetIndex,
+            !chart.isDatasetVisible(item.datasetIndex),
+          );
+        }
+        chart.update();
+      };
+
+      const colorBox = document.createElement("span");
+      colorBox.className = "chart-html-legend-swatch";
+      colorBox.style.background = item.fillStyle;
+      colorBox.style.borderColor = item.strokeStyle;
+      colorBox.style.borderWidth = `${item.lineWidth}px`;
+
+      const textContainer = document.createElement("span");
+      textContainer.className = "chart-html-legend-label";
+      if (item.hidden) textContainer.classList.add("is-hidden");
+      textContainer.appendChild(document.createTextNode(item.text));
+
+      listItem.appendChild(colorBox);
+      listItem.appendChild(textContainer);
+      listContainer.appendChild(listItem);
+    });
+  },
+};
+
 // Plugin to add extra spacing beneath the legend (push chart down)
 const LegendPad = {
   id: "legendPad",
@@ -5720,6 +5777,8 @@ function renderAssetBreakdownChart() {
   if (!has) {
     assetBreakdownChart?.destroy();
     assetBreakdownChart = null;
+    const legendContainer = $("assetBreakdownLegend");
+    if (legendContainer) legendContainer.innerHTML = "";
     if (tableContainer) tableContainer.classList.add("hidden");
     if (tableBody) tableBody.innerHTML = "";
     return;
@@ -5750,15 +5809,12 @@ function renderAssetBreakdownChart() {
       cutout: "70%",
       layout: {
         padding: {
-          bottom: 18,
+          bottom: 36,
         },
       },
       plugins: {
-        legend: {
-          position: "bottom",
-          labels: { padding: 16 },
-        },
-        legendPad: { extra: 20 },
+        htmlLegend: { containerID: "assetBreakdownLegend" },
+        legend: { display: false },
         tooltip: { callbacks: { label: pieTooltip } },
       },
     },
@@ -5804,6 +5860,8 @@ function updateFuturePortfolioCard() {
       futurePortfolioChart.destroy();
       futurePortfolioChart = null;
     }
+    const futureLegendContainer = $("futurePortfolioLegend");
+    if (futureLegendContainer) futureLegendContainer.innerHTML = "";
     if (tableBody) tableBody.innerHTML = "";
     if (tableContainer) tableContainer.classList.add("hidden");
     if (resultEl) resultEl.classList.add("hidden");
@@ -6003,15 +6061,12 @@ function updateFuturePortfolioCard() {
         cutout: "70%",
         layout: {
           padding: {
-            bottom: 18,
+            bottom: 36,
           },
         },
         plugins: {
-          legend: {
-            position: "bottom",
-            labels: { padding: 16 },
-          },
-          legendPad: { extra: 20 },
+          htmlLegend: { containerID: "futurePortfolioLegend" },
+          legend: { display: false },
           tooltip: { callbacks: { label: pieTooltip } },
         },
       },
@@ -6051,6 +6106,8 @@ function updateSnapshotChart() {
   if (!has) {
     snapshotChart?.destroy();
     snapshotChart = null;
+    const legendContainer = $("snapshotHistoryLegend");
+    if (legendContainer) legendContainer.innerHTML = "";
     return;
   }
 
@@ -6081,6 +6138,11 @@ function updateSnapshotChart() {
       responsive: true,
       maintainAspectRatio: false,
       borderRadius: 4,
+      layout: {
+        padding: {
+          bottom: 36,
+        },
+      },
       scales: {
         y: {
           beginAtZero: true,
@@ -6094,6 +6156,8 @@ function updateSnapshotChart() {
         },
       },
       plugins: {
+        htmlLegend: { containerID: "snapshotHistoryLegend" },
+        legend: { display: false },
         tooltip: {
           callbacks: {
             label: (c) => `${c.dataset.label}: ${fmtCurrency(c.raw)}`,
@@ -7788,6 +7852,7 @@ window.addEventListener("load", () => {
 
   Chart.register(ChartZoom);
   Chart.register(LegendPad);
+  Chart.register(HtmlLegend);
   Chart.defaults.font.family = "Inter";
   if ($("themeToggle")) $("themeToggle").checked = isDarkMode;
   if (typeof Chart !== "undefined")

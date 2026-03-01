@@ -753,10 +753,9 @@ describe('App Core Logic', () => {
     const path = require('path');
     const appSource = fs.readFileSync(path.join(__dirname, '..', 'assets/js/app.js'), 'utf8');
 
-    expect(appSource).toContain('position: "bottom"');
-    expect(appSource).toContain('labels: { padding: 16 }');
-    expect(appSource).toContain('legendPad: { extra: 20 }');
-    expect(appSource).toContain('bottom: 18');
+    expect(appSource).toContain('htmlLegend: { containerID: "assetBreakdownLegend" }');
+    expect(appSource).toContain('legend: { display: false }');
+    expect(appSource).toContain('bottom: 36');
   });
 
   test('future portfolio chart matches allocation donut layout', () => {
@@ -764,11 +763,36 @@ describe('App Core Logic', () => {
     const path = require('path');
     const appSource = fs.readFileSync(path.join(__dirname, '..', 'assets/js/app.js'), 'utf8');
 
-    expect(appSource).toContain('position: "bottom"');
-    expect(appSource).toContain('labels: { padding: 16 }');
-    expect(appSource).toContain('legendPad: { extra: 20 }');
-    expect(appSource).toContain('bottom: 18');
+    expect(appSource).toContain('htmlLegend: { containerID: "futurePortfolioLegend" }');
+    expect(appSource).toContain('legend: { display: false }');
+    expect(appSource).toContain('bottom: 36');
   });
+  test('snapshot history chart uses HTML legend below chart', () => {
+    const fs = require('fs');
+    const path = require('path');
+    const appSource = fs.readFileSync(path.join(__dirname, '..', 'assets/js/app.js'), 'utf8');
+
+    expect(appSource).toContain('htmlLegend: { containerID: "snapshotHistoryLegend" }');
+    expect(appSource).toContain('legend: { display: false }');
+    expect(appSource).toContain('bottom: 36');
+  });
+
+  test('snapshot history legend container is outside chart container', () => {
+    const fs = require('fs');
+    const path = require('path');
+    const { JSDOM } = require('jsdom');
+    const indexHtml = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+    const dom = new JSDOM(indexHtml);
+    const document = dom.window.document;
+    const legend = document.getElementById('snapshotHistoryLegend');
+    const chartContainer = document.querySelector('#snapshotHistoryCard .chart-container');
+
+    expect(legend).not.toBeNull();
+    expect(chartContainer).not.toBeNull();
+    expect(legend.parentElement).toBe(document.getElementById('snapshotHistoryCard'));
+    expect(chartContainer.contains(legend)).toBe(false);
+  });
+
 
   test('applyTaxSettingsChanges', () => {
     document.body.innerHTML = `
