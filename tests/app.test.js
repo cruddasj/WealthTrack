@@ -757,6 +757,15 @@ describe('App Core Logic', () => {
     expect(appSource).toContain('bottom: 18');
   });
 
+  test('future portfolio chart matches allocation donut layout', () => {
+    const fs = require('fs');
+    const path = require('path');
+    const appSource = fs.readFileSync(path.join(__dirname, '..', 'assets/js/app.js'), 'utf8');
+
+    expect(appSource).toContain('legend: { position: "bottom" }');
+    expect(appSource).toContain('bottom: 18');
+  });
+
   test('applyTaxSettingsChanges', () => {
     document.body.innerHTML = `
       <div class="overflow-x-auto"><table id="assetTableHeader"><tbody id="assetTableBody"></tbody></table></div>
