@@ -73,6 +73,9 @@ npx playwright install
 
 # This will start a local server and run the Playwright test suite
 npm run test:e2e
+
+# This will launch the Playwright UI so you can visually inspect the outcomes of your tests
+npx playwright test --ui
 ```
 
 If you see `NO_COLOR`/`FORCE_COLOR` warnings in test output, run tests with color forcing disabled:
