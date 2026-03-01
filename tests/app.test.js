@@ -777,6 +777,22 @@ describe('App Core Logic', () => {
     expect(appSource).toContain('bottom: 36');
   });
 
+  test('snapshot history legend container is outside chart container', () => {
+    const fs = require('fs');
+    const path = require('path');
+    const { JSDOM } = require('jsdom');
+    const indexHtml = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+    const dom = new JSDOM(indexHtml);
+    const document = dom.window.document;
+    const legend = document.getElementById('snapshotHistoryLegend');
+    const chartContainer = document.querySelector('#snapshotHistoryCard .chart-container');
+
+    expect(legend).not.toBeNull();
+    expect(chartContainer).not.toBeNull();
+    expect(legend.parentElement).toBe(document.getElementById('snapshotHistoryCard'));
+    expect(chartContainer.contains(legend)).toBe(false);
+  });
+
 
   test('applyTaxSettingsChanges', () => {
     document.body.innerHTML = `
