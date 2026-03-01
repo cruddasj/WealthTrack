@@ -2,7 +2,7 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
-## [NEXT_VERSION] - [NEXT_DATE]
+## 1.1.111 - 2026-03-01
 
 - Improved visual contrast of elements such as stat boxes and input fields in dark mode.
 
