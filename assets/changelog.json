@@ -1,7 +1,7 @@
 [
   {
-    "version": "[NEXT_VERSION]",
-    "date": "[NEXT_DATE]",
+    "version": "1.1.124",
+    "date": "2026-03-01",
     "changes": [
       "Improve automated version selection so releases can honor a newer changelog version (such as 1.2.0) instead of always forcing the next patch number."
     ]
