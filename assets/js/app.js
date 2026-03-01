@@ -5748,6 +5748,11 @@ function renderAssetBreakdownChart() {
       responsive: true,
       maintainAspectRatio: false,
       cutout: "70%",
+      layout: {
+        padding: {
+          bottom: 18,
+        },
+      },
       plugins: {
         legend: { position: "bottom" },
         tooltip: { callbacks: { label: pieTooltip } },
