@@ -2,7 +2,7 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
-## [NEXT_VERSION] - [NEXT_DATE]
+## 1.1.120 - 2026-03-01
 
 - Update FIRE Readiness forecast cards so scenarios that are already covered at the start date show “Goal met now” instead of repeating the current month.
 
