@@ -748,12 +748,13 @@ describe('App Core Logic', () => {
   });
 
 
-  test('asset breakdown chart uses bottom legend positioning', () => {
+  test('asset breakdown chart keeps spacing between donut and legend', () => {
     const fs = require('fs');
     const path = require('path');
     const appSource = fs.readFileSync(path.join(__dirname, '..', 'assets/js/app.js'), 'utf8');
 
     expect(appSource).toContain('legend: { position: "bottom" }');
+    expect(appSource).toContain('bottom: 18');
   });
 
   test('applyTaxSettingsChanges', () => {
