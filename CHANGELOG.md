@@ -2,6 +2,11 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
+## [NEXT_VERSION] - [NEXT_DATE]
+
+- Replace the Portfolio Insights allocation pie chart with a ranked dot plot so portfolios with many assets stay easier to scan and compare.
+- Add automated test coverage to verify the Portfolio Insights allocation chart uses the new non-pie configuration.
+
 ## 1.1.108 - 2026-03-01
 
 - Refresh contributor and README documentation so required Node.js, npm, and Tailwind CSS versions match the current project tooling.

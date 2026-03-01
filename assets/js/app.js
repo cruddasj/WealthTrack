@@ -5780,24 +5780,65 @@ function renderAssetBreakdownChart() {
       value: calculateCurrentValue(asset),
     }))
     .sort((a, b) => b.value - a.value);
+  const total = rows.reduce((sum, row) => sum + row.value, 0);
+  const labels = rows.map((row) => row.name);
   const data = {
-    labels: rows.map((r) => r.name),
+    labels,
     datasets: [
       {
-        data: rows.map((r) => r.value),
-        backgroundColor: rows.map((_, i) => colorFor(i)),
+        label: "Portfolio allocation",
+        data: rows.map((row) => ({
+          x: total > 0 ? (row.value / total) * 100 : 0,
+          y: row.name,
+          value: row.value,
+        })),
+        pointBackgroundColor: rows.map((_, i) => colorFor(i)),
+        pointBorderColor: rows.map((_, i) => colorFor(i)),
+        pointHoverBackgroundColor: rows.map((_, i) => colorFor(i)),
+        pointRadius: 6,
+        pointHoverRadius: 8,
+        showLine: false,
       },
     ],
   };
   const cfg = {
-    type: "pie",
+    type: "line",
     data,
     options: {
       responsive: true,
       maintainAspectRatio: false,
+      scales: {
+        x: {
+          min: 0,
+          max: 100,
+          ticks: {
+            callback: (value) => `${Number(value).toFixed(0)}%`,
+          },
+          title: {
+            display: true,
+            text: "Portfolio share",
+          },
+        },
+        y: {
+          type: "category",
+          labels,
+          offset: true,
+          ticks: {
+            autoSkip: false,
+          },
+        },
+      },
       plugins: {
-        legend: { position: "top" },
-        tooltip: { callbacks: { label: pieTooltip } },
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            title: (items) => items?.[0]?.raw?.y || "",
+            label: (context) => {
+              const raw = context.raw || {};
+              return `${fmtCurrency(raw.value || 0)} (${(raw.x || 0).toFixed(2)}%)`;
+            },
+          },
+        },
       },
     },
   };
@@ -5807,7 +5848,6 @@ function renderAssetBreakdownChart() {
     cfg,
   );
   if (tableContainer && tableBody) {
-    const total = rows.reduce((sum, row) => sum + row.value, 0);
     tableBody.innerHTML = rows
       .map((row) => {
         const share = total > 0 ? ((row.value / total) * 100).toFixed(2) : "0.00";

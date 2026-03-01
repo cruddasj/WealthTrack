@@ -35,31 +35,33 @@ describe('App integration flows for coverage', () => {
 
     global.GBP_CURRENCY = 'GBP';
     global.ChartZoom = {};
-    global.Chart = function Chart() {
-      return {
-        destroy() {},
-        update() {},
-        resetZoom() {},
-        data: { datasets: [] },
-        scales: { x: { min: 0, max: 12 } },
-        options: {
-          scales: {
-            x: { min: 0, max: 12, time: {}, grid: {}, ticks: {} },
-            y: { grid: {}, ticks: {} }
-          },
-          plugins: { legend: { labels: {} }, title: {} }
-        }
-      };
-    };
+    global.Chart = jest.fn((ctx, cfg) => ({
+      ctx,
+      config: { data: cfg.data, options: cfg.options },
+      destroy() {},
+      update() {},
+      resetZoom() {},
+      data: { datasets: [] },
+      scales: { x: { min: 0, max: 12 } },
+      options: {
+        scales: {
+          x: { min: 0, max: 12, time: {}, grid: {}, ticks: {} },
+          y: { grid: {}, ticks: {} }
+        },
+        plugins: { legend: { labels: {} }, title: {} }
+      }
+    }));
     global.Chart.defaults = { font: {} };
     global.Chart.register = jest.fn();
 
     Object.defineProperty(window.HTMLCanvasElement.prototype, 'getContext', {
       configurable: true,
-      value: () => ({
-        canvas: {},
-        measureText: () => ({ width: 0 })
-      })
+      value: function getContextMock() {
+        return {
+          canvas: this,
+          measureText: () => ({ width: 0 })
+        };
+      }
     });
 
     global.ResizeObserver = class {
@@ -169,6 +171,9 @@ describe('App integration flows for coverage', () => {
     setValue('assetStartDate', '2025-01-01');
     setValue('assetTaxTreatment', 'tax-free');
     submit('assetForm');
+
+    const assetBreakdownChartCall = global.Chart.mock.calls.find(([ctx]) => ctx?.canvas?.id === 'assetBreakdownChart');
+    expect(assetBreakdownChartCall?.[1]?.type).toBe('line');
 
     // Add liability
     setValue('liabilityName', 'Loan');
