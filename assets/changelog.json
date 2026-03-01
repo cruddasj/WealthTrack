@@ -1,5 +1,13 @@
 [
   {
+    "version": "[NEXT_VERSION]",
+    "date": "[NEXT_DATE]",
+    "changes": [
+      "Restore the mobile navigation backdrop so page content stays visible with a soft blur instead of turning fully black.",
+      "Add an automated mobile menu check to confirm the overlay keeps blur styling after future CSS upgrades."
+    ]
+  },
+  {
     "version": "1.1.98",
     "date": "2026-02-28",
     "changes": [
