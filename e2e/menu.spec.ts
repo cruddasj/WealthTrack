@@ -62,4 +62,32 @@ test.describe('Menu Navigation', () => {
     await expect(page.locator('#settings')).toHaveClass(/active/);
     await dismissModals();
   });
+
+  test('Mobile menu overlay keeps content visible with blur', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+
+    const menuToggle = page.locator('#menu-toggle');
+    await expect(menuToggle).toBeVisible();
+    await menuToggle.click();
+
+    const overlay = page.locator('#overlay');
+    await expect(overlay).toBeVisible();
+    await expect(overlay).toHaveClass(/backdrop-blur-sm/);
+
+    const overlayStyles = await overlay.evaluate((element) => {
+      const computed = window.getComputedStyle(element);
+      return {
+        backgroundColor: computed.backgroundColor,
+        backdropFilter: computed.backdropFilter,
+        webkitBackdropFilter: computed.webkitBackdropFilter
+      };
+    });
+
+    expect(overlayStyles.backgroundColor).not.toBe('rgb(0, 0, 0)');
+    expect(
+      overlayStyles.backdropFilter.includes('blur(') ||
+        overlayStyles.webkitBackdropFilter.includes('blur(')
+    ).toBe(true);
+  });
+
 });
