@@ -5195,45 +5195,49 @@ function updateWealthChart() {
       label: "Low Growth",
       data: low.map((y, i) => ({ x: labels[i], y })),
       borderColor: CHART_COLOURS.red,
-      borderDash: [5, 5],
+      borderDash: [6, 4],
       fill: false,
-      pointRadius: 1,
+      tension: 0.4,
+      pointRadius: 0,
       pointHoverRadius: 6,
-      pointHitRadius: 8,
+      pointHitRadius: 15,
       pointStyle: "circle",
       pointBackgroundColor: CHART_COLOURS.red,
       pointBorderColor: CHART_COLOURS.red,
-      pointBorderWidth: 1.5,
+      pointBorderWidth: 2,
+      borderWidth: 2,
     },
     {
       label: "Expected Growth",
       data: base.map((y, i) => ({ x: labels[i], y })),
       borderColor: CHART_COLOURS.blue,
-      borderDash: [5, 5],
       backgroundColor: CHART_COLOURS.blueFill,
       tension: 0.4,
-      fill: false,
-      pointRadius: 1,
+      fill: true,
+      pointRadius: 0,
       pointHoverRadius: 6,
-      pointHitRadius: 8,
+      pointHitRadius: 15,
       pointStyle: "circle",
-      pointBackgroundColor: CHART_COLOURS.blue,
+      pointBackgroundColor: "#ffffff",
       pointBorderColor: CHART_COLOURS.blue,
-      pointBorderWidth: 1.5,
+      pointBorderWidth: 2,
+      borderWidth: 3,
     },
     {
       label: "High Growth",
       data: high.map((y, i) => ({ x: labels[i], y })),
       borderColor: CHART_COLOURS.green,
-      borderDash: [5, 5],
+      borderDash: [6, 4],
       fill: false,
-      pointRadius: 1,
+      tension: 0.4,
+      pointRadius: 0,
       pointHoverRadius: 6,
-      pointHitRadius: 8,
+      pointHitRadius: 15,
       pointStyle: "circle",
       pointBackgroundColor: CHART_COLOURS.green,
       pointBorderColor: CHART_COLOURS.green,
-      pointBorderWidth: 1.5,
+      pointBorderWidth: 2,
+      borderWidth: 2,
     },
   ];
 
@@ -5793,13 +5797,14 @@ function renderAssetBreakdownChart() {
     ],
   };
   const cfg = {
-    type: "pie",
+    type: "doughnut",
     data,
     options: {
       responsive: true,
       maintainAspectRatio: false,
+      cutout: '70%',
       plugins: {
-        legend: { position: "top" },
+        legend: { position: "right" },
         tooltip: { callbacks: { label: pieTooltip } },
       },
     },
@@ -6030,13 +6035,14 @@ function updateFuturePortfolioCard() {
       ],
     };
     const cfg = {
-      type: "pie",
+      type: "doughnut",
       data,
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        cutout: '70%',
         plugins: {
-          legend: { position: "top" },
+          legend: { position: "right" },
           tooltip: { callbacks: { label: pieTooltip } },
         },
       },
@@ -6105,13 +6111,18 @@ function updateSnapshotChart() {
     options: {
       responsive: true,
       maintainAspectRatio: false,
+      borderRadius: 4,
       scales: {
         y: {
           beginAtZero: true,
           stacked: true,
+          grid: { drawBorder: false },
           ticks: { callback: currencyTick },
         },
-        x: { stacked: true },
+        x: {
+          stacked: true,
+          grid: { display: false }
+        },
       },
       plugins: {
         tooltip: {
