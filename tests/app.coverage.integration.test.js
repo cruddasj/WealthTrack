@@ -252,7 +252,7 @@ describe('App integration flows for coverage', () => {
       expect(selectStartEvent.defaultPrevented).toBe(true);
 
       incomeRow.dispatchEvent(pointerEvent('pointerdown'));
-      jest.advanceTimersByTime(3100);
+      jest.advanceTimersByTime(1100);
       expect(document.getElementById('editIncomeFormModal')).not.toBeNull();
       const closeFromLongPress = document.querySelector('[data-action="close-modal"]');
       if (closeFromLongPress) closeFromLongPress.click();
@@ -261,9 +261,9 @@ describe('App integration flows for coverage', () => {
     const assetRow = document.querySelector('[data-long-press-action="edit-asset"]');
     if (assetRow) {
       assetRow.dispatchEvent(pointerEvent('pointerdown'));
-      jest.advanceTimersByTime(2000);
+      jest.advanceTimersByTime(500);
       assetRow.dispatchEvent(pointerEvent('pointerup'));
-      jest.advanceTimersByTime(1500);
+      jest.advanceTimersByTime(700);
       expect(document.getElementById('editAssetFormModal')).toBeNull();
     }
 

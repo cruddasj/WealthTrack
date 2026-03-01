@@ -1,5 +1,13 @@
 [
   {
+    "version": "[NEXT_VERSION]",
+    "date": "[NEXT_DATE]",
+    "changes": [
+      "Make Financial Inputs rows non-selectable after adding assets, incomes, expenses, or liabilities so mobile long-press edit gestures trigger more reliably.",
+      "Reduce the Financial Inputs long-press edit hold time from 3 seconds to 1 second for faster mobile editing."
+    ]
+  },
+  {
     "version": "1.1.125",
     "date": "2026-03-01",
     "changes": [

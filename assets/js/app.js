@@ -45,7 +45,7 @@ const SNAPSHOT_DISPLAY_LIMIT = 5;
 let showAllSnapshots = false;
 
 const profilePickers = {};
-const TABLE_ROW_LONG_PRESS_MS = 3000;
+const TABLE_ROW_LONG_PRESS_MS = 1000;
 let importFileContent = null;
 let importFileToken = null;
 const getImportFileToken = (file) =>
@@ -4187,7 +4187,7 @@ function renderAssets() {
         `<span><span class="text-xs text-gray-500 dark:text-gray-400">High:</span> ${formatGrossNetRate(highGross, highNet)}</span>` +
         "</span>";
       const taxInfo = describeAssetTax(asset, taxSummary);
-      return `<tr class="text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700" data-long-press-action="edit-asset" data-index="${originalIndex}">
+      return `<tr class="text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 select-none" data-long-press-action="edit-asset" data-index="${originalIndex}">
     <td class="px-6 py-3 whitespace-nowrap align-middle">${asset.name}${passiveBadge}</td>
     <td class="px-6 py-3 whitespace-nowrap align-middle">${startCell}</td>
     <td class="px-6 py-3 whitespace-nowrap align-middle font-semibold">${fmtCurrency(currentValue)}</td>
@@ -4247,7 +4247,7 @@ function renderIncomes() {
       const amountLabel = hasAmount
         ? `${fmtCurrency(inc.amount)} (${inc.frequency})`
         : fmtCurrency(inc.amount || 0);
-      return `<tr class="text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700" data-long-press-action="edit-income" data-index="${idx}">
+      return `<tr class="text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 select-none" data-long-press-action="edit-income" data-index="${idx}">
     <td class="px-6 py-3 whitespace-nowrap align-middle">${inc.name}</td>
     <td class="px-6 py-3 whitespace-nowrap align-middle">${startCell}</td>
     <td class="px-6 py-3 whitespace-nowrap align-middle font-semibold">${amountLabel}</td>
@@ -4296,7 +4296,7 @@ function renderExpenses() {
       const amountLabel = hasAmount
         ? `${fmtCurrency(exp.amount)} (${exp.frequency})`
         : fmtCurrency(exp.amount || 0);
-      return `<tr class="text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700" data-long-press-action="edit-expense" data-index="${idx}">
+      return `<tr class="text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 select-none" data-long-press-action="edit-expense" data-index="${idx}">
     <td class="px-6 py-3 whitespace-nowrap align-middle">${exp.name}</td>
     <td class="px-6 py-3 whitespace-nowrap align-middle">${startCell}</td>
     <td class="px-6 py-3 whitespace-nowrap align-middle font-semibold">${amountLabel}</td>
@@ -4441,7 +4441,7 @@ function renderLiabilities() {
           ? `${startLabel}<span class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100">Upcoming</span>`
           : startLabel;
       }
-      return `<tr class="text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700" data-long-press-action="edit-liability" data-index="${i}">
+      return `<tr class="text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 select-none" data-long-press-action="edit-liability" data-index="${i}">
     <td class="px-6 py-4 whitespace-nowrap">${l.name}</td>
     <td class="px-6 py-4 whitespace-nowrap">${startCell}</td>
     <td class="px-6 py-4 whitespace-nowrap font-semibold">${fmtCurrency(currentValue)}</td>
