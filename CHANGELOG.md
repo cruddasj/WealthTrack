@@ -2,6 +2,10 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
+## [NEXT_VERSION] - [NEXT_DATE]
+
+- Improved visual contrast of elements such as stat boxes and input fields in dark mode.
+
 ## 1.1.108 - 2026-03-01
 
 - Refresh contributor and README documentation so required Node.js, npm, and Tailwind CSS versions match the current project tooling.

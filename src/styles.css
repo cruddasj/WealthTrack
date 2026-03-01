@@ -222,7 +222,7 @@
 
   /* tables */
   .table-header {
-    @apply px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider;
+    @apply px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-200 uppercase tracking-wider;
   }
   .sort-arrow {
     @apply inline-block w-3 text-[10px] text-gray-400 dark:text-gray-400;
@@ -373,10 +373,10 @@
   --card-filter: none;
   --dark-canvas: #000000;
   --dark-surface-1: #0b0b0b;
-  --dark-surface-2: #111111;
-  --dark-surface-3: #151515;
-  --dark-border-1: #1f1f1f;
-  --dark-border-2: #2a2a2a;
+  --dark-surface-2: #171717;
+  --dark-surface-3: #262626;
+  --dark-border-1: #262626;
+  --dark-border-2: #333333;
 }
 .dark {
   --card-bg: #1f2937;
