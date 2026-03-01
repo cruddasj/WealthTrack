@@ -678,3 +678,45 @@ html.dark:not(.theme-inverted):not(.theme-glass) .input-field {
     display: block;
   }
 }
+
+
+@media (min-width: 768px) {
+  body.sidebar-desktop-collapsed #sidebar {
+    width: 5.5rem !important;
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+    align-items: center;
+  }
+
+  body.sidebar-desktop-collapsed #sidebarThemeControl,
+  body.sidebar-desktop-collapsed #sidebar .desktop-collapse-hide {
+    display: none !important;
+  }
+
+  body.sidebar-desktop-collapsed #sidebar #brandLogo {
+    width: 2.5rem !important;
+    margin-bottom: 0;
+  }
+
+  body.sidebar-desktop-collapsed #sidebar nav {
+    margin-top: 0.75rem;
+  }
+
+  body.sidebar-desktop-collapsed #sidebar .nav-btn {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+    display: flex;
+    justify-content: center;
+  }
+
+  body.sidebar-desktop-collapsed #sidebar .nav-btn-label {
+    justify-content: center;
+    font-size: 0;
+    line-height: 1;
+  }
+
+  body.sidebar-desktop-collapsed #sidebar .nav-btn i {
+    margin-right: 0 !important;
+    font-size: 1rem;
+  }
+}

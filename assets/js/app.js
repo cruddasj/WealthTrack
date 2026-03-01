@@ -80,6 +80,7 @@ const LEGACY_LS_KEYS = {
   activeProfile: "activeProfile",
   forecastTip: "forecastTipSeen",
   view: "activeView",
+  desktopSidebarCollapsed: "desktopSidebarCollapsed",
 };
 const LS = Object.fromEntries(
   Object.entries(LEGACY_LS_KEYS).map(([name, key]) => [name, storageKey(key)]),
@@ -7910,13 +7911,46 @@ window.addEventListener("load", () => {
 
   // Mobile menu
   const sidebar = $("sidebar"),
-    overlay = $("overlay");
+    overlay = $("overlay"),
+    desktopSidebarToggle = $("desktopSidebarToggle");
   const scheduleBrandLogoResize = () => {
     if (typeof requestAnimationFrame === "function") {
       requestAnimationFrame(() => requestAnimationFrame(sizeBrandLogo));
     } else {
       setTimeout(sizeBrandLogo, 50);
     }
+  };
+  const applyDesktopSidebarState = (collapsed, options = {}) => {
+    const shouldPersist = options.persist !== false;
+    const body = document.body;
+    if (body) {
+      body.classList.toggle("sidebar-desktop-collapsed", collapsed);
+    }
+    if (desktopSidebarToggle) {
+      desktopSidebarToggle.setAttribute("aria-expanded", String(!collapsed));
+      const nextLabel = collapsed ? "Expand navigation" : "Collapse navigation";
+      desktopSidebarToggle.setAttribute("aria-label", nextLabel);
+      desktopSidebarToggle.setAttribute("title", nextLabel);
+      desktopSidebarToggle.innerHTML = collapsed
+        ? '<i class="fa-solid fa-angles-right" aria-hidden="true"></i><span class="sr-only">Toggle navigation width</span>'
+        : '<i class="fa-solid fa-angles-left" aria-hidden="true"></i><span class="sr-only">Toggle navigation width</span>';
+    }
+    if (shouldPersist) {
+      try {
+        localStorage.setItem(LS.desktopSidebarCollapsed, collapsed ? "1" : "0");
+      } catch (_) {}
+    }
+    if (window.innerWidth >= 768) {
+      scheduleBrandLogoResize();
+    }
+  };
+  const syncDesktopSidebarForViewport = () => {
+    if (window.innerWidth < 768) {
+      applyDesktopSidebarState(false, { persist: false });
+      return;
+    }
+    const isCollapsed = getLocalStorageItem(LS.desktopSidebarCollapsed) === "1";
+    applyDesktopSidebarState(isCollapsed, { persist: false });
   };
   const setMenuState = (open) => {
     if (!sidebar || !overlay) return;
@@ -7947,9 +7981,21 @@ window.addEventListener("load", () => {
   };
   on($("menu-toggle"), "click", toggleMenu);
   on(overlay, "click", () => setMenuState(false));
+  if (desktopSidebarToggle)
+    on(desktopSidebarToggle, "click", () => {
+      if (window.innerWidth < 768) return;
+      const body = document.body;
+      const isCollapsed = body
+        ? body.classList.contains("sidebar-desktop-collapsed")
+        : false;
+      applyDesktopSidebarState(!isCollapsed);
+    });
+
+  syncDesktopSidebarForViewport();
 
   on(window, "resize", () => {
     if (window.innerWidth >= 768) setMenuState(false);
+    syncDesktopSidebarForViewport();
     updateMobileHeaderOffset();
     updateChartContainers();
   });
@@ -7966,6 +8012,13 @@ window.addEventListener("load", () => {
       clearChartTooltip(wealthChart);
       adaptChartToZoom(wealthChart);
     });
+
+  document.querySelectorAll("#sidebar .nav-btn").forEach((btn) => {
+    const label = (btn.textContent || "").trim().replace(/\s+/g, " ");
+    if (!label) return;
+    btn.setAttribute("aria-label", label);
+    btn.setAttribute("title", label);
+  });
 
   const brandHome = $("brandHome");
   if (brandHome)

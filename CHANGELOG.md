@@ -2,6 +2,12 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
+## [NEXT_VERSION] - [NEXT_DATE]
+
+- Add a desktop sidebar toggle button so navigation can be collapsed to an icon-only rail and expanded again as needed.
+- Keep collapsed sidebar behavior consistent with WealthTrack styling, including icon-only navigation labels and remembered desktop preference.
+- Replace the desktop sidebar toggle icon with clearer chevrons so it is obvious that the menu can collapse and expand.
+
 ## 1.1.108 - 2026-03-01
 
 - Refresh contributor and README documentation so required Node.js, npm, and Tailwind CSS versions match the current project tooling.

@@ -141,6 +141,15 @@ describe('App integration flows for coverage', () => {
 
     // Navigation/menu actions
     document.getElementById('menu-toggle').click();
+    const desktopSidebarToggle = document.getElementById('desktopSidebarToggle');
+    if (desktopSidebarToggle) {
+      desktopSidebarToggle.click();
+      expect(document.body.classList.contains('sidebar-desktop-collapsed')).toBe(true);
+      expect(localStorage.getItem('wealthtrack:desktopSidebarCollapsed')).toBe('1');
+      desktopSidebarToggle.click();
+      expect(document.body.classList.contains('sidebar-desktop-collapsed')).toBe(false);
+      expect(localStorage.getItem('wealthtrack:desktopSidebarCollapsed')).toBe('0');
+    }
     document.querySelector('[data-target="data-entry"]').click();
     document.querySelector('[data-target="forecasts"]').click();
     document.querySelector('[data-target="portfolio-analysis"]').click();

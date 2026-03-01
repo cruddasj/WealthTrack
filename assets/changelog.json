@@ -1,5 +1,14 @@
 [
   {
+    "version": "[NEXT_VERSION]",
+    "date": "[NEXT_DATE]",
+    "changes": [
+      "Add a desktop sidebar toggle button so navigation can be collapsed to an icon-only rail and expanded again as needed.",
+      "Keep collapsed sidebar behavior consistent with WealthTrack styling, including icon-only navigation labels and remembered desktop preference.",
+      "Replace the desktop sidebar toggle icon with clearer chevrons so it is obvious that the menu can collapse and expand."
+    ]
+  },
+  {
     "version": "1.1.108",
     "date": "2026-03-01",
     "changes": [
