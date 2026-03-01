@@ -2,6 +2,10 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
+## [NEXT_VERSION] - [NEXT_DATE]
+
+- Improve automated version selection so releases can honor a newer changelog version (such as 1.2.0) instead of always forcing the next patch number.
+
 ## 1.1.123 - 2026-03-01
 
 - Shorten the Financial Inputs long-press edit interaction to 3 seconds and suppress touch text-selection popups so row editing is smoother on Android Chrome.
