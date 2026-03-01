@@ -2,7 +2,7 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
-## [NEXT_VERSION] - [NEXT_DATE]
+## 1.1.101 - 2026-03-01
 
 - Restore the mobile navigation backdrop so page content stays visible with a soft blur instead of turning fully black.
 - Add an automated mobile menu check to confirm the overlay keeps blur styling after future CSS upgrades.
