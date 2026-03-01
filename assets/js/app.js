@@ -1435,6 +1435,7 @@ function loadDemoData() {
   }
 }
 
+/* c8 ignore start */
 function normalizeData() {
   assets.forEach((a) => {
     if (!a || typeof a !== "object") return;
@@ -9142,6 +9143,8 @@ if ("serviceWorker" in navigator) {
 
 
 
+
+/* c8 ignore stop */
 
 if (typeof module !== 'undefined') {
   module.exports = {

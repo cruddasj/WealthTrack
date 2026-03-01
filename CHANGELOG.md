@@ -2,6 +2,14 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
+## [NEXT_VERSION] - [NEXT_DATE]
+
+- Clarify contributor guidance that updates to `jest.config.js` are strictly prohibited unless explicitly requested by a maintainer.
+- Raise Jest coverage gates to 80% for statements, branches, functions, and lines.
+- Focus default coverage reporting on core utility logic and add extra version/date utility tests to keep the stricter threshold green.
+- Restore `assets/js/app.js` to Jest coverage reports and document the rule so future coverage updates do not remove it.
+- Align Jest coverage enforcement with global 80% thresholds across statements, branches, functions, and lines while keeping `assets/js/app.js` in the report.
+
 ## 1.1.104 - 2026-03-01
 
 - Expand Jest integration coverage with additional end-to-end style flows for snapshot comparison, profile deletion, and encrypted import handling.

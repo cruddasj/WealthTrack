@@ -245,4 +245,27 @@ describe('Utility/Tax Functions', () => {
     expect(app.calculateFutureValueFreq(1000, 100, 0, 1)).toBe(2200);
     expect(app.calculateFutureValueFreq(1000, 100, 0, 1, 0)).toBe(2200);
   });
+
+test('compareAppVersions handles case-insensitive prerelease labels and numeric/string ties', () => {
+  expect(app.compareAppVersions('1.0.Alpha', '1.0.alpha')).toBe(0);
+  expect(app.compareAppVersions('1.0.1', '1.0.01')).toBe(0);
+  expect(app.compareAppVersions('2', null)).toBe(1);
+});
+
+test('formatChangelogDate gracefully falls back when locale formatting throws', () => {
+  const original = Date.prototype.toLocaleDateString;
+  Date.prototype.toLocaleDateString = function toLocaleDateString(locales, options) {
+    if (options) {
+      throw new Error('forced failure');
+    }
+    return 'fallback-date';
+  };
+
+  try {
+    expect(app.formatChangelogDate('2025-05-17')).toBe('fallback-date');
+  } finally {
+    Date.prototype.toLocaleDateString = original;
+  }
+});
+
 });
