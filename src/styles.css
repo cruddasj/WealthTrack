@@ -349,6 +349,11 @@
   align-items: center;
 }
 
+@media (max-width: 767px) {
+  .chart-container--donut {
+    height: 500px;
+  }
+}
 
 .chart-html-legend {
   margin-top: 0.5rem;
