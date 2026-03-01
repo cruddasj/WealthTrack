@@ -3,10 +3,11 @@ module.exports = {
   collectCoverage: true,
   coverageProvider: 'v8',
   collectCoverageFrom: [
-    'assets/js/utilities.js'
+    'assets/js/utilities.js',
+    'assets/js/app.js'
   ],
   coverageThreshold: {
-    global: {
+    'assets/js/utilities.js': {
       statements: 80,
       branches: 80,
       functions: 80,

@@ -11,6 +11,7 @@ Do
 
 - Check for any minor or patch updates to npm libraries and apply them if they are found before making any further changes.
 - For any new code developed, tests should be included, and before committing changes, all tests must pass.
+- Keep `assets/js/app.js` in Jest coverage collection/reporting at all times; never remove it from `collectCoverageFrom` when adjusting test coverage settings.
 - Code should be linted using `npm run lint` before being committed.
 - Before running Playwright E2E tests in a new environment, install browser binaries with `npx playwright install` (or `npx playwright install --with-deps` on fresh Linux machines) so test runs do not fail with missing executable errors.
 - If Node warns that `NO_COLOR` is ignored because `FORCE_COLOR` is set, clear color forcing for the test command (for example `FORCE_COLOR=0 npm run test:e2e`) to avoid noisy output.

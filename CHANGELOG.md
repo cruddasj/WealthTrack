@@ -6,6 +6,7 @@ All notable changes to WealthTrack will be documented in this file. This project
 
 - Raise Jest coverage gates to 80% for statements, branches, functions, and lines.
 - Focus default coverage reporting on core utility logic and add extra version/date utility tests to keep the stricter threshold green.
+- Restore `assets/js/app.js` to Jest coverage reports and document the rule so future coverage updates do not remove it.
 
 ## 1.1.104 - 2026-03-01
 
