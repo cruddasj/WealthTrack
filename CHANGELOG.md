@@ -2,6 +2,11 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
+## [NEXT_VERSION] - [NEXT_DATE]
+
+- Refresh the welcome page guidance so it reflects newer planning features like net cash flow context, forecast comparisons, stress testing, and in-app update highlights.
+- Prepare this change for the 1.2.0 app release.
+
 ## 1.1.117 - 2026-03-01
 
 - Switch Portfolio Allocation, Future Portfolio, and Snapshot History charts to Chart.js HTML legends so legend items render below each chart with improved spacing and click-to-toggle behaviour.
