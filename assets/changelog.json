@@ -1,7 +1,7 @@
 [
   {
-    "version": "[NEXT_VERSION]",
-    "date": "[NEXT_DATE]",
+    "version": "1.1.98",
+    "date": "2026-02-28",
     "changes": [
       "Document Playwright browser installation and optional Linux dependency setup to prevent missing executable failures during E2E runs.",
       "Add guidance for suppressing NO_COLOR and FORCE_COLOR warning noise when running Playwright tests."

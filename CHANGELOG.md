@@ -2,7 +2,7 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
-## [NEXT_VERSION] - [NEXT_DATE]
+## 1.1.98 - 2026-02-28
 
 - Document Playwright browser installation and optional Linux dependency setup to prevent missing executable failures during E2E runs.
 - Add guidance for suppressing `NO_COLOR` and `FORCE_COLOR` warning noise when running Playwright tests.
