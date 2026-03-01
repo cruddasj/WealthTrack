@@ -1,7 +1,7 @@
 [
   {
-    "version": "[NEXT_VERSION]",
-    "date": "[NEXT_DATE]",
+    "version": "1.1.115",
+    "date": "2026-03-01",
     "changes": [
       "Make the Future Portfolio donut chart layout match Portfolio Allocation by placing the legend below the chart with extra spacing for readability."
     ]
