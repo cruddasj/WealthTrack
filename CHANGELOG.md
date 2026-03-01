@@ -2,6 +2,10 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
+## [NEXT_VERSION] - [NEXT_DATE]
+
+- Add a mobile-friendly long-press shortcut on Financial Inputs rows so holding a row for 3 seconds opens its edit form.
+
 ## 1.1.121 - 2026-03-01
 
 - Reduce mobile-only vertical space around Portfolio Allocation and Future Portfolio donut charts so the chart and legend sit closer together.

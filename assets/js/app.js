@@ -45,6 +45,7 @@ const SNAPSHOT_DISPLAY_LIMIT = 5;
 let showAllSnapshots = false;
 
 const profilePickers = {};
+const TABLE_ROW_LONG_PRESS_MS = 3000;
 let importFileContent = null;
 let importFileToken = null;
 const getImportFileToken = (file) =>
@@ -2717,6 +2718,27 @@ function showEditEvent(index) {
   openModalNode(tpl);
 }
 
+function showFinancialRowEditor(action, index) {
+  const normalizedIndex = Number(index);
+  if (!Number.isFinite(normalizedIndex)) return;
+  switch (action) {
+    case "edit-asset":
+      showEditAsset(normalizedIndex);
+      break;
+    case "edit-income":
+      showEditIncome(normalizedIndex);
+      break;
+    case "edit-expense":
+      showEditExpense(normalizedIndex);
+      break;
+    case "edit-liability":
+      showEditLiability(normalizedIndex);
+      break;
+    default:
+      break;
+  }
+}
+
 // Table header generator + sorting (condensed columns)
 const ASSET_COLS = [
   "Asset Name",
@@ -4165,7 +4187,7 @@ function renderAssets() {
         `<span><span class="text-xs text-gray-500 dark:text-gray-400">High:</span> ${formatGrossNetRate(highGross, highNet)}</span>` +
         "</span>";
       const taxInfo = describeAssetTax(asset, taxSummary);
-      return `<tr class="text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
+      return `<tr class="text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700" data-long-press-action="edit-asset" data-index="${originalIndex}">
     <td class="px-6 py-3 whitespace-nowrap align-middle">${asset.name}${passiveBadge}</td>
     <td class="px-6 py-3 whitespace-nowrap align-middle">${startCell}</td>
     <td class="px-6 py-3 whitespace-nowrap align-middle font-semibold">${fmtCurrency(currentValue)}</td>
@@ -4225,7 +4247,7 @@ function renderIncomes() {
       const amountLabel = hasAmount
         ? `${fmtCurrency(inc.amount)} (${inc.frequency})`
         : fmtCurrency(inc.amount || 0);
-      return `<tr class="text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
+      return `<tr class="text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700" data-long-press-action="edit-income" data-index="${idx}">
     <td class="px-6 py-3 whitespace-nowrap align-middle">${inc.name}</td>
     <td class="px-6 py-3 whitespace-nowrap align-middle">${startCell}</td>
     <td class="px-6 py-3 whitespace-nowrap align-middle font-semibold">${amountLabel}</td>
@@ -4274,7 +4296,7 @@ function renderExpenses() {
       const amountLabel = hasAmount
         ? `${fmtCurrency(exp.amount)} (${exp.frequency})`
         : fmtCurrency(exp.amount || 0);
-      return `<tr class="text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
+      return `<tr class="text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700" data-long-press-action="edit-expense" data-index="${idx}">
     <td class="px-6 py-3 whitespace-nowrap align-middle">${exp.name}</td>
     <td class="px-6 py-3 whitespace-nowrap align-middle">${startCell}</td>
     <td class="px-6 py-3 whitespace-nowrap align-middle font-semibold">${amountLabel}</td>
@@ -4419,7 +4441,7 @@ function renderLiabilities() {
           ? `${startLabel}<span class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100">Upcoming</span>`
           : startLabel;
       }
-      return `<tr class="text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
+      return `<tr class="text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700" data-long-press-action="edit-liability" data-index="${i}">
     <td class="px-6 py-4 whitespace-nowrap">${l.name}</td>
     <td class="px-6 py-4 whitespace-nowrap">${startCell}</td>
     <td class="px-6 py-4 whitespace-nowrap font-semibold">${fmtCurrency(currentValue)}</td>
@@ -8078,6 +8100,44 @@ window.addEventListener("load", () => {
       if (window.innerWidth < 768) toggleMenu();
     });
 
+
+
+  let longPressTimer = null;
+  let longPressTarget = null;
+
+  const clearLongPress = () => {
+    if (longPressTimer) clearTimeout(longPressTimer);
+    longPressTimer = null;
+    longPressTarget = null;
+  };
+
+  const triggerRowLongPressEdit = (eventTarget) => {
+    const row = eventTarget?.closest?.("tr[data-long-press-action][data-index]");
+    if (!row) return;
+    const interactive = eventTarget?.closest?.(
+      "button, a, input, select, textarea, label, [role='button'], [data-action]",
+    );
+    if (interactive) return;
+
+    const { longPressAction, index } = row.dataset;
+    longPressTarget = row;
+    longPressTimer = setTimeout(() => {
+      if (longPressTarget !== row) return;
+      showFinancialRowEditor(longPressAction, index);
+      clearLongPress();
+    }, TABLE_ROW_LONG_PRESS_MS);
+  };
+
+  on(document, "pointerdown", (e) => {
+    if (!e.isPrimary || e.pointerType !== "touch") return;
+    clearLongPress();
+    triggerRowLongPressEdit(e.target);
+  });
+
+  on(document, "pointerup", clearLongPress);
+  on(document, "pointercancel", clearLongPress);
+  on(document, "pointerleave", clearLongPress);
+
   // Global click handlers (nav, tabs, actions, modal close)
   on(document, "click", (e) => {
     // Sortable asset table headers
@@ -8147,16 +8207,10 @@ window.addEventListener("load", () => {
           }
           break;
         case "edit-asset":
-          showEditAsset(+index);
-          break;
         case "edit-income":
-          showEditIncome(+index);
-          break;
         case "edit-expense":
-          showEditExpense(+index);
-          break;
         case "edit-liability":
-          showEditLiability(+index);
+          showFinancialRowEditor(act, index);
           break;
         case "delete-asset":
           showConfirm("Are you sure you want to delete this asset?", () => {
