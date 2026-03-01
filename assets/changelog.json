@@ -1,7 +1,7 @@
 [
   {
-    "version": "[NEXT_VERSION]",
-    "date": "[NEXT_DATE]",
+    "version": "1.1.122",
+    "date": "2026-03-01",
     "changes": [
       "Add a mobile-friendly long-press shortcut on Financial Inputs rows so holding a row for 3 seconds opens its edit form."
     ]
