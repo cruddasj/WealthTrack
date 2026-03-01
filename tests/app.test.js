@@ -747,6 +747,15 @@ describe('App Core Logic', () => {
     expect(() => app.updateGoalButton()).not.toThrow();
   });
 
+
+  test('asset breakdown chart uses bottom legend positioning', () => {
+    const fs = require('fs');
+    const path = require('path');
+    const appSource = fs.readFileSync(path.join(__dirname, '..', 'assets/js/app.js'), 'utf8');
+
+    expect(appSource).toContain('legend: { position: "bottom" }');
+  });
+
   test('applyTaxSettingsChanges', () => {
     document.body.innerHTML = `
       <div class="overflow-x-auto"><table id="assetTableHeader"><tbody id="assetTableBody"></tbody></table></div>
