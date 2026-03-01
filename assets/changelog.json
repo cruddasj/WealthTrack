@@ -1,7 +1,7 @@
 [
   {
-    "version": "[NEXT_VERSION]",
-    "date": "[NEXT_DATE]",
+    "version": "1.1.103",
+    "date": "2026-03-01",
     "changes": [
       "Set the global Jest coverage requirement to 70% across statements, branches, functions, and lines.",
       "Remove the dedicated coverage override for assets/js/app.js so all files follow the same global rule.",

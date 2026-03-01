@@ -2,7 +2,7 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
-## [NEXT_VERSION] - [NEXT_DATE]
+## 1.1.103 - 2026-03-01
 
 - Set the global Jest coverage requirement to 70% across statements, branches, functions, and lines.
 - Remove the dedicated coverage override for `assets/js/app.js` so all files follow the same global rule.
