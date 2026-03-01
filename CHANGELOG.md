@@ -4,6 +4,7 @@ All notable changes to WealthTrack will be documented in this file. This project
 
 ## [NEXT_VERSION] - [NEXT_DATE]
 
+- Clarify contributor guidance that updates to `jest.config.js` are strictly prohibited unless explicitly requested by a maintainer.
 - Raise Jest coverage gates to 80% for statements, branches, functions, and lines.
 - Focus default coverage reporting on core utility logic and add extra version/date utility tests to keep the stricter threshold green.
 - Restore `assets/js/app.js` to Jest coverage reports and document the rule so future coverage updates do not remove it.
