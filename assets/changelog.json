@@ -1,7 +1,7 @@
 [
   {
-    "version": "[NEXT_VERSION]",
-    "date": "[NEXT_DATE]",
+    "version": "1.1.114",
+    "date": "2026-03-01",
     "changes": [
       "Add extra spacing between the Portfolio Allocation donut chart and its legend so labels no longer feel cramped on mobile."
     ]
