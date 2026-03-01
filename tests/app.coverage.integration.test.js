@@ -25,8 +25,17 @@ function submit(formId) {
   form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
 }
 
+
+function pointerEvent(type, pointerType = 'touch') {
+  const event = new Event(type, { bubbles: true, cancelable: true });
+  Object.defineProperty(event, 'pointerType', { value: pointerType });
+  Object.defineProperty(event, 'isPrimary', { value: true });
+  return event;
+}
+
 describe('App integration flows for coverage', () => {
   beforeEach(() => {
+    jest.useFakeTimers();
     jest.resetModules();
     document.open();
     document.write(html);
@@ -125,6 +134,10 @@ describe('App integration flows for coverage', () => {
       enc: { Utf8: 'utf8' }
     };
 
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
   });
 
   test('exercises major interactive flows', async () => {
@@ -226,6 +239,24 @@ describe('App integration flows for coverage', () => {
       setValue('editLiabilityName', 'Loan Updated');
       setValue('editLiabilityValue', '2800');
       submit('editLiabilityFormModal');
+    }
+
+    const incomeRow = document.querySelector('[data-long-press-action="edit-income"]');
+    if (incomeRow) {
+      incomeRow.dispatchEvent(pointerEvent('pointerdown'));
+      jest.advanceTimersByTime(3100);
+      expect(document.getElementById('editIncomeFormModal')).not.toBeNull();
+      const closeFromLongPress = document.querySelector('[data-action="close-modal"]');
+      if (closeFromLongPress) closeFromLongPress.click();
+    }
+
+    const assetRow = document.querySelector('[data-long-press-action="edit-asset"]');
+    if (assetRow) {
+      assetRow.dispatchEvent(pointerEvent('pointerdown'));
+      jest.advanceTimersByTime(2000);
+      assetRow.dispatchEvent(pointerEvent('pointerup'));
+      jest.advanceTimersByTime(1500);
+      expect(document.getElementById('editAssetFormModal')).toBeNull();
     }
 
     // Calculator forms
