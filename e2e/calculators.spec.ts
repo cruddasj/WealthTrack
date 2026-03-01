@@ -1,24 +1,14 @@
 import { test, expect } from '@playwright/test';
+import { setupE2ETest, expandCard } from './test-helpers';
 
 test.describe('Calculators', () => {
   test.beforeEach(async ({ page }) => {
+    await setupE2ETest(page);
     await page.goto('/');
-    // Dismiss welcome modal if it appears
-    const closeModalBtn = page.locator('.modal-close');
-    if (await closeModalBtn.isVisible()) {
-      await closeModalBtn.click();
-    }
     // Navigate to Calculators section
     await page.locator('nav').locator('button', { hasText: 'Calculators' }).click({ force: true });
     await expect(page.locator('#calculators')).toHaveClass(/active/);
   });
-
-  async function expandCard(page, title) {
-    const card = page.locator('.card', { has: page.locator('h3', { hasText: title }) });
-    if (await card.locator('.card-body').isHidden()) {
-      await card.locator('h3', { hasText: title }).click();
-    }
-  }
 
   test('UK Take Home Pay calculator', async ({ page }) => {
     await expandCard(page, 'UK Take Home Pay');

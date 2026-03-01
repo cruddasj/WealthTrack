@@ -1,47 +1,29 @@
 import { test, expect } from '@playwright/test';
+import { setupE2ETest, expandCard } from './test-helpers';
 
 test.describe('Portfolio Insights', () => {
   test.beforeEach(async ({ page }) => {
-    // Disable onboarding and welcome via localStorage
-    await page.addInitScript(() => {
-      window.localStorage.setItem('wealthtrack:welcomeSeen', '1');
-      window.localStorage.setItem('wealthtrack:onboardDataSeen', '1');
-      window.localStorage.setItem('wealthtrack:forecastTipSeen', '1');
-      window.localStorage.setItem('wealthtrack:welcomeDisabled', '1');
-    });
-
+    await setupE2ETest(page);
     await page.goto('/');
 
     // Add some data to unlock Portfolio Insights
     await page.locator('nav').locator('button', { hasText: 'Financial Inputs' }).click();
 
     // Add Asset
-    const assetCard = page.locator('#data-entry .card', { has: page.locator('h3', { hasText: /^Assets$/ }) }).first();
-    const isAssetCollapsed = await assetCard.evaluate(el => el.classList.contains('collapsed'));
-    if (isAssetCollapsed) {
-      await assetCard.locator('h3').click({ force: true });
-    }
+    await expandCard(page, /^Assets$/);
     await page.fill('#assetName', 'Savings');
     await page.fill('#assetValue', '10000');
     await page.fill('#assetReturn', '5');
     await page.click('button:has-text("Add Asset")');
 
     // Add Income
-    const incomeCard = page.locator('#data-entry .card', { has: page.locator('h3', { hasText: /^Income$/ }) }).first();
-    const isIncomeCollapsed = await incomeCard.evaluate(el => el.classList.contains('collapsed'));
-    if (isIncomeCollapsed) {
-      await incomeCard.locator('h3', { hasText: /^Income$/ }).click({ force: true });
-    }
+    await expandCard(page, /^Income$/);
     await page.fill('#incomeName', 'Salary');
     await page.fill('#incomeAmount', '3000');
     await page.click('button:has-text("Add Income")');
 
     // Add Expense
-    const expenseCard = page.locator('#data-entry .card', { has: page.locator('h3', { hasText: /^Expenses$/ }) }).first();
-    const isExpenseCollapsed = await expenseCard.evaluate(el => el.classList.contains('collapsed'));
-    if (isExpenseCollapsed) {
-      await expenseCard.locator('h3', { hasText: /^Expenses$/ }).click({ force: true });
-    }
+    await expandCard(page, /^Expenses$/);
     await page.fill('#expenseName', 'Rent');
     await page.fill('#expenseAmount', '1000');
     await page.click('button:has-text("Add Expense")');
@@ -51,17 +33,6 @@ test.describe('Portfolio Insights', () => {
     await expect(page.locator('#portfolio-analysis')).toHaveClass(/active/);
     await page.waitForTimeout(500);
   });
-
-  async function expandCard(page, title) {
-    const card = page.locator('.card').filter({ has: page.locator('h3, h4', { hasText: title }) }).first();
-    const isCollapsed = await card.evaluate(el => el.classList.contains('collapsed'));
-    if (isCollapsed) {
-      await card.locator('h3, h4', { hasText: title }).first().click({ force: true });
-      await expect(card).not.toHaveClass(/collapsed/);
-      await page.waitForTimeout(500);
-    }
-    return card;
-  }
 
   test('Net Cash Flow', async ({ page }) => {
     await expandCard(page, 'Net Cash Flow');

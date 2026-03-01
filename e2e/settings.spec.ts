@@ -1,15 +1,9 @@
 import { test, expect } from '@playwright/test';
+import { setupE2ETest, expandCard } from './test-helpers';
 
 test.describe('Settings & Data', () => {
   test.beforeEach(async ({ page }) => {
-    // Disable onboarding and welcome via localStorage
-    await page.addInitScript(() => {
-      window.localStorage.setItem('wealthtrack:welcomeSeen', '1');
-      window.localStorage.setItem('wealthtrack:onboardDataSeen', '1');
-      window.localStorage.setItem('wealthtrack:forecastTipSeen', '1');
-      window.localStorage.setItem('wealthtrack:welcomeDisabled', '1');
-    });
-
+    await setupE2ETest(page);
     await page.goto('/');
 
     // Navigate to Settings
@@ -17,17 +11,6 @@ test.describe('Settings & Data', () => {
     await expect(page.locator('#settings')).toHaveClass(/active/);
     await page.waitForTimeout(500);
   });
-
-  async function expandCard(page, title) {
-    const card = page.locator('.card').filter({ has: page.locator('h3, h4', { hasText: title }) }).first();
-    const isCollapsed = await card.evaluate(el => el.classList.contains('collapsed'));
-    if (isCollapsed) {
-      await card.locator('h3, h4', { hasText: title }).first().click({ force: true });
-      await expect(card).not.toHaveClass(/collapsed/);
-      await page.waitForTimeout(500);
-    }
-    return card;
-  }
 
   test('Profile Management', async ({ page }) => {
     await page.waitForTimeout(1000);

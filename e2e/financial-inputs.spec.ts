@@ -1,31 +1,15 @@
 import { test, expect } from '@playwright/test';
+import { setupE2ETest, expandCard } from './test-helpers';
 
 test.describe('Financial Inputs', () => {
   test.beforeEach(async ({ page }) => {
-    // Disable onboarding and welcome via localStorage
-    await page.addInitScript(() => {
-      window.localStorage.setItem('wealthtrack:welcomeSeen', '1');
-      window.localStorage.setItem('wealthtrack:onboardDataSeen', '1');
-      window.localStorage.setItem('wealthtrack:forecastTipSeen', '1');
-      window.localStorage.setItem('wealthtrack:welcomeDisabled', '1');
-    });
-
+    await setupE2ETest(page);
     await page.goto('/');
 
     // Ensure we are on the data-entry page
     await page.locator('nav').locator('button', { hasText: 'Financial Inputs' }).click();
     await expect(page.locator('#data-entry')).toHaveClass(/active/);
   });
-
-  async function expandCard(page, title) {
-    const card = page.locator('.card', { has: page.locator('h3, h4', { hasText: title }) }).first();
-    const isCollapsed = await card.evaluate(el => el.classList.contains('collapsed'));
-    if (isCollapsed) {
-      await card.locator('h3, h4').click();
-      await expect(card).not.toHaveClass(/collapsed/);
-    }
-    return card;
-  }
 
   test('Add and edit Income', async ({ page }) => {
     await expandCard(page, 'Income');

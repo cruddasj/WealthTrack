@@ -57,4 +57,31 @@ describe('Calculator Functions', () => {
     // With 0 rate
     expect(app.calculateFutureValueFreq(1000, 100, 0, 1, 12)).toBe(1000 + 100 * 12);
   });
+
+  test('calculateStudentLoanRepayment includes all supported plans', () => {
+    expect(app.calculateStudentLoanRepayment(32000, 'plan4')).toBeCloseTo((32000 - 31295) * 0.09, 2);
+    expect(app.calculateStudentLoanRepayment(26000, 'plan5')).toBeCloseTo((26000 - 25000) * 0.09, 2);
+    expect(app.calculateStudentLoanRepayment(22000, 'postgrad')).toBeCloseTo((22000 - 21000) * 0.06, 2);
+  });
+
+  test('calculateUkIncomeTax and calculateUkNi respect fallback thresholds', () => {
+    const tax = app.calculateUkIncomeTax(70000, 12570, { basicLimit: 37700, higherLimit: 80000 });
+    const ni = app.calculateUkNi(70000, { primaryNiThreshold: 10000, upperNiThreshold: 50000 });
+    expect(tax).toBeGreaterThan(0);
+    expect(ni).toBeGreaterThan(0);
+  });
+
+  test('calculateUkNi falls back to default threshold values when config keys are missing', () => {
+    const withEmptyConfig = app.calculateUkNi(20000, {});
+    const withDefaultConfig = app.calculateUkNi(20000);
+    expect(withEmptyConfig).toBeCloseTo(withDefaultConfig, 2);
+
+    const withOnlyPrimaryThreshold = app.calculateUkNi(60000, { primaryNiThreshold: 10000 });
+    expect(withOnlyPrimaryThreshold).toBeGreaterThan(withDefaultConfig);
+  });
+
+  test('calculateFutureValueFreq uses monthly defaults when periods are omitted or zero', () => {
+    expect(app.calculateFutureValueFreq(1000, 100, 0, 1)).toBe(2200);
+    expect(app.calculateFutureValueFreq(1000, 100, 0, 1, 0)).toBe(2200);
+  });
 });

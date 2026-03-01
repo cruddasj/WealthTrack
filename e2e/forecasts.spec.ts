@@ -1,24 +1,14 @@
 import { test, expect } from '@playwright/test';
+import { setupE2ETest, expandCard } from './test-helpers';
 
 test.describe('Forecasts', () => {
   test.beforeEach(async ({ page }) => {
-    // Disable onboarding and welcome via localStorage
-    await page.addInitScript(() => {
-      window.localStorage.setItem('wealthtrack:welcomeSeen', '1');
-      window.localStorage.setItem('wealthtrack:onboardDataSeen', '1');
-      window.localStorage.setItem('wealthtrack:forecastTipSeen', '1');
-      window.localStorage.setItem('wealthtrack:welcomeDisabled', '1');
-    });
-
+    await setupE2ETest(page);
     await page.goto('/');
 
     // Add an asset to unlock Forecasts
     await page.locator('nav').locator('button', { hasText: 'Financial Inputs' }).click();
-    const assetCard = page.locator('#data-entry .card', { has: page.locator('h3', { hasText: /^Assets$/ }) }).first();
-    const isAssetCollapsed = await assetCard.evaluate(el => el.classList.contains('collapsed'));
-    if (isAssetCollapsed) {
-      await assetCard.locator('h3').click({ force: true });
-    }
+    await expandCard(page, /^Assets$/);
     await page.fill('#assetName', 'Test Asset');
     await page.fill('#assetValue', '10000');
     await page.fill('#assetReturn', '5');
@@ -29,17 +19,6 @@ test.describe('Forecasts', () => {
     await expect(page.locator('#forecasts')).toHaveClass(/active/);
     await page.waitForTimeout(500);
   });
-
-  async function expandCard(page, title) {
-    const card = page.locator('.card').filter({ has: page.locator('h3, h4', { hasText: title }) }).first();
-    const isCollapsed = await card.evaluate(el => el.classList.contains('collapsed'));
-    if (isCollapsed) {
-      await card.locator('h3, h4', { hasText: title }).first().click({ force: true });
-      await expect(card).not.toHaveClass(/collapsed/);
-      await page.waitForTimeout(500);
-    }
-    return card;
-  }
 
   test('Scenario Modelling: Add, Edit, and Delete event', async ({ page }) => {
     await expandCard(page, 'Scenario Modelling');
