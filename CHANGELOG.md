@@ -198,6 +198,9 @@ All notable changes to WealthTrack will be documented in this file. This project
 
 - Added automated test suite to verify application functionality and ensure ongoing stability.
 
+## [[NEXT_VERSION]] - [NEXT_DATE]
+- Update application software dependencies
+
 ## [1.1.81] - 2026-02-28
 
 - Update GitHub Actions to latest versions and pin to SHA commit hashes for security best practices.
