@@ -236,6 +236,41 @@ describe('App Core Logic', () => {
     expect(app.calculateCurrentValue(null, now)).toBe(0);
   });
 
+
+  test('getGoalAchievementDatesFromScenarios returns first hit per scenario', () => {
+    app.setGoalValue(1000);
+    const scenarios = {
+      labels: [
+        new Date('2025-01-01T00:00:00Z'),
+        new Date('2025-02-01T00:00:00Z'),
+        new Date('2025-03-01T00:00:00Z')
+      ],
+      low: [900, 1000, 1100],
+      base: [800, 900, 1000],
+      high: [1000, 1200, 1300]
+    };
+
+    const dates = app.getGoalAchievementDatesFromScenarios(scenarios);
+
+    expect(dates.low).toBe('2025-02-01T00:00:00.000Z');
+    expect(dates.base).toBe('2025-03-01T00:00:00.000Z');
+    expect(dates.high).toBe('2025-02-01T00:00:00.000Z');
+  });
+
+  test('describeGoalDateImpact reports faster and slower timelines', () => {
+    const faster = app.describeGoalDateImpact(
+      '2025-06-01T00:00:00.000Z',
+      '2025-03-01T00:00:00.000Z'
+    );
+    const slower = app.describeGoalDateImpact(
+      '2025-03-01T00:00:00.000Z',
+      '2025-06-01T00:00:00.000Z'
+    );
+
+    expect(faster.impactLabel).toContain('faster');
+    expect(slower.impactLabel).toContain('slower');
+  });
+
   test('calculateCurrentLiability handles start dates and interest', () => {
     const now = new Date('2025-01-01').getTime();
 
