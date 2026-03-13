@@ -98,4 +98,11 @@ describe('App helper utilities coverage', () => {
     expect(app.parseDateInput('2025-01-01')).toBeGreaterThan(0);
     expect(app.toDateInputValue(new Date('2025-01-02T12:00:00Z'))).toBe('2025-01-02');
   });
+  test('formats goal timeline shifts as faster or slower', () => {
+    expect(app.formatGoalTimelineShift('2030-01-01T00:00:00.000Z', '2029-01-01T00:00:00.000Z')).toContain('faster');
+    expect(app.formatGoalTimelineShift('2030-01-01T00:00:00.000Z', '2031-01-01T00:00:00.000Z')).toContain('slower');
+    expect(app.formatGoalTimelineShift('2030-01-01T00:00:00.000Z', '2030-01-15T00:00:00.000Z')).toBe('No meaningful change');
+    expect(app.formatGoalTimelineShift(null, '2030-01-01T00:00:00.000Z')).toBe('Not enough data');
+  });
+
 });

@@ -2410,6 +2410,49 @@ function getSnapshotForecastSeries() {
   }));
 }
 
+function getScenarioGoalHitDate(series, labels, targetValue) {
+  if (!Array.isArray(series) || !Array.isArray(labels) || !targetValue) return null;
+  const limit = Math.min(series.length, labels.length);
+  for (let i = 1; i < limit; i++) {
+    const value = series[i];
+    const label = labels[i];
+    if (!(label instanceof Date) || !Number.isFinite(value)) continue;
+    if (value >= targetValue) return label.toISOString();
+  }
+  return null;
+}
+
+function getSnapshotGoalHits() {
+  if (!goalValue) return null;
+  const scenarios = lastForecastScenarios || buildForecastScenarios();
+  if (!scenarios || !Array.isArray(scenarios.labels)) return null;
+  return {
+    low: getScenarioGoalHitDate(scenarios.low, scenarios.labels, goalValue),
+    base: getScenarioGoalHitDate(scenarios.base, scenarios.labels, goalValue),
+    high: getScenarioGoalHitDate(scenarios.high, scenarios.labels, goalValue),
+  };
+}
+
+function formatGoalTimelineShift(baseIsoDate, comparedIsoDate) {
+  if (!baseIsoDate || !comparedIsoDate) return "Not enough data";
+  const baseTime = Date.parse(baseIsoDate);
+  const comparedTime = Date.parse(comparedIsoDate);
+  if (!Number.isFinite(baseTime) || !Number.isFinite(comparedTime)) {
+    return "Not enough data";
+  }
+  const monthDiff = Math.round((comparedTime - baseTime) / (1000 * 60 * 60 * 24 * 30.4375));
+  if (Math.abs(monthDiff) < 1) return "No meaningful change";
+  const years = Math.floor(Math.abs(monthDiff) / 12);
+  const months = Math.abs(monthDiff) % 12;
+  const durationParts = [];
+  if (years > 0) durationParts.push(`${years}y`);
+  if (months > 0) durationParts.push(`${months}m`);
+  const durationLabel = durationParts.join(" ");
+  return monthDiff < 0
+    ? `${durationLabel} faster`
+    : `${durationLabel} slower`;
+}
+
 function getGoalTargetYear() {
   return goalTargetDate ? new Date(goalTargetDate).getFullYear() : null;
 }
@@ -5150,6 +5193,66 @@ function renderSnapshotComparisonResult() {
       ? "Comparing against your latest asset values."
       : "Comparing two saved snapshots.";
 
+  const baseGoalHits = baseSnapshot.goalHits || null;
+  const comparedGoalHits =
+    comparisonSource === "current"
+      ? getSnapshotGoalHits()
+      : snapshots.find((s) => s.date === snapshotComparisonState.targetDate)
+          ?.goalHits || null;
+  const goalScenarioRows = [
+    { key: "low", label: "Low" },
+    { key: "base", label: "Expected" },
+    { key: "high", label: "High" },
+  ];
+  const hasGoalDates = goalValue > 0;
+  const goalTimelineSection = hasGoalDates
+    ? `
+        <div class="rounded-lg border border-gray-200 dark:border-gray-700 p-4 space-y-3">
+          <h4 class="text-sm font-semibold text-gray-800 dark:text-gray-100">Goal date impact</h4>
+          <p class="text-xs text-gray-500 dark:text-gray-400">Shows whether your target wealth date is faster or slower than the base snapshot for each growth scenario.</p>
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-left">
+              <thead class="bg-gray-100 dark:bg-gray-800">
+                <tr>
+                  <th class="table-header">Scenario</th>
+                  <th class="table-header">Base snapshot date</th>
+                  <th class="table-header">Compared date</th>
+                  <th class="table-header">Timeline change</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700 text-sm text-gray-700 dark:text-gray-300">
+                ${goalScenarioRows
+                  .map((row) => {
+                    const baseDate = baseGoalHits?.[row.key] || null;
+                    const comparedDate = comparedGoalHits?.[row.key] || null;
+                    const change = formatGoalTimelineShift(baseDate, comparedDate);
+                    const toneClass =
+                      change.includes("faster")
+                        ? "text-green-600 dark:text-green-400"
+                        : change.includes("slower")
+                          ? "text-red-600 dark:text-red-400"
+                          : "text-gray-600 dark:text-gray-300";
+                    const baseLabel = baseDate ? fmtDate(new Date(baseDate)) : "Not met";
+                    const comparedLabel = comparedDate
+                      ? fmtDate(new Date(comparedDate))
+                      : "Not met";
+                    return `
+                      <tr>
+                        <td class="px-6 py-3 whitespace-nowrap font-medium">${row.label}</td>
+                        <td class="px-6 py-3 whitespace-nowrap">${baseLabel}</td>
+                        <td class="px-6 py-3 whitespace-nowrap">${comparedLabel}</td>
+                        <td class="px-6 py-3 whitespace-nowrap font-semibold ${toneClass}">${change}</td>
+                      </tr>
+                    `;
+                  })
+                  .join("")}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `
+    : '<p class="text-sm text-gray-500 dark:text-gray-400">Set a wealth goal to compare target date changes.</p>';
+
   result.innerHTML = `
     <div class="space-y-4">
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -5174,6 +5277,7 @@ function renderSnapshotComparisonResult() {
         </div>
       </div>
       ${tableSection}
+      ${goalTimelineSection}
       <p class="text-xs text-gray-500 dark:text-gray-400">${comparisonNote}</p>
     </div>
   `;
@@ -8343,6 +8447,7 @@ window.addEventListener("load", () => {
               value: total,
               assets: detailed,
               forecast: getSnapshotForecastSeries(),
+              goalHits: getSnapshotGoalHits(),
             });
             showAllSnapshots = false;
             persist();
@@ -9363,6 +9468,7 @@ if (typeof module !== "undefined") {
     updateGoalButton,
     applyTaxSettingsChanges,
     clearTaxCalculatorResult,
+    formatGoalTimelineShift,
     // State (for testing)
     getAssets: () => assets,
     setAssets: (val) => {

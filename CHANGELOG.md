@@ -2,6 +2,11 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
+## [NEXT_VERSION] - [NEXT_DATE]
+
+- Show goal date timeline changes in Snapshot Comparison so you can see how much faster or slower each low, expected, and high scenario reaches your target compared with the selected snapshot.
+- Keep development dependencies current by updating @types/node, jest, and jest-environment-jsdom to the latest patch releases.
+
 ## 1.1.126 - 2026-03-01
 
 - Make Financial Inputs rows non-selectable after adding assets, incomes, expenses, or liabilities so mobile long-press edit gestures trigger more reliably.
@@ -197,9 +202,6 @@ All notable changes to WealthTrack will be documented in this file. This project
 ## 1.1.72 - 2026-02-28
 
 - Added automated test suite to verify application functionality and ensure ongoing stability.
-
-## [[NEXT_VERSION]] - [NEXT_DATE]
-- Update application software dependencies
 
 ## [1.1.81] - 2026-02-28
 

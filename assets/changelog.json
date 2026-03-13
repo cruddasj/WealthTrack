@@ -3,7 +3,9 @@
     "version": "[NEXT_VERSION]",
     "date": "[NEXT_DATE]",
     "changes": [
-      "Update application software dependencies"
+      "Update application software dependencies",
+      "Show goal date timeline changes in Snapshot Comparison so you can see how much faster or slower each low, expected, and high scenario reaches your target compared with the selected snapshot.",
+      "Keep development dependencies current by updating @types/node, jest, and jest-environment-jsdom to the latest patch releases."
     ]
   },
   {
