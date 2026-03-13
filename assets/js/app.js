@@ -2410,6 +2410,83 @@ function getSnapshotForecastSeries() {
   }));
 }
 
+function getGoalAchievementDatesFromScenarios(scenarios) {
+  if (!scenarios || !(goalValue > 0)) {
+    return { low: null, base: null, high: null };
+  }
+  const findHitDate = (series) => {
+    if (!Array.isArray(series)) return null;
+    for (let i = 1; i < series.length; i++) {
+      if (series[i] >= goalValue) {
+        const label = scenarios.labels?.[i];
+        return label instanceof Date ? label.toISOString() : null;
+      }
+    }
+    return null;
+  };
+  return {
+    low: findHitDate(scenarios.low),
+    base: findHitDate(scenarios.base),
+    high: findHitDate(scenarios.high),
+  };
+}
+
+function getCurrentGoalAchievementDates() {
+  const scenarios = lastForecastScenarios || buildForecastScenarios();
+  return getGoalAchievementDatesFromScenarios(scenarios);
+}
+
+function describeGoalDateImpact(baseDateIso, comparedDateIso) {
+  if (!baseDateIso && !comparedDateIso) {
+    return {
+      impactLabel: "Not projected in either view",
+      impactClass: "text-gray-600 dark:text-gray-300",
+    };
+  }
+  if (!baseDateIso && comparedDateIso) {
+    return {
+      impactLabel: "Now projected (was not previously met)",
+      impactClass: "text-green-600 dark:text-green-400",
+    };
+  }
+  if (baseDateIso && !comparedDateIso) {
+    return {
+      impactLabel: "No longer projected within the forecast horizon",
+      impactClass: "text-red-600 dark:text-red-400",
+    };
+  }
+
+  const baseDate = Date.parse(baseDateIso);
+  const comparedDate = Date.parse(comparedDateIso);
+  if (!Number.isFinite(baseDate) || !Number.isFinite(comparedDate)) {
+    return {
+      impactLabel: "Date comparison unavailable",
+      impactClass: "text-gray-600 dark:text-gray-300",
+    };
+  }
+
+  const dayDiff = Math.round((comparedDate - baseDate) / (1000 * 60 * 60 * 24));
+  if (Math.abs(dayDiff) <= 15) {
+    return {
+      impactLabel: "On roughly the same timeline",
+      impactClass: "text-blue-600 dark:text-blue-400",
+    };
+  }
+
+  const absMonths = Math.max(1, Math.round(Math.abs(dayDiff) / 30.44));
+  const monthsLabel = `${absMonths} month${absMonths === 1 ? "" : "s"}`;
+  if (dayDiff < 0) {
+    return {
+      impactLabel: `${monthsLabel} faster`,
+      impactClass: "text-green-600 dark:text-green-400",
+    };
+  }
+  return {
+    impactLabel: `${monthsLabel} slower`,
+    impactClass: "text-red-600 dark:text-red-400",
+  };
+}
+
 function getGoalTargetYear() {
   return goalTargetDate ? new Date(goalTargetDate).getFullYear() : null;
 }
@@ -5145,6 +5222,70 @@ function renderSnapshotComparisonResult() {
       </div>`
     : '<p class="text-sm text-gray-500 dark:text-gray-400">Asset allocation details for this comparison are not available.</p>';
 
+  const scenarioLabels = [
+    { key: "low", label: "Low growth" },
+    { key: "base", label: "Expected growth" },
+    { key: "high", label: "High growth" },
+  ];
+  const baseGoalDates =
+    baseSnapshot.goalAchievementDates &&
+    typeof baseSnapshot.goalAchievementDates === "object"
+      ? baseSnapshot.goalAchievementDates
+      : {};
+  const comparedGoalDates =
+    comparisonSource === "snapshot"
+      ? snapshots.find((s) => s.date === snapshotComparisonState.targetDate)
+          ?.goalAchievementDates || {}
+      : getCurrentGoalAchievementDates();
+
+  const formatGoalDateLabel = (dateIso) => {
+    if (!dateIso) {
+      const targetYear = getGoalTargetYear();
+      return targetYear ? `Not met by ${targetYear}` : "Not met in 30 years";
+    }
+    const parsed = new Date(dateIso);
+    if (Number.isNaN(parsed.getTime())) return "Unavailable";
+    return parsed.toLocaleString("default", { month: "short", year: "numeric" });
+  };
+
+  const goalDateImpactRows = scenarioLabels
+    .map((scenario) => {
+      const baseGoalDate = baseGoalDates[scenario.key] || null;
+      const comparedGoalDate = comparedGoalDates[scenario.key] || null;
+      const impact = describeGoalDateImpact(baseGoalDate, comparedGoalDate);
+      return `
+        <tr>
+          <td class="px-6 py-3 whitespace-nowrap">${scenario.label}</td>
+          <td class="px-6 py-3 whitespace-nowrap">${formatGoalDateLabel(baseGoalDate)}</td>
+          <td class="px-6 py-3 whitespace-nowrap">${formatGoalDateLabel(comparedGoalDate)}</td>
+          <td class="px-6 py-3 whitespace-nowrap font-semibold ${impact.impactClass}">${impact.impactLabel}</td>
+        </tr>
+      `;
+    })
+    .join("");
+
+  const goalDateSection = goalValue > 0
+    ? `<div class="space-y-2">
+        <h5 class="text-sm font-semibold text-gray-900 dark:text-gray-100">Goal date impact</h5>
+        <p class="text-xs text-gray-500 dark:text-gray-400">Shows how projected goal achievement timelines changed versus the selected snapshot baseline.</p>
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-left">
+            <thead class="bg-gray-200 dark:bg-gray-700">
+              <tr>
+                <th class="table-header">Scenario</th>
+                <th class="table-header">Snapshot date</th>
+                <th class="table-header">Compared date</th>
+                <th class="table-header">Impact</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700 text-sm text-gray-700 dark:text-gray-300">
+              ${goalDateImpactRows}
+            </tbody>
+          </table>
+        </div>
+      </div>`
+    : "";
+
   const comparisonNote =
     comparisonSource === "current"
       ? "Comparing against your latest asset values."
@@ -5174,6 +5315,7 @@ function renderSnapshotComparisonResult() {
         </div>
       </div>
       ${tableSection}
+      ${goalDateSection}
       <p class="text-xs text-gray-500 dark:text-gray-400">${comparisonNote}</p>
     </div>
   `;
@@ -8343,6 +8485,7 @@ window.addEventListener("load", () => {
               value: total,
               assets: detailed,
               forecast: getSnapshotForecastSeries(),
+              goalAchievementDates: getCurrentGoalAchievementDates(),
             });
             showAllSnapshots = false;
             persist();
@@ -9354,6 +9497,9 @@ if (typeof module !== "undefined") {
     liabilityBalanceAfterMonths,
     getGoalTargetYear,
     getGoalHorizonYears,
+    getGoalAchievementDatesFromScenarios,
+    getCurrentGoalAchievementDates,
+    describeGoalDateImpact,
     getPassiveIncomeTargetDate,
     updatePassiveIncome,
     updateFireForecastCard,

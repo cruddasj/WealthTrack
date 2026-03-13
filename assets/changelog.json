@@ -3,7 +3,8 @@
     "version": "[NEXT_VERSION]",
     "date": "[NEXT_DATE]",
     "changes": [
-      "Update application software dependencies"
+      "Update application software dependencies",
+      "Expand Snapshot Comparison with goal date impact details that show whether low, expected, and high scenarios are projected faster or slower versus a selected snapshot baseline."
     ]
   },
   {
