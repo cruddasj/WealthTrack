@@ -3,7 +3,8 @@
     "version": "[NEXT_VERSION]",
     "date": "[NEXT_DATE]",
     "changes": [
-      "Update application software dependencies"
+      "Hide first-time tips on the Welcome and Export areas when first-time guidance is turned off.",
+      "Rewrite export helper text in plain language so backup and password protection are clearer for non-technical users."
     ]
   },
   {

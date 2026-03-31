@@ -2,6 +2,11 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
+## [NEXT_VERSION] - [NEXT_DATE]
+
+- Hide first-time tips on the Welcome and Export areas when first-time guidance is turned off.
+- Rewrite the export helper text in plain language so backup and password protection are clearer for non-technical users.
+
 ## 1.1.127 - 2026-03-13
 
 - Update application software dependencies.
