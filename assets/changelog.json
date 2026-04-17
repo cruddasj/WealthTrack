@@ -1,7 +1,7 @@
 [
   {
-    "version": "[NEXT_VERSION]",
-    "date": "[NEXT_DATE]",
+    "version": "1.1.129",
+    "date": "2026-04-17",
     "changes": [
       "Add an annual platform fee option on assets so account charges (for example ISA provider fees) are deducted from low, expected, and high growth forecasts.",
       "Support optional annual fee caps per asset so provider maximum charges are respected in projections."
