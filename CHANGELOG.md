@@ -2,6 +2,11 @@
 
 All notable changes to WealthTrack will be documented in this file. This project adheres to a manual release process; update both this file and `assets/changelog.json` when shipping new versions so the in-app update summary stays accurate.
 
+## [NEXT_VERSION] - [NEXT_DATE]
+
+- Add an annual platform fee option on assets so account charges (for example ISA provider fees) are deducted from low, expected, and high growth forecasts.
+- Support optional annual fee caps per asset so provider maximum charges are respected in projections.
+
 ## 1.1.127 - 2026-03-13
 
 - Update application software dependencies.

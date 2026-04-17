@@ -654,6 +654,16 @@ const SCENARIO_LABELS = {
   high: "High Growth",
 };
 
+function getAnnualAssetFeeRate(asset) {
+  if (!asset || typeof asset !== "object") return 0;
+  return toNonNegativeNumber(asset.annualFeeRate, 0);
+}
+
+function getAnnualAssetFeeCap(asset) {
+  if (!asset || typeof asset !== "object") return 0;
+  return toNonNegativeNumber(asset.annualFeeCap, 0);
+}
+
 let taxSettings = normalizeTaxSettings();
 let taxComputationCache = null;
 
@@ -718,6 +728,15 @@ function computeAssetTaxDetails() {
     SCENARIO_KEYS.forEach((scenario) => {
       const grossRate = getGrossRate(asset, scenario);
       const grossAmount = baseValue * (grossRate / 100);
+      const annualFeeRate = getAnnualAssetFeeRate(asset);
+      const annualFeeCap = getAnnualAssetFeeCap(asset);
+      const annualFeeAmountUncapped = baseValue * (annualFeeRate / 100);
+      const annualFeeAmount =
+        annualFeeCap > 0
+          ? Math.min(annualFeeAmountUncapped, annualFeeCap)
+          : annualFeeAmountUncapped;
+      const annualFeeEffectiveRate =
+        baseValue > 0 ? (annualFeeAmount / baseValue) * 100 : 0;
       let taxableAmount = 0;
       let allowanceShare = 0;
       let taxDue = 0;
@@ -733,10 +752,16 @@ function computeAssetTaxDetails() {
         netRate = baseValue > 0 ? (netAmount / baseValue) * 100 : grossRate;
         if (grossAmount > 0) effectiveTaxRate = taxDue / grossAmount;
       }
+      netRate -= annualFeeEffectiveRate;
       detail[scenario] = {
         grossRate,
         netRate,
         annualGross: grossAmount,
+        annualFeeRate,
+        annualFeeCap,
+        annualFeeAmount,
+        annualFeeAmountUncapped,
+        annualFeeEffectiveRate,
         annualTax: taxDue,
         taxableAmount,
         allowanceShare,
@@ -1422,6 +1447,8 @@ function normalizeData() {
     const ret = parseFloat(a.return) || 0;
     if (a.lowGrowth == null) a.lowGrowth = ret;
     if (a.highGrowth == null) a.highGrowth = ret;
+    a.annualFeeRate = toNonNegativeNumber(a.annualFeeRate, 0);
+    a.annualFeeCap = toNonNegativeNumber(a.annualFeeCap, 0);
     if (a.includeInPassive === undefined) a.includeInPassive = true;
     if (a.excludeNetCashflow === undefined) a.excludeNetCashflow = false;
     a.taxTreatment = normalizeTaxTreatment(a.taxTreatment);
@@ -2595,6 +2622,10 @@ function showEditAsset(index) {
   tpl.querySelector("#editAssetReturn").value = asset.return;
   tpl.querySelector("#editLowGrowth").value = asset.lowGrowth;
   tpl.querySelector("#editHighGrowth").value = asset.highGrowth;
+  const editAssetFee = tpl.querySelector("#editAssetAnnualFeeRate");
+  if (editAssetFee) editAssetFee.value = getAnnualAssetFeeRate(asset);
+  const editAssetFeeCap = tpl.querySelector("#editAssetAnnualFeeCap");
+  if (editAssetFeeCap) editAssetFeeCap.value = getAnnualAssetFeeCap(asset);
   const editTaxSelect = tpl.querySelector("#editAssetTaxTreatment");
   if (editTaxSelect)
     editTaxSelect.value = normalizeTaxTreatment(asset.taxTreatment);
@@ -2623,6 +2654,14 @@ function showEditAsset(index) {
     a.return = ret;
     a.lowGrowth = parseFloat(f.querySelector("#editLowGrowth").value) || ret;
     a.highGrowth = parseFloat(f.querySelector("#editHighGrowth").value) || ret;
+    a.annualFeeRate = toNonNegativeNumber(
+      f.querySelector("#editAssetAnnualFeeRate")?.value,
+      0,
+    );
+    a.annualFeeCap = toNonNegativeNumber(
+      f.querySelector("#editAssetAnnualFeeCap")?.value,
+      0,
+    );
     a.monthlyDeposit = monthlyFrom(a.frequency, a.originalDeposit);
     const incCbx = f.querySelector("#editIncludePassive");
     a.includeInPassive = incCbx ? !!incCbx.checked : true;
@@ -7069,6 +7108,14 @@ function handleFormSubmit(e) {
       newAsset.return = ret;
       newAsset.lowGrowth = parseFloat(form.lowGrowth.value) || ret;
       newAsset.highGrowth = parseFloat(form.highGrowth.value) || ret;
+      newAsset.annualFeeRate = toNonNegativeNumber(
+        form.assetAnnualFeeRate?.value,
+        0,
+      );
+      newAsset.annualFeeCap = toNonNegativeNumber(
+        form.assetAnnualFeeCap?.value,
+        0,
+      );
       newAsset.monthlyDeposit = monthlyFrom(
         newAsset.frequency,
         newAsset.originalDeposit,

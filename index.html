@@ -568,7 +568,7 @@
             </div>
 
             <div
-              class="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-4 md:col-span-full"
+              class="grid grid-cols-1 md:grid-cols-5 gap-2 md:gap-4 md:col-span-full"
             >
               <div>
                 <label for="lowGrowth" class="form-label">
@@ -616,6 +616,42 @@
                   placeholder="e.g. 4"
                   class="input-field"
                 />
+              </div>
+
+              <div>
+                <label for="assetAnnualFeeRate" class="form-label">
+                  Annual Platform Fee (%)
+                </label>
+                <input
+                  type="number"
+                  step="any"
+                  id="assetAnnualFeeRate"
+                  min="0"
+                  value="0"
+                  placeholder="e.g. 1"
+                  class="input-field"
+                />
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Optional. This annual fee is deducted from each growth scenario in forecasts.
+                </p>
+              </div>
+
+              <div>
+                <label for="assetAnnualFeeCap" class="form-label">
+                  Annual Fee Cap (<span data-currency-symbol>£</span>)
+                </label>
+                <input
+                  type="number"
+                  step="any"
+                  id="assetAnnualFeeCap"
+                  min="0"
+                  value="0"
+                  placeholder="e.g. 200"
+                  class="input-field"
+                />
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Optional. If set above 0, yearly platform charges are limited to this maximum.
+                </p>
               </div>
 
               <div>
@@ -2925,6 +2961,30 @@
               type="number"
               step="any"
               id="editAssetReturn"
+              class="input-field"
+            />
+          </div>
+          <div>
+            <label for="editAssetAnnualFeeRate" class="form-label"
+              >Annual Platform Fee (%)</label
+            >
+            <input
+              type="number"
+              step="any"
+              min="0"
+              id="editAssetAnnualFeeRate"
+              class="input-field"
+            />
+          </div>
+          <div>
+            <label for="editAssetAnnualFeeCap" class="form-label"
+              >Annual Fee Cap (<span data-currency-symbol>£</span>)</label
+            >
+            <input
+              type="number"
+              step="any"
+              min="0"
+              id="editAssetAnnualFeeCap"
               class="input-field"
             />
           </div>

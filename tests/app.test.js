@@ -386,6 +386,75 @@ describe('App Core Logic', () => {
     expect(assetDetails.base.netRate).toBeCloseTo(4.2, 1);
   });
 
+  test('computeAssetTaxDetails deducts annual platform fees from net growth rates', () => {
+    const now = Date.now();
+    app.setAssets([
+      {
+        name: 'ISA Platform Fee',
+        value: 50000,
+        return: 6,
+        lowGrowth: 4,
+        highGrowth: 8,
+        annualFeeRate: 1,
+        annualFeeCap: 0,
+        dateAdded: now,
+        startDate: now,
+        taxTreatment: 'tax-free'
+      }
+    ]);
+    app.setTaxSettings({
+      band: 'basic',
+      incomeAllowance: 1000,
+      dividendAllowance: 500,
+      capitalAllowance: 3000
+    });
+    app.invalidateTaxCache();
+
+    const taxDetails = app.computeAssetTaxDetails();
+    const assetDetails = taxDetails.detailMap.get(now);
+
+    expect(assetDetails.base.grossRate).toBe(6);
+    expect(assetDetails.base.annualFeeRate).toBe(1);
+    expect(assetDetails.base.annualFeeCap).toBe(0);
+    expect(assetDetails.base.annualFeeAmount).toBe(500);
+    expect(assetDetails.base.annualFeeAmountUncapped).toBe(500);
+    expect(assetDetails.base.annualFeeEffectiveRate).toBeCloseTo(1, 5);
+    expect(assetDetails.base.netRate).toBeCloseTo(5, 5);
+    expect(assetDetails.low.netRate).toBeCloseTo(3, 5);
+    expect(assetDetails.high.netRate).toBeCloseTo(7, 5);
+  });
+
+  test('computeAssetTaxDetails applies annual platform fee cap when provided', () => {
+    const now = Date.now();
+    app.setAssets([
+      {
+        name: 'Capped Fee Asset',
+        value: 50000,
+        return: 6,
+        annualFeeRate: 1,
+        annualFeeCap: 200,
+        dateAdded: now,
+        startDate: now,
+        taxTreatment: 'tax-free'
+      }
+    ]);
+    app.setTaxSettings({
+      band: 'basic',
+      incomeAllowance: 1000,
+      dividendAllowance: 500,
+      capitalAllowance: 3000
+    });
+    app.invalidateTaxCache();
+
+    const taxDetails = app.computeAssetTaxDetails();
+    const assetDetails = taxDetails.detailMap.get(now);
+
+    expect(assetDetails.base.annualFeeAmountUncapped).toBe(500);
+    expect(assetDetails.base.annualFeeAmount).toBe(200);
+    expect(assetDetails.base.annualFeeEffectiveRate).toBeCloseTo(0.4, 5);
+    expect(assetDetails.base.netRate).toBeCloseTo(5.6, 5);
+  });
+
   test('calculatePassiveAssetValueAt projects value to target date considering events and growth', () => {
     const startTs = new Date('2025-01-01').getTime();
     const asset = {
